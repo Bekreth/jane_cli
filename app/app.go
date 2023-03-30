@@ -21,6 +21,7 @@ func NewApplication(logger logger.Logger) Application {
 	schedule := scheduleState{
 		logger:    logger.AddContext("state", "schedule"),
 		rootState: tempState,
+		subState:  none,
 	}
 
 	root.scheduleState = &schedule
@@ -54,6 +55,7 @@ func (app *Application) HandleKeyinput(character rune, key keyboard.Key) bool {
 			nextState.name(),
 		)
 		nextState.initialize()
+		app.state.shutdown()
 		app.state = nextState
 	}
 	return true
