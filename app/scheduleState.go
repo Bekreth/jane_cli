@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"strings"
 	"time"
 
@@ -24,6 +23,7 @@ const (
 
 type scheduleState struct {
 	logger        logger.Logger
+	writer        screenWriter
 	rootState     state
 	subState      subcommand
 	fetcher       scheduleFetcher
@@ -39,15 +39,16 @@ func (schedule scheduleState) initialize() {
 		"entering schedule. available states %v",
 		schedule.rootState.name(),
 	)
+	schedule.writer.writeString("")
 }
 
 func (schedule *scheduleState) handleKeyinput(character rune, key keyboard.Key) state {
+	var output state
+	output = schedule
 	switch key {
 	case keyboard.KeyTab:
 		schedule.triggerAutocomplete()
-		// TODO: replace
-		fmt.Println("schedule>", schedule.currentBuffer)
-		return schedule
+
 	case keyboard.KeyDelete:
 		fallthrough
 	case keyboard.KeyBackspace2:
@@ -56,19 +57,16 @@ func (schedule *scheduleState) handleKeyinput(character rune, key keyboard.Key) 
 		if len(schedule.currentBuffer) != 0 {
 			schedule.currentBuffer = schedule.currentBuffer[0 : len(schedule.currentBuffer)-1]
 		}
-		// TODO: replace
-		fmt.Println("schedule> ", schedule.currentBuffer)
 
 	case keyboard.KeyEnter:
-		return schedule.submit()
+		output = schedule.submit()
 	}
 
 	if character != 0 {
 		schedule.currentBuffer += string(character)
-		//TODO: replace
-		fmt.Println("schedule> ", schedule.currentBuffer)
 	}
-	return schedule
+	schedule.writer.writeString(schedule.currentBuffer)
+	return output
 }
 
 func (schedule *scheduleState) shutdown() {
@@ -76,7 +74,6 @@ func (schedule *scheduleState) shutdown() {
 }
 
 func (schedule *scheduleState) triggerAutocomplete() {
-	schedule.logger.Debugln("triggering autocomplete")
 	words := strings.Split(schedule.currentBuffer, " ")
 	if completed := schedule.autocompleteWord(words[len(words)-1]); completed != "" {
 		updatedBuffer := strings.Join(append(words[0:len(words)-1], completed), " ")

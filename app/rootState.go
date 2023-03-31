@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/Bekreth/jane_cli/logger"
@@ -10,6 +9,7 @@ import (
 
 type rootState struct {
 	logger        logger.Logger
+	writer        screenWriter
 	scheduleState state
 	currentBuffer string
 }
@@ -20,15 +20,16 @@ func (rootState) name() string {
 
 func (root rootState) initialize() {
 	root.logger.Debugf("entering root. available states %v", root.scheduleState.name())
+	root.writer.writeString("")
 }
 
 func (root *rootState) handleKeyinput(character rune, key keyboard.Key) state {
+	var output state
+	output = root
 	switch key {
 	case keyboard.KeyTab:
 		root.triggerAutocomplete()
-		// TODO: replace
-		fmt.Println(root.currentBuffer)
-		return root
+
 	case keyboard.KeyDelete:
 		fallthrough
 	case keyboard.KeyBackspace2:
@@ -37,18 +38,16 @@ func (root *rootState) handleKeyinput(character rune, key keyboard.Key) state {
 		if len(root.currentBuffer) != 0 {
 			root.currentBuffer = root.currentBuffer[0 : len(root.currentBuffer)-1]
 		}
-		// TODO: replace
-		fmt.Println(root.currentBuffer)
+
 	case keyboard.KeyEnter:
-		return root.submit()
+		output = root.submit()
 	}
 
 	if character != 0 {
 		root.currentBuffer += string(character)
-		// TODO: replace
-		fmt.Println(root.currentBuffer)
 	}
-	return root
+	root.writer.writeString(root.currentBuffer)
+	return output
 }
 
 func (root *rootState) shutdown() {
@@ -56,8 +55,6 @@ func (root *rootState) shutdown() {
 }
 
 func (root *rootState) triggerAutocomplete() {
-	root.logger.Debugf("triggering autocomplete")
-
 	if strings.HasPrefix(root.scheduleState.name(), root.currentBuffer) {
 		root.currentBuffer = root.scheduleState.name()
 	}
@@ -67,5 +64,6 @@ func (root *rootState) submit() state {
 	if root.currentBuffer == root.scheduleState.name() {
 		return root.scheduleState
 	}
+	root.writer.newLine()
 	return root
 }

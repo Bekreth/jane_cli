@@ -16,16 +16,20 @@ func NewApplication(logger logger.Logger) Application {
 
 	root := rootState{
 		logger:        logger.AddContext("state", "root"),
+		writer:        screenWriter{"jane>"},
 		scheduleState: tempState,
 	}
 	schedule := scheduleState{
 		logger:    logger.AddContext("state", "schedule"),
+		writer:    screenWriter{"schedule>"},
 		rootState: tempState,
 		subState:  none,
 	}
 
 	root.scheduleState = &schedule
 	schedule.rootState = &root
+
+	root.initialize()
 
 	return Application{
 		logger:    logger,
