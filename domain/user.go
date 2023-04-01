@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/Bekreth/jane_cli/logger"
 	"gopkg.in/yaml.v3"
@@ -60,48 +61,51 @@ func NewUser(logger logger.Logger, filePath string) (User, error) {
 			os.Remove(newFilePath)
 			return output, err
 		}
+		return output, output.SaveUserFile()
 	}
 
 	return output, nil
 }
 
+const postCheckMessage = "User data isn't fully initialized.  Missing the following data: %v. Run the following commands: \n%v\n"
+
 func (user User) PostCheck() {
-	message := "User data isn't fully initialized.  Missing data for %v, run the following commands: \n%v\n"
 	missingData := []string{}
 	commands := []string{}
 
 	shouldPrint := false
 
+	user.logger.Debugln(user.Auth)
 	if user.Auth.Domain == "" {
 		missingData = append(missingData, "clinic domain")
-		commands = append(commands, "* init -d ${clinicDomain}")
+		commands = append(commands, " * init -d ${clinicDomain}")
 		shouldPrint = true
 	}
 	if user.Auth.Username == "" {
 		missingData = append(missingData, "username")
-		commands = append(commands, "* init -u ${username}")
+		commands = append(commands, " * init -u ${username}")
 		shouldPrint = true
 	}
 	if user.Auth.AuthCookie == "" {
 		missingData = append(missingData, "authentication token")
-		commands = append(commands, "* auth -p ${password}")
+		commands = append(commands, " * auth -p ${password}")
 		shouldPrint = true
 	}
 
 	if shouldPrint {
-		fmt.Printf(message, missingData, commands)
+		fmt.Printf(
+			postCheckMessage,
+			strings.Join(missingData, ", "),
+			strings.Join(commands, "\n"),
+		)
 	}
 }
 
 func (user User) SaveUserFile() error {
-	userFile, err := os.OpenFile(user.filePath, os.O_RDWR, os.ModeAppend)
+	userFile, err := os.Create(user.filePath)
 	if err != nil {
-		user.logger.Infof("the user file %v doesn't exist, creating it", user.filePath)
-		userFile, err = os.Create(user.filePath)
-		if err != nil {
-			user.logger.Infof("unable to create user file at %v: %v", user.filePath, err)
-			return err
-		}
+		user.logger.Infof("unable to create user file at %v: %v", user.filePath, err)
+		return err
 	}
 
 	bytes, err := yaml.Marshal(user)

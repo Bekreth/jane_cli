@@ -1,3 +1,5 @@
-debugger: true
+logger:
+  debugger: true
+  output: var/log
 client:
-  userFilePath: var/user4.yaml
+  userFilePath: var/user.yaml

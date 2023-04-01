@@ -1,6 +1,10 @@
 package logger
 
-import "github.com/sirupsen/logrus"
+import (
+	"os"
+
+	"github.com/sirupsen/logrus"
+)
 
 type LogrusLogger struct {
 	*logrus.Logger
@@ -10,10 +14,22 @@ type LogrusEntry struct {
 	*logrus.Entry
 }
 
-func NewLogrusLogger() Logger {
-	return LogrusLogger{
+func NewLogrusLogger(config Config) (Logger, error) {
+	output := LogrusLogger{
 		logrus.New(),
 	}
+	output.SetFormatter(&logrus.JSONFormatter{
+		PrettyPrint: true,
+	})
+	file, err := os.OpenFile(config.Output, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+	if err != nil {
+		return output, err
+	}
+	output.SetOutput(file)
+	if config.Debugger {
+		output.EnableDebugger()
+	}
+	return output, err
 }
 
 func (logger LogrusLogger) AddContext(key string, value string) Logger {

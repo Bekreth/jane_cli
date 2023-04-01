@@ -11,36 +11,25 @@ import (
 	"github.com/eiannone/keyboard"
 )
 
-// TODO: Make this agnostic to OS
-const defaultConfigLocation = "etc/config.yaml"
-
 func main() {
-	logger := logger.NewLogrusLogger()
-	logger.Infoln("Starting Jane CLI")
-	configLocation := defaultConfigLocation
-	logger.Infof("Loading config from %v", configLocation)
-	fileBytes, err := os.ReadFile(configLocation)
-	if err != nil {
-		outputError := fmt.Errorf("Failed to read config file: %v", err)
-		logger.Infoln(outputError)
-		panic(err)
-	}
-	config, err := parseConfig(fileBytes)
-	if err != nil {
-		outputError := fmt.Errorf("failed to read config file: %v", err)
-		logger.Infoln(outputError)
-		panic(err)
-	}
+	fmt.Println("Starting Jane CLI")
+	config, err := parseConfig("")
+	logger, err := logger.NewLogrusLogger(config.Logger)
 
-	if config.Debugger {
-		logger.EnableDebugger()
+	if err != nil {
+		fmt.Printf("failed to load config: %v\n", err)
+		os.Exit(1)
 	}
 
 	if config.Client.UserFilePath == "" {
-		panic("no path is provided for user file path")
+		fmt.Println("no path is provided for user file path")
+		os.Exit(1)
 	}
 
-	user, err := domain.NewUser(logger, config.Client.UserFilePath)
+	user, err := domain.NewUser(
+		logger.AddContext("service", "userReader"),
+		config.Client.UserFilePath,
+	)
 	if err != nil {
 		os.Exit(1)
 	}
