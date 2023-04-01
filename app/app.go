@@ -15,9 +15,14 @@ func NewApplication(logger logger.Logger) Application {
 	tempState := noState{}
 
 	root := rootState{
-		logger:        logger.AddContext("state", "root"),
-		writer:        screenWriter{"jane>"},
-		scheduleState: tempState,
+		logger: logger.AddContext("state", "root"),
+		writer: screenWriter{"jane>"},
+	}
+	auth := authState{
+		logger:        logger.AddContext("state", "auth"),
+		writer:        screenWriter{"auth>"},
+		rootState:     tempState,
+		authenticator: fakeAuthenticator{},
 	}
 	schedule := scheduleState{
 		logger:    logger.AddContext("state", "schedule"),
@@ -26,7 +31,12 @@ func NewApplication(logger logger.Logger) Application {
 		subState:  none,
 	}
 
-	root.scheduleState = &schedule
+	root.states = map[string]state{
+		schedule.name(): &schedule,
+		auth.name():     &auth,
+	}
+
+	auth.rootState = &root
 	schedule.rootState = &root
 
 	root.initialize()
@@ -34,7 +44,7 @@ func NewApplication(logger logger.Logger) Application {
 	return Application{
 		logger:    logger,
 		state:     &root,
-		allStates: []state{&root, &schedule},
+		allStates: []state{&root, &schedule, &auth},
 	}
 }
 

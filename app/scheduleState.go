@@ -46,6 +46,9 @@ func (schedule *scheduleState) handleKeyinput(character rune, key keyboard.Key) 
 	var output state
 	output = schedule
 	switch key {
+	case keyboard.KeySpace:
+		schedule.currentBuffer += string(" ")
+
 	case keyboard.KeyTab:
 		schedule.triggerAutocomplete()
 

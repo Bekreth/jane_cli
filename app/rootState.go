@@ -10,7 +10,7 @@ import (
 type rootState struct {
 	logger        logger.Logger
 	writer        screenWriter
-	scheduleState state
+	states        map[string]state
 	currentBuffer string
 }
 
@@ -19,7 +19,14 @@ func (rootState) name() string {
 }
 
 func (root rootState) initialize() {
-	root.logger.Debugf("entering root. available states %v", root.scheduleState.name())
+	stateNames := []string{}
+	for key := range root.states {
+		stateNames = append(stateNames, key)
+	}
+	root.logger.Debugf(
+		"entering root. available states: %v",
+		stateNames,
+	)
 	root.writer.writeString("")
 }
 
@@ -27,6 +34,9 @@ func (root *rootState) handleKeyinput(character rune, key keyboard.Key) state {
 	var output state
 	output = root
 	switch key {
+	case keyboard.KeySpace:
+		root.currentBuffer += string(" ")
+
 	case keyboard.KeyTab:
 		root.triggerAutocomplete()
 
@@ -55,14 +65,18 @@ func (root *rootState) shutdown() {
 }
 
 func (root *rootState) triggerAutocomplete() {
-	if strings.HasPrefix(root.scheduleState.name(), root.currentBuffer) {
-		root.currentBuffer = root.scheduleState.name()
+	for _, stateName := range mapKeys(root.states) {
+		if strings.HasPrefix(stateName, root.currentBuffer) {
+			root.currentBuffer = stateName
+		}
 	}
 }
 
 func (root *rootState) submit() state {
-	if root.currentBuffer == root.scheduleState.name() {
-		return root.scheduleState
+	for _, stateName := range mapKeys(root.states) {
+		if root.currentBuffer == stateName {
+			return root.states[stateName]
+		}
 	}
 	root.writer.newLine()
 	return root

@@ -4,3 +4,4 @@ jane_cli
 *.swo
 
 output/
+var/
