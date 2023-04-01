@@ -1,8 +1,6 @@
 package app
 
-import (
-	"strings"
-)
+import "strings"
 
 func parseFlags(input string) map[string]string {
 	output := map[string]string{}

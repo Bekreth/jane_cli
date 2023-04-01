@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/Bekreth/jane_cli/app"
+	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
 
 	"github.com/eiannone/keyboard"
@@ -35,7 +36,18 @@ func main() {
 		logger.EnableDebugger()
 	}
 
-	application := app.NewApplication(logger)
+	if config.Client.UserFilePath == "" {
+		panic("no path is provided for user file path")
+	}
+
+	user, err := domain.NewUser(logger, config.Client.UserFilePath)
+	if err != nil {
+		os.Exit(1)
+	}
+
+	user.PostCheck()
+
+	application := app.NewApplication(logger, user)
 
 	logger.Infoln("Application initialized, starting run loop")
 	for {

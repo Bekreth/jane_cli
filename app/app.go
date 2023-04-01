@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
 	"github.com/eiannone/keyboard"
 )
@@ -11,40 +12,48 @@ type Application struct {
 	allStates []state
 }
 
-func NewApplication(logger logger.Logger) Application {
-	tempState := noState{}
+func NewApplication(
+	logger logger.Logger,
+	user domain.User,
+) Application {
 
 	root := rootState{
 		logger: logger.AddContext("state", "root"),
 		writer: screenWriter{"jane>"},
 	}
-	auth := authState{
-		logger:        logger.AddContext("state", "auth"),
-		writer:        screenWriter{"auth>"},
-		rootState:     tempState,
-		authenticator: fakeAuthenticator{},
+	init := initState{
+		logger: logger.AddContext("state", "init"),
+		writer: screenWriter{"init>"},
+		user:   user,
 	}
+	/*
+		auth := authState{
+			logger:    logger.AddContext("state", "auth"),
+			writer:    screenWriter{"auth>"},
+			rootState: tempState,
+		}
+	*/
 	schedule := scheduleState{
-		logger:    logger.AddContext("state", "schedule"),
-		writer:    screenWriter{"schedule>"},
-		rootState: tempState,
-		subState:  none,
+		logger:   logger.AddContext("state", "schedule"),
+		writer:   screenWriter{"schedule>"},
+		subState: none,
 	}
 
 	root.states = map[string]state{
 		schedule.name(): &schedule,
-		auth.name():     &auth,
+		init.name():     &init,
 	}
 
-	auth.rootState = &root
+	//auth.rootState = &root
 	schedule.rootState = &root
+	init.rootState = &root
 
 	root.initialize()
 
 	return Application{
 		logger:    logger,
 		state:     &root,
-		allStates: []state{&root, &schedule, &auth},
+		allStates: []state{&root, &schedule, &init},
 	}
 }
 

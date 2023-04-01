@@ -5,12 +5,11 @@ import (
 	"time"
 
 	"github.com/Bekreth/jane_cli/logger"
-	"github.com/Bekreth/jane_cli/schedule"
 	"github.com/eiannone/keyboard"
 )
 
 type scheduleFetcher interface {
-	fetchSchedule(startDate time.Time, endDate time.Time) ([]schedule.Day, error)
+	fetchSchedule(startDate time.Time, endDate time.Time)
 }
 
 type subcommand string

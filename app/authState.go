@@ -1,28 +1,18 @@
 package app
 
 import (
+	"fmt"
+
 	"github.com/Bekreth/jane_cli/logger"
 	"github.com/eiannone/keyboard"
 )
 
 type authenticator interface {
-	loginWithoutUsername(password string) error
-	login(username string, password string) error
-}
-
-type fakeAuthenticator struct {
-	//TODO
-}
-
-func (fakeAuthenticator) loginWithoutUsername(password string) error {
-	return nil
-}
-func (fakeAuthenticator) login(username string, password string) error {
-	return nil
+	LoginRequired() bool
+	Login(password string) error
 }
 
 const passwordFlag = "-p"
-const usernameFlag = "-u"
 
 type authState struct {
 	logger        logger.Logger
@@ -75,14 +65,16 @@ func (auth *authState) handleKeyinput(character rune, key keyboard.Key) state {
 
 func (auth *authState) submit() state {
 	flags := parseFlags(auth.currentBuffer)
+	var err error
 	if password, ok := flags[passwordFlag]; ok {
-		if username, ok := flags[usernameFlag]; ok {
-			auth.authenticator.login(username, password)
-		} else {
-			auth.authenticator.loginWithoutUsername(password)
-		}
+		err = auth.authenticator.Login(password)
 	} else {
 		auth.writer.writeString("password not provided")
+	}
+	if err != nil {
+		auth.writer.writeString(fmt.Sprintf("failed to login: %v", err))
+	} else {
+		auth.writer.writeString("login successful")
 	}
 	return auth.rootState
 }

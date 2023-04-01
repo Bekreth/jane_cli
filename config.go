@@ -1,9 +1,13 @@
 package main
 
-import "gopkg.in/yaml.v3"
+import (
+	"github.com/Bekreth/jane_cli/client"
+	"gopkg.in/yaml.v3"
+)
 
 type Config struct {
-	Debugger bool `yaml:"debugger"`
+	Debugger bool          `yaml:"debugger"`
+	Client   client.Config `yaml:"client"`
 }
 
 func parseConfig(fileBytes []byte) (Config, error) {
