@@ -41,13 +41,8 @@ func (client Client) FetchSchedule(
 	if err != nil {
 		client.logger.Infof("failed to build fetch schedule request: %v", err)
 	}
-	cookie := http.Cookie{
-		Name:  authCookieKey,
-		Value: client.auth.AuthCookie,
-	}
-	request.AddCookie(&cookie)
 
-	response, err := http.DefaultClient.Do(request)
+	response, err := client.janeClient.Do(request)
 	if err != nil {
 		client.logger.Infof("got a bad fetch schedule response: %v", err)
 		return schedule.Schedule{}, err

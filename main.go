@@ -38,12 +38,18 @@ func main() {
 	//TODO: This sucks, depointer it
 	thisUser := &user
 
-	client := client.NewClient(
+	client, err := client.NewClient(
 		logger.AddContext("service", "httpClient"),
 		config.Client,
 		&thisUser.Auth,
 		thisUser.SaveUserFile,
 	)
+
+	if err != nil {
+		logger.Infof("failed to build Jane client: %v", err)
+		fmt.Println("failed to build Jane client: %v", err)
+		os.Exit(1)
+	}
 
 	application := app.NewApplication(logger, thisUser, client)
 

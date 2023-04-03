@@ -26,26 +26,37 @@ func (client Client) Login(password string) error {
 		urlBase,
 		authBody,
 	)
-	request.ContentLength = int64(len(loginCredentials))
 	if err != nil {
 		client.logger.Infof("failed to build auth request: %v", err)
 		return err
 	}
 
-	response, err := http.DefaultClient.Do(request)
+	request.ContentLength = int64(len(loginCredentials))
+	request.Header.Del("Accept-Encoding")
+	request.Header.Add("Accept", "*/*")
+	request.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+	response, err := client.janeClient.Do(request)
 	if err != nil {
 		client.logger.Infof("got a bad auth response: %v", err)
 		return err
 	}
+	client.logger.Debugf("%v", response)
 
 	for _, cookie := range response.Cookies() {
 		if cookie.Name == authCookieKey {
 			client.logger.Debugf("Got a new auth cookie until %v", cookie.Expires)
 			client.auth.AuthCookie = cookie.Value
 			client.auth.Expires = cookie.Expires
+			userID, err := client.getUserID()
+			if err != nil {
+				return err
+			}
+			client.auth.UserID = userID
 			return client.updateAuth()
 		}
 	}
+
 	return fmt.Errorf("no cookie was provided")
 }
 
@@ -58,7 +69,7 @@ func (client Client) getUserID() (int, error) {
 		nil,
 	)
 
-	response, err := http.DefaultClient.Do(request)
+	response, err := client.janeClient.Do(request)
 	if err != nil {
 		client.logger.Infof("unable to get userID: %v", err)
 		return 0, err
@@ -79,12 +90,13 @@ func (client Client) getUserID() (int, error) {
 
 	for _, staffMember := range output {
 		if staffMember.Email == client.auth.Username {
+			client.logger.Debugf(
+				"got client ID of %v for user %v",
+				staffMember.ID,
+				client.auth.Username,
+			)
 			client.auth.UserID = staffMember.ID
-			err := client.updateAuth()
-			if err != nil {
-				client.logger.Infof("failed to update user data: %v", err)
-				return 0, err
-			}
+			return staffMember.ID, err
 		}
 	}
 
