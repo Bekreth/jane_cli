@@ -12,7 +12,7 @@ type initState struct {
 	logger        logger.Logger
 	writer        screenWriter
 	rootState     state
-	user          domain.User
+	user          *domain.User
 	currentBuffer string
 	nextState     state
 }
@@ -34,7 +34,7 @@ func (init *initState) initialize() {
 }
 
 func (init *initState) handleKeyinput(character rune, key keyboard.Key) state {
-	keyHandler(key, &init.currentBuffer, init.submit)
+	keyHandler(key, &init.currentBuffer, init.triggerAutocomplete, init.submit)
 
 	if character != 0 {
 		init.currentBuffer += string(character)
@@ -42,6 +42,9 @@ func (init *initState) handleKeyinput(character rune, key keyboard.Key) state {
 
 	init.writer.writeString(init.currentBuffer)
 	return init.nextState
+}
+
+func (init *initState) triggerAutocomplete() {
 }
 
 func (init *initState) submit() {

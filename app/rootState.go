@@ -1,6 +1,7 @@
 package app
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/Bekreth/jane_cli/logger"
@@ -12,13 +13,14 @@ type rootState struct {
 	writer        screenWriter
 	states        map[string]state
 	currentBuffer string
+	nextState     state
 }
 
 func (rootState) name() string {
 	return "root"
 }
 
-func (root rootState) initialize() {
+func (root *rootState) initialize() {
 	stateNames := []string{}
 	for key := range root.states {
 		stateNames = append(stateNames, key)
@@ -27,37 +29,18 @@ func (root rootState) initialize() {
 		"entering root. available states: %v",
 		stateNames,
 	)
+	root.nextState = root
 	root.writer.writeString("")
 }
 
 func (root *rootState) handleKeyinput(character rune, key keyboard.Key) state {
-	var output state
-	output = root
-	switch key {
-	case keyboard.KeySpace:
-		root.currentBuffer += string(" ")
-
-	case keyboard.KeyTab:
-		root.triggerAutocomplete()
-
-	case keyboard.KeyDelete:
-		fallthrough
-	case keyboard.KeyBackspace2:
-		fallthrough
-	case keyboard.KeyBackspace:
-		if len(root.currentBuffer) != 0 {
-			root.currentBuffer = root.currentBuffer[0 : len(root.currentBuffer)-1]
-		}
-
-	case keyboard.KeyEnter:
-		output = root.submit()
-	}
+	keyHandler(key, &root.currentBuffer, root.triggerAutocomplete, root.submit)
 
 	if character != 0 {
 		root.currentBuffer += string(character)
 	}
 	root.writer.writeString(root.currentBuffer)
-	return output
+	return root.nextState
 }
 
 func (root *rootState) shutdown() {
@@ -72,12 +55,19 @@ func (root *rootState) triggerAutocomplete() {
 	}
 }
 
-func (root *rootState) submit() state {
+func (root *rootState) submit() {
+	words := strings.Split(root.currentBuffer, " ")
 	for _, stateName := range mapKeys(root.states) {
-		if root.currentBuffer == stateName {
-			return root.states[stateName]
+		if words[0] == stateName {
+			// TODO: deal with passing arguments forward
+			//root.arguments = words[1 : len(words)-1]
+			root.nextState = root.states[stateName]
+			return
 		}
 	}
+	// TODO: Deal with failed command
+	root.currentBuffer = ""
+	root.writer.writeString(fmt.Sprintf("'%v' is not a valid command", words[0]))
 	root.writer.newLine()
-	return root
+	root.nextState = root
 }

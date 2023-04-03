@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/Bekreth/jane_cli/client"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
 	"github.com/eiannone/keyboard"
@@ -8,13 +9,15 @@ import (
 
 type Application struct {
 	logger    logger.Logger
+	writer    screenWriter
 	state     state
 	allStates []state
 }
 
 func NewApplication(
 	logger logger.Logger,
-	user domain.User,
+	user *domain.User,
+	client client.Client,
 ) Application {
 
 	root := rootState{
@@ -26,25 +29,24 @@ func NewApplication(
 		writer: screenWriter{"init>"},
 		user:   user,
 	}
-	/*
-		auth := authState{
-			logger:    logger.AddContext("state", "auth"),
-			writer:    screenWriter{"auth>"},
-			rootState: tempState,
-		}
-	*/
+	auth := authState{
+		logger:        logger.AddContext("state", "auth"),
+		writer:        screenWriter{"auth>"},
+		authenticator: client,
+	}
 	schedule := scheduleState{
-		logger:   logger.AddContext("state", "schedule"),
-		writer:   screenWriter{"schedule>"},
-		subState: none,
+		logger:  logger.AddContext("state", "schedule"),
+		writer:  screenWriter{"schedule>"},
+		fetcher: client,
 	}
 
 	root.states = map[string]state{
+		auth.name():     &auth,
 		schedule.name(): &schedule,
 		init.name():     &init,
 	}
 
-	//auth.rootState = &root
+	auth.rootState = &root
 	schedule.rootState = &root
 	init.rootState = &root
 
@@ -52,8 +54,9 @@ func NewApplication(
 
 	return Application{
 		logger:    logger,
+		writer:    screenWriter{},
 		state:     &root,
-		allStates: []state{&root, &schedule, &init},
+		allStates: []state{&root, &schedule, &init, &auth},
 	}
 }
 
@@ -67,6 +70,9 @@ func (app *Application) HandleKeyinput(character rune, key keyboard.Key) bool {
 		for _, state := range app.allStates {
 			state.shutdown()
 		}
+		app.writer.newLine()
+		app.writer.writeString("Shutting down Jane CLI")
+		app.writer.newLine()
 		return false
 	}
 

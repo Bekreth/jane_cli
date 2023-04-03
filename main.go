@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/Bekreth/jane_cli/app"
+	"github.com/Bekreth/jane_cli/client"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
 
@@ -33,10 +34,18 @@ func main() {
 	if err != nil {
 		os.Exit(1)
 	}
-
 	user.PostCheck()
+	//TODO: This sucks, depointer it
+	thisUser := &user
 
-	application := app.NewApplication(logger, user)
+	client := client.NewClient(
+		logger.AddContext("service", "httpClient"),
+		config.Client,
+		&thisUser.Auth,
+		thisUser.SaveUserFile,
+	)
+
+	application := app.NewApplication(logger, thisUser, client)
 
 	logger.Infoln("Application initialized, starting run loop")
 	for {

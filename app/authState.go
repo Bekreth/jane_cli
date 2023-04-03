@@ -8,7 +8,6 @@ import (
 )
 
 type authenticator interface {
-	LoginRequired() bool
 	Login(password string) error
 }
 
@@ -18,6 +17,7 @@ type authState struct {
 	logger        logger.Logger
 	writer        screenWriter
 	rootState     state
+	nextState     state
 	authenticator authenticator
 	currentBuffer string
 }
@@ -71,12 +71,18 @@ func (auth *authState) submit() state {
 	} else {
 		auth.writer.writeString("password not provided")
 	}
+
 	if err != nil {
 		auth.writer.writeString(fmt.Sprintf("failed to login: %v", err))
+		auth.writer.newLine()
 	} else {
 		auth.writer.writeString("login successful")
+		auth.writer.newLine()
 	}
+
 	return auth.rootState
 }
 
-func (auth *authState) shutdown() {}
+func (auth *authState) shutdown() {
+	auth.currentBuffer = ""
+}

@@ -18,9 +18,6 @@ func NewLogrusLogger(config Config) (Logger, error) {
 	output := LogrusLogger{
 		logrus.New(),
 	}
-	output.SetFormatter(&logrus.JSONFormatter{
-		PrettyPrint: true,
-	})
 	file, err := os.OpenFile(config.Output, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 	if err != nil {
 		return output, err

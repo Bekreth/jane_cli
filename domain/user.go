@@ -75,7 +75,6 @@ func (user User) PostCheck() {
 
 	shouldPrint := false
 
-	user.logger.Debugln(user.Auth)
 	if user.Auth.Domain == "" {
 		missingData = append(missingData, "clinic domain")
 		commands = append(commands, " * init -d ${clinicDomain}")
@@ -101,7 +100,8 @@ func (user User) PostCheck() {
 	}
 }
 
-func (user User) SaveUserFile() error {
+func (user *User) SaveUserFile() error {
+	user.logger.Debugf("updating user file at %v", user.filePath)
 	userFile, err := os.Create(user.filePath)
 	if err != nil {
 		user.logger.Infof("unable to create user file at %v: %v", user.filePath, err)

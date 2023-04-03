@@ -1,6 +1,8 @@
 package app
 
-import "github.com/eiannone/keyboard"
+import (
+	"github.com/eiannone/keyboard"
+)
 
 func mapKeys(input map[string]state) []string {
 	output := []string{}
@@ -10,10 +12,18 @@ func mapKeys(input map[string]state) []string {
 	return output
 }
 
-func keyHandler(key keyboard.Key, buffer *string, submit func()) {
+func keyHandler(
+	key keyboard.Key,
+	buffer *string,
+	triggerAutocomplete func(),
+	submit func(),
+) {
 	switch key {
 	case keyboard.KeySpace:
 		*buffer += string(" ")
+
+	case keyboard.KeyTab:
+		triggerAutocomplete()
 
 	case keyboard.KeyDelete:
 		fallthrough

@@ -2,14 +2,14 @@ package app
 
 import (
 	"strings"
-	"time"
 
 	"github.com/Bekreth/jane_cli/logger"
 	"github.com/eiannone/keyboard"
 )
 
 type scheduleFetcher interface {
-	fetchSchedule(startDate time.Time, endDate time.Time)
+	//fetchSchedule(startDate time.Time, endDate time.Time)
+	FetchSchedule()
 }
 
 type subcommand string
@@ -91,8 +91,14 @@ func (schedule *scheduleState) autocompleteWord(word string) string {
 }
 
 func (schedule *scheduleState) submit() state {
-	if schedule.currentBuffer == ".." {
-		return schedule.rootState
+	/*
+		if schedule.currentBuffer == ".." {
+			return schedule.rootState
+		}
+		return schedule
+	*/
+	if schedule.currentBuffer == "get" {
+		schedule.fetcher.FetchSchedule()
 	}
-	return schedule
+	return schedule.rootState
 }
