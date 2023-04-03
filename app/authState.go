@@ -36,35 +36,20 @@ func (auth authState) initialize() {
 }
 
 func (auth *authState) handleKeyinput(character rune, key keyboard.Key) state {
-	var output state
-	output = auth
-
-	switch key {
-	case keyboard.KeySpace:
-		auth.currentBuffer += string(" ")
-
-	case keyboard.KeyDelete:
-		fallthrough
-	case keyboard.KeyBackspace2:
-		fallthrough
-	case keyboard.KeyBackspace:
-		if len(auth.currentBuffer) != 0 {
-			auth.currentBuffer = auth.currentBuffer[0 : len(auth.currentBuffer)-1]
-		}
-
-	case keyboard.KeyEnter:
-		output = auth.submit()
-	}
+	keyHandler(key, &auth.currentBuffer, auth.triggerAutocomplete, auth.submit)
 
 	if character != 0 {
 		auth.currentBuffer += string(character)
 	}
 
 	auth.writer.writeString(auth.currentBuffer)
-	return output
+	return auth.nextState
 }
 
-func (auth *authState) submit() state {
+func (auth *authState) triggerAutocomplete() {
+}
+
+func (auth *authState) submit() {
 	flags := parseFlags(auth.currentBuffer)
 	var err error
 	if password, ok := flags[passwordFlag]; ok {
@@ -81,7 +66,7 @@ func (auth *authState) submit() state {
 		auth.writer.newLine()
 	}
 
-	return auth.rootState
+	auth.nextState = auth.rootState
 }
 
 func (auth *authState) shutdown() {

@@ -30,7 +30,7 @@ func (client Client) FetchSchedule(
 	startDate time.Time,
 	endDate time.Time,
 ) (schedule.Schedule, error) {
-	client.logger.Debugf("fetching scheudle")
+	client.logger.Debugf("fetching scheudle from %v to %v", startDate, endDate)
 
 	request, err := http.NewRequest(
 		http.MethodGet,

@@ -11,6 +11,7 @@ import (
 )
 
 const timeFormat = "2006-01-02"
+const dateFlag = "-d"
 
 type scheduleFetcher interface {
 	FetchSchedule(startDate time.Time, endDate time.Time) (schedule.Schedule, error)
@@ -77,31 +78,57 @@ func (schedule *scheduleState) triggerAutocomplete() {
 }
 
 func (schedule *scheduleState) submit() {
-	words := strings.Split(schedule.currentBuffer, " ")
-	if words[0] == ".." {
+	flags := parseFlags(schedule.currentBuffer)
+	if _, exists := flags[".."]; exists {
 		schedule.nextState = schedule.rootState
+		return
 	}
 
+	var startAt time.Time
+	var endAt time.Time
+	timeIsSet := false
+
 	for key, times := range autocompletes {
-		if key == words[0] {
-			startAt, endAt := times()
-			fetchedSchedule, err := schedule.fetcher.FetchSchedule(startAt, endAt)
-			if err != nil {
-				schedule.writer.writeString(fmt.Sprintf("failed to get schedule: %v", err))
-			}
-			if len(fetchedSchedule.Appointments) == 0 {
-				schedule.writer.writeString(fmt.Sprintf(
-					"no shift between %v and %v",
-					startAt.Format(timeFormat),
-					endAt.Format(timeFormat),
-				))
-				schedule.writer.newLine()
-			} else {
-				schedule.writer.writeString("\n" + fetchedSchedule.ToString())
-			}
-			schedule.currentBuffer = ""
-			return
+		if _, exists := flags[key]; exists {
+			startAt, endAt = times()
+			timeIsSet = true
 		}
+	}
+
+	if !timeIsSet {
+		if dateString, exists := flags[dateFlag]; exists {
+			now := time.Now().Local()
+			year := now.Year()
+			date, err := time.Parse(timeFormat, fmt.Sprintf("%v-%v", year, dateString))
+			if err != nil {
+				schedule.writer.writeString("Failed to parse time.  Use format MM-DD")
+				schedule.writer.newLine()
+				return
+			}
+			startAt = date
+			endAt = date
+
+			timeIsSet = true
+		}
+	}
+
+	if timeIsSet {
+		fetchedSchedule, err := schedule.fetcher.FetchSchedule(startAt, endAt)
+		if err != nil {
+			schedule.writer.writeString(fmt.Sprintf("failed to get schedule: %v", err))
+		}
+		if len(fetchedSchedule.Appointments) == 0 {
+			schedule.writer.writeString(fmt.Sprintf(
+				"no shift between %v and %v",
+				startAt.Format(timeFormat),
+				endAt.Format(timeFormat),
+			))
+			schedule.writer.newLine()
+		} else {
+			schedule.writer.writeString("\n" + fetchedSchedule.ToString())
+		}
+		schedule.currentBuffer = ""
+		return
 	}
 
 	schedule.nextState = schedule.rootState
