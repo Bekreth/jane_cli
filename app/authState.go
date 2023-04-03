@@ -31,6 +31,7 @@ func (auth authState) initialize() {
 		"entering authenticator. available states %v",
 		auth.rootState.name(),
 	)
+	auth.writer.newLine()
 	auth.writer.writeString("")
 }
 

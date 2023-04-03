@@ -30,5 +30,6 @@ func NewClient(
 }
 
 func (client Client) getDomain() string {
+	//return "http://localhost:2345"
 	return fmt.Sprintf("https://%v.janeapp.com", client.auth.Domain)
 }

@@ -1,74 +1,64 @@
 package app
 
 import (
+	"fmt"
 	"strings"
+	"time"
 
+	"github.com/Bekreth/jane_cli/domain/schedule"
 	"github.com/Bekreth/jane_cli/logger"
 	"github.com/eiannone/keyboard"
 )
 
+const timeFormat = "2006-01-02"
+
 type scheduleFetcher interface {
-	//fetchSchedule(startDate time.Time, endDate time.Time)
-	FetchSchedule()
+	FetchSchedule(startDate time.Time, endDate time.Time) (schedule.Schedule, error)
 }
 
-type subcommand string
+var oneDay = 24 * time.Hour
 
-const (
-	none    subcommand = "none"
-	opening subcommand = "opening"
-	book    subcommand = "book"
-)
+var autocompletes = map[string]func() (time.Time, time.Time){
+	"today": func() (time.Time, time.Time) {
+		return time.Now().Local(), time.Now().Local()
+	},
+	"tomorrow": func() (time.Time, time.Time) {
+		return time.Now().Local().Add(oneDay), time.Now().Local().Add(oneDay)
+	},
+}
 
 type scheduleState struct {
 	logger        logger.Logger
 	writer        screenWriter
 	rootState     state
-	subState      subcommand
 	fetcher       scheduleFetcher
 	currentBuffer string
+	nextState     state
 }
 
 func (scheduleState) name() string {
 	return "schedule"
 }
 
-func (schedule scheduleState) initialize() {
+func (schedule *scheduleState) initialize() {
 	schedule.logger.Debugf(
 		"entering schedule. available states %v",
 		schedule.rootState.name(),
 	)
+	schedule.nextState = schedule
+	schedule.writer.newLine()
 	schedule.writer.writeString("")
 }
 
 func (schedule *scheduleState) handleKeyinput(character rune, key keyboard.Key) state {
-	var output state
-	output = schedule
-	switch key {
-	case keyboard.KeySpace:
-		schedule.currentBuffer += string(" ")
-
-	case keyboard.KeyTab:
-		schedule.triggerAutocomplete()
-
-	case keyboard.KeyDelete:
-		fallthrough
-	case keyboard.KeyBackspace2:
-		fallthrough
-	case keyboard.KeyBackspace:
-		if len(schedule.currentBuffer) != 0 {
-			schedule.currentBuffer = schedule.currentBuffer[0 : len(schedule.currentBuffer)-1]
-		}
-
-	case keyboard.KeyEnter:
-		output = schedule.submit()
-	}
+	keyHandler(key, &schedule.currentBuffer, schedule.triggerAutocomplete, schedule.submit)
 
 	if character != 0 {
 		schedule.currentBuffer += string(character)
 	}
+
 	schedule.writer.writeString(schedule.currentBuffer)
-	return output
+	return schedule.nextState
 }
 
 func (schedule *scheduleState) shutdown() {
@@ -77,28 +67,42 @@ func (schedule *scheduleState) shutdown() {
 
 func (schedule *scheduleState) triggerAutocomplete() {
 	words := strings.Split(schedule.currentBuffer, " ")
-	if completed := schedule.autocompleteWord(words[len(words)-1]); completed != "" {
-		updatedBuffer := strings.Join(append(words[0:len(words)-1], completed), " ")
-		schedule.currentBuffer = updatedBuffer
-	}
-}
 
-func (schedule *scheduleState) autocompleteWord(word string) string {
-	if strings.HasPrefix("openings", word) {
-		return "openings "
-	}
-	return ""
-}
-
-func (schedule *scheduleState) submit() state {
-	/*
-		if schedule.currentBuffer == ".." {
-			return schedule.rootState
+	for key := range autocompletes {
+		if strings.HasPrefix(key, words[len(words)-1]) {
+			arguments := append(words[0:len(words)-1], key)
+			schedule.currentBuffer = strings.Join(arguments, " ")
 		}
-		return schedule
-	*/
-	if schedule.currentBuffer == "get" {
-		schedule.fetcher.FetchSchedule()
 	}
-	return schedule.rootState
+}
+
+func (schedule *scheduleState) submit() {
+	words := strings.Split(schedule.currentBuffer, " ")
+	if words[0] == ".." {
+		schedule.nextState = schedule.rootState
+	}
+
+	for key, times := range autocompletes {
+		if key == words[0] {
+			startAt, endAt := times()
+			fetchedSchedule, err := schedule.fetcher.FetchSchedule(startAt, endAt)
+			if err != nil {
+				schedule.writer.writeString(fmt.Sprintf("failed to get schedule: %v", err))
+			}
+			if len(fetchedSchedule.Appointments) == 0 {
+				schedule.writer.writeString(fmt.Sprintf(
+					"no shift between %v and %v",
+					startAt.Format(timeFormat),
+					endAt.Format(timeFormat),
+				))
+				schedule.writer.newLine()
+			} else {
+				schedule.writer.writeString("\n" + fetchedSchedule.ToString())
+			}
+			schedule.currentBuffer = ""
+			return
+		}
+	}
+
+	schedule.nextState = schedule.rootState
 }

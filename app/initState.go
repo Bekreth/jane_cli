@@ -30,6 +30,7 @@ func (init *initState) initialize() {
 		init.rootState.name(),
 	)
 	init.nextState = init
+	init.writer.newLine()
 	init.writer.writeString("")
 }
 

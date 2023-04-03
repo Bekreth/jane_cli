@@ -1,5 +1,6 @@
 auth:
     host: 
     username: 
+    userID:
     authCookie: 
     expires: 

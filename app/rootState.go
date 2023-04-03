@@ -30,6 +30,7 @@ func (root *rootState) initialize() {
 		stateNames,
 	)
 	root.nextState = root
+	root.writer.newLine()
 	root.writer.writeString("")
 }
 
