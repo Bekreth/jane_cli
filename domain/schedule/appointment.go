@@ -2,15 +2,17 @@ package schedule
 
 import (
 	"fmt"
+
+	"github.com/Bekreth/jane_cli/domain"
 )
 
 // state: booked, break
 
 type Appointment struct {
-	StartAt JaneTime `json:"start_at"`
-	EndAt   JaneTime `json:"end_at"`
-	State   string   `json:"state"`
-	Patient Patient  `json:"patient"`
+	StartAt JaneTime       `json:"start_at"`
+	EndAt   JaneTime       `json:"end_at"`
+	State   string         `json:"state"`
+	Patient domain.Patient `json:"patient"`
 }
 
 func (appointment Appointment) ToString() string {
@@ -20,7 +22,7 @@ func (appointment Appointment) ToString() string {
 		appointment.StartAt.Format(hourMinuteFormat),
 		appointment.EndAt.Format(hourMinuteFormat),
 	)
-	if appointment.State == "booked" {
+	if appointment.State == "booked" || appointment.State == "arrived" {
 		output += fmt.Sprintf(" with %v", appointment.Patient.PreferredFirstName)
 	}
 	return output

@@ -14,6 +14,31 @@ type Application struct {
 	allStates []state
 }
 
+type tempPatientFetcher struct{}
+
+func (tempPatientFetcher) FindPatient(patientName string) ([]domain.Patient, error) {
+	return []domain.Patient{
+		{
+			ID:                 1,
+			FirstName:          "Billy",
+			LastName:           "Bob",
+			PreferredFirstName: "Will",
+		},
+		{
+			ID:                 2,
+			FirstName:          "Mark",
+			LastName:           "Walberg",
+			PreferredFirstName: "Will",
+		},
+		{
+			ID:                 3,
+			FirstName:          "Jimmy",
+			LastName:           "Neutron",
+			PreferredFirstName: "Will",
+		},
+	}, nil
+}
+
 func NewApplication(
 	logger logger.Logger,
 	user *domain.User,
@@ -39,16 +64,24 @@ func NewApplication(
 		writer:  screenWriter{"schedule>"},
 		fetcher: client,
 	}
+	booking := bookingState{
+		logger:         logger.AddContext("state", "booking"),
+		writer:         screenWriter{"booking>"},
+		patientFetcher: tempPatientFetcher{},
+		// TODO: Add interface for clients
+	}
 
 	root.states = map[string]state{
 		auth.name():     &auth,
 		schedule.name(): &schedule,
 		init.name():     &init,
+		booking.name():  &booking,
 	}
 
 	auth.rootState = &root
 	schedule.rootState = &root
 	init.rootState = &root
+	booking.rootState = &root
 
 	root.initialize()
 

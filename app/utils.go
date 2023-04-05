@@ -4,6 +4,14 @@ import (
 	"github.com/eiannone/keyboard"
 )
 
+func mapKeysString(input map[string]string) []string {
+	output := []string{}
+	for key := range input {
+		output = append(output, key)
+	}
+	return output
+}
+
 func mapKeys(input map[string]state) []string {
 	output := []string{}
 	for key := range input {

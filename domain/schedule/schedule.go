@@ -35,12 +35,6 @@ func (schedule Schedule) ToString() string {
 	return strings.Join(pairingStrings, "\n\n")
 }
 
-type Patient struct {
-	FirstName          string `json:"first_name"`
-	LastName           string `json:"last_name"`
-	PreferredFirstName string `json:"preferred_first_name"`
-}
-
 type Shift struct {
 	StartAt JaneTime `json:"start_at"`
 	EndAt   JaneTime `json:"end_at"`
