@@ -12,7 +12,7 @@ import (
 )
 
 type patientFetcher interface {
-	FindPatient(patientName string) ([]domain.Patient, error)
+	FindPatients(patientName string) ([]domain.Patient, error)
 }
 
 type appointmentBooker interface {
@@ -89,7 +89,7 @@ func (booking *bookingState) handlePatientSelector(character rune) state {
 		return booking
 	}
 	booking.booking.targetPatient = booking.booking.patients[index-1]
-	booking.logger.Debugf("selected patient %v", booking.booking.targetPatient)
+	booking.logger.Debugf("selected patient at index %v", index)
 	//TODO
 	return booking.rootState
 }
@@ -123,7 +123,12 @@ func (booking *bookingState) submit() {
 
 	booking.currentBuffer = ""
 	patientName := flags[patientFlag]
-	patients, err := booking.patientFetcher.FindPatient(patientName)
+	if patientName == "" {
+		booking.writer.writeStringf("no name provided, use the %v flag", patientFlag)
+		booking.writer.newLine()
+		return
+	}
+	patients, err := booking.patientFetcher.FindPatients(patientName)
 	if err != nil {
 		booking.writer.writeStringf("failed to lookup patient %v : %v", patientName, err)
 		booking.writer.newLine()
@@ -135,7 +140,7 @@ func (booking *bookingState) submit() {
 		return
 	}
 	//TODO: Make this configurable
-	if len(patients) > 5 {
+	if len(patients) > 8 {
 		booking.writer.writeStringf("too many patients to render nicely for %v", patientName)
 		booking.writer.newLine()
 		return

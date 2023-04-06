@@ -11,13 +11,8 @@ import (
 	"github.com/Bekreth/jane_cli/logger"
 )
 
-/*
-path=/;
-expires=Wed, 03 Apr 2024 19:35:14 GMT;
-HttpOnly;
-secure;
-SameSite=Lax
-*/
+const apiBase2 = "admin/api/v2"
+const apiBase3 = "admin/api/v3"
 
 type Client struct {
 	janeClient *http.Client

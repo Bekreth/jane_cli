@@ -4,15 +4,16 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Bekreth/jane_cli/domain"
 	"github.com/stretchr/testify/assert"
 )
 
-func makeTime(t *testing.T, timeAsString string) time.Time {
+func makeTime(t *testing.T, timeAsString string) JaneTime {
 	output, err := time.Parse(hourMinuteFormat, timeAsString)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return output
+	return JaneTime{output}
 }
 
 func TestPairedShiftAppointment(t *testing.T) {
@@ -34,7 +35,7 @@ func TestPairedShiftAppointment(t *testing.T) {
 						StartAt: makeTime(t, "09:00"),
 						EndAt:   makeTime(t, "12:00"),
 						State:   "booked",
-						Patient: Patient{
+						Patient: domain.Patient{
 							PreferredFirstName: "Roy",
 						},
 					},
@@ -47,7 +48,7 @@ func TestPairedShiftAppointment(t *testing.T) {
 						StartAt: makeTime(t, "13:00"),
 						EndAt:   makeTime(t, "17:00"),
 						State:   "booked",
-						Patient: Patient{
+						Patient: domain.Patient{
 							PreferredFirstName: "Mary",
 						},
 					},
@@ -70,7 +71,7 @@ func TestPairedShiftAppointment(t *testing.T) {
 						StartAt: makeTime(t, "09:00"),
 						EndAt:   makeTime(t, "12:00"),
 						State:   "booked",
-						Patient: Patient{
+						Patient: domain.Patient{
 							PreferredFirstName: "Roy",
 						},
 					},
@@ -78,7 +79,7 @@ func TestPairedShiftAppointment(t *testing.T) {
 						StartAt: makeTime(t, "13:00"),
 						EndAt:   makeTime(t, "17:00"),
 						State:   "booked",
-						Patient: Patient{
+						Patient: domain.Patient{
 							PreferredFirstName: "Mary",
 						},
 					},
@@ -101,7 +102,7 @@ func TestPairedShiftAppointment(t *testing.T) {
 						StartAt: makeTime(t, "09:00"),
 						EndAt:   makeTime(t, "12:00"),
 						State:   "booked",
-						Patient: Patient{
+						Patient: domain.Patient{
 							PreferredFirstName: "Roy",
 						},
 					},
@@ -109,7 +110,7 @@ func TestPairedShiftAppointment(t *testing.T) {
 						StartAt: makeTime(t, "12:00"),
 						EndAt:   makeTime(t, "14:00"),
 						State:   "booked",
-						Patient: Patient{
+						Patient: domain.Patient{
 							PreferredFirstName: "Mary",
 						},
 					},
@@ -132,7 +133,7 @@ func TestPairedShiftAppointment(t *testing.T) {
 						StartAt: makeTime(t, "10:00"),
 						EndAt:   makeTime(t, "12:00"),
 						State:   "booked",
-						Patient: Patient{
+						Patient: domain.Patient{
 							PreferredFirstName: "Roy",
 						},
 					},
@@ -140,7 +141,7 @@ func TestPairedShiftAppointment(t *testing.T) {
 						StartAt: makeTime(t, "12:00"),
 						EndAt:   makeTime(t, "17:00"),
 						State:   "booked",
-						Patient: Patient{
+						Patient: domain.Patient{
 							PreferredFirstName: "Mary",
 						},
 					},
@@ -163,7 +164,7 @@ func TestPairedShiftAppointment(t *testing.T) {
 						StartAt: makeTime(t, "10:00"),
 						EndAt:   makeTime(t, "12:00"),
 						State:   "booked",
-						Patient: Patient{
+						Patient: domain.Patient{
 							PreferredFirstName: "Roy",
 						},
 					},
@@ -171,7 +172,7 @@ func TestPairedShiftAppointment(t *testing.T) {
 						StartAt: makeTime(t, "09:00"),
 						EndAt:   makeTime(t, "10:00"),
 						State:   "booked",
-						Patient: Patient{
+						Patient: domain.Patient{
 							PreferredFirstName: "Mark",
 						},
 					},
@@ -179,7 +180,7 @@ func TestPairedShiftAppointment(t *testing.T) {
 						StartAt: makeTime(t, "12:00"),
 						EndAt:   makeTime(t, "17:00"),
 						State:   "booked",
-						Patient: Patient{
+						Patient: domain.Patient{
 							PreferredFirstName: "Mary",
 						},
 					},

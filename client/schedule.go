@@ -10,7 +10,6 @@ import (
 	"github.com/Bekreth/jane_cli/domain/schedule"
 )
 
-const apiBase = "admin/api/v2"
 const calendar = "calendar"
 const timeFormat = "2006-01-02"
 
@@ -18,7 +17,7 @@ func (client Client) buildScheduleRequest(startDate time.Time, endDate time.Time
 	return fmt.Sprintf(
 		"%v/%v/%v?start_date=%v&end_date=%v&staff_member_ids[]=%v",
 		client.getDomain(),
-		apiBase,
+		apiBase2,
 		calendar,
 		startDate.Format(timeFormat),
 		endDate.Format(timeFormat),

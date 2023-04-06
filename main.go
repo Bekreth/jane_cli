@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/Bekreth/jane_cli/app"
+	"github.com/Bekreth/jane_cli/cache"
 	"github.com/Bekreth/jane_cli/client"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
@@ -47,11 +48,19 @@ func main() {
 
 	if err != nil {
 		logger.Infof("failed to build Jane client: %v", err)
-		fmt.Println("failed to build Jane client: %v", err)
+		fmt.Printf("failed to build Jane client: %v", err)
 		os.Exit(1)
 	}
 
-	application := app.NewApplication(logger, thisUser, client)
+	cache, err := cache.NewCache(logger.AddContext("service", "cache"), client)
+
+	if err != nil {
+		logger.Infof("failed to build patient cache: %v", err)
+		fmt.Printf("failed to build patient cache: %v", err)
+		os.Exit(1)
+	}
+
+	application := app.NewApplication(logger, thisUser, client, cache)
 
 	logger.Infoln("Application initialized, starting run loop")
 	for {

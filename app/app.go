@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/Bekreth/jane_cli/cache"
 	"github.com/Bekreth/jane_cli/client"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
@@ -43,6 +44,7 @@ func NewApplication(
 	logger logger.Logger,
 	user *domain.User,
 	client client.Client,
+	cache cache.Cache,
 ) Application {
 
 	root := rootState{
@@ -67,7 +69,7 @@ func NewApplication(
 	booking := bookingState{
 		logger:         logger.AddContext("state", "booking"),
 		writer:         screenWriter{"booking>"},
-		patientFetcher: tempPatientFetcher{},
+		patientFetcher: cache,
 		// TODO: Add interface for clients
 	}
 

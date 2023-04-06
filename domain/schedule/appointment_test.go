@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Bekreth/jane_cli/domain"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -25,8 +26,8 @@ func TestToString(t *testing.T) {
 		{
 			description: "No appointment",
 			testAppointment: Appointment{
-				StartAt: startAt,
-				EndAt:   endAt,
+				StartAt: JaneTime{startAt},
+				EndAt:   JaneTime{endAt},
 				State:   "unscheduled",
 			},
 			expectedOutput: "* unscheduled from 12:12 to 15:15",
@@ -34,10 +35,10 @@ func TestToString(t *testing.T) {
 		{
 			description: "Appointment with person",
 			testAppointment: Appointment{
-				StartAt: startAt,
-				EndAt:   endAt,
+				StartAt: JaneTime{startAt},
+				EndAt:   JaneTime{endAt},
 				State:   "booked",
-				Patient: Patient{
+				Patient: domain.Patient{
 					PreferredFirstName: "Billy",
 				},
 			},
