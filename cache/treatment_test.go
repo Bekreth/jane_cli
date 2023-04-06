@@ -17,7 +17,7 @@ func TestMatchingTreatment(t *testing.T) {
 		{
 			description: "expecting to match",
 			inputTreatment: domain.Treatment{
-				BillingName: "60 minutes",
+				Name: "60 minutes",
 			},
 			inputName:      "60",
 			expectedOutput: true,
@@ -25,7 +25,7 @@ func TestMatchingTreatment(t *testing.T) {
 		{
 			description: "fail to match",
 			inputTreatment: domain.Treatment{
-				BillingName: "60 minutes",
+				Name: "60 minutes",
 			},
 			inputName:      "30",
 			expectedOutput: false,

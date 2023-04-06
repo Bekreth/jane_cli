@@ -15,31 +15,6 @@ type Application struct {
 	allStates []state
 }
 
-type tempPatientFetcher struct{}
-
-func (tempPatientFetcher) FindPatient(patientName string) ([]domain.Patient, error) {
-	return []domain.Patient{
-		{
-			ID:                 1,
-			FirstName:          "Billy",
-			LastName:           "Bob",
-			PreferredFirstName: "Will",
-		},
-		{
-			ID:                 2,
-			FirstName:          "Mark",
-			LastName:           "Walberg",
-			PreferredFirstName: "Will",
-		},
-		{
-			ID:                 3,
-			FirstName:          "Jimmy",
-			LastName:           "Neutron",
-			PreferredFirstName: "Will",
-		},
-	}, nil
-}
-
 func NewApplication(
 	logger logger.Logger,
 	user *domain.User,
@@ -67,9 +42,9 @@ func NewApplication(
 		fetcher: client,
 	}
 	booking := bookingState{
-		logger:         logger.AddContext("state", "booking"),
-		writer:         screenWriter{"booking>"},
-		patientFetcher: cache,
+		logger:  logger.AddContext("state", "booking"),
+		writer:  screenWriter{"booking>"},
+		fetcher: cache,
 		// TODO: Add interface for clients
 	}
 

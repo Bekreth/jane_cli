@@ -15,11 +15,16 @@ import (
 
 func main() {
 	fmt.Println("Starting Jane CLI")
-	config, err := parseConfig("")
-	logger, err := logger.NewLogrusLogger(config.Logger)
+	config, err := parseConfig()
 
 	if err != nil {
 		fmt.Printf("failed to load config: %v\n", err)
+		os.Exit(1)
+	}
+
+	logger, err := logger.NewLogrusLogger(config.Logger)
+	if err != nil {
+		fmt.Printf("failed to setup logger: %v\n", err)
 		os.Exit(1)
 	}
 
@@ -52,7 +57,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	cache, err := cache.NewCache(logger.AddContext("service", "cache"), client)
+	cache, err := cache.NewCache(logger.AddContext("service", "cache"), client, client)
 
 	if err != nil {
 		logger.Infof("failed to build patient cache: %v", err)

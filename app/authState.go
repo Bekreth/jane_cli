@@ -26,11 +26,12 @@ func (authState) name() string {
 	return "auth"
 }
 
-func (auth authState) initialize() {
+func (auth *authState) initialize() {
 	auth.logger.Debugf(
 		"entering authenticator. available states %v",
 		auth.rootState.name(),
 	)
+	auth.nextState = auth
 	auth.writer.newLine()
 	auth.writer.writeString("")
 }

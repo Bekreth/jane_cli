@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/Bekreth/jane_cli/domain"
@@ -44,17 +43,8 @@ func matchingPatient(patient domain.Patient, nameToCheck string) bool {
 	loweredName := strings.ToLower(nameToCheck)
 
 	byFirst := strings.HasPrefix(firstName, loweredName)
-	if byFirst {
-		fmt.Printf("Matched by first %v: %v\n", loweredName, patient)
-	}
 	byLast := strings.HasPrefix(lastName, loweredName)
-	if byFirst {
-		fmt.Printf("Matched by last %v: %v\n", loweredName, patient)
-	}
 	byPref := strings.HasPrefix(preferred, loweredName)
-	if byFirst {
-		fmt.Printf("Matched by pref %v: %v\n", loweredName, patient)
-	}
 
 	output := byFirst || byLast || byPref
 	return output

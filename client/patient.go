@@ -47,6 +47,10 @@ func (client Client) FetchPatients(patientName string) ([]domain.Patient, error)
 		client.buildPatientRequest(),
 		strings.NewReader(string(jsonBody)),
 	)
+	if err != nil {
+		client.logger.Infof("failed to build patient request")
+		return output, err
+	}
 
 	response, err := client.janeClient.Do(request)
 	if err != nil {

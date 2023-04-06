@@ -28,6 +28,9 @@ func (duration *SecondsDuration) UnmarshalJSON(bytes []byte) error {
 
 type Treatment struct {
 	ID                int             `json:"id"`
-	BillingName       string          `json:"billing_name"`
+	Name              string          `json:"name"`
 	ScheduledDuration SecondsDuration `json:"scheduled_duration"`
+	StaffMemberID     int             `json:"staff_member_id"`
 }
+
+var DefaultTreatment = Treatment{}

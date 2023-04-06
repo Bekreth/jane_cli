@@ -6,3 +6,5 @@ type Patient struct {
 	LastName           string `json:"last_name"`
 	PreferredFirstName string `json:"preferred_first_name"`
 }
+
+var DefaultPatient = Patient{}
