@@ -1,4 +1,4 @@
-package app
+package booking
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
 	"github.com/eiannone/keyboard"
@@ -23,6 +24,7 @@ type bookingDataFetcher interface {
 	// ) error
 }
 
+// TODO use this
 const bookingTimeFormat = "01.02T15:04"
 const bookingDateFlag = "-d"
 const appointmentFlag = "-a"
@@ -48,46 +50,69 @@ type bookingBuilder struct {
 }
 
 type bookingState struct {
-	logger        logger.Logger
-	writer        screenWriter
-	rootState     state
+	logger    logger.Logger
+	writer    terminal.ScreenWriter
+	fetcher   bookingDataFetcher
+	rootState terminal.State
+
 	currentBuffer string
-	nextState     state
-	fetcher       bookingDataFetcher
+	nextState     terminal.State
 	booking       bookingBuilder
 }
 
-func (bookingState) name() string {
+func NewState(
+	logger logger.Logger,
+	writer terminal.ScreenWriter,
+	fetcher bookingDataFetcher,
+	rootState terminal.State,
+) terminal.State {
+	return &bookingState{
+		logger:    logger,
+		writer:    writer,
+		fetcher:   fetcher,
+		rootState: rootState,
+	}
+}
+
+func (bookingState) Name() string {
 	return "booking"
 }
 
-func (booking *bookingState) initialize() {
+func (booking *bookingState) Initialize() {
 	booking.logger.Debugf(
 		"entering booking. available states %v",
-		booking.rootState.name(),
+		booking.rootState.Name(),
 	)
 	booking.nextState = booking
 	booking.booking = bookingBuilder{
 		substate: argument,
 	}
-	booking.writer.newLine()
-	booking.writer.writeString("")
+	booking.writer.NewLine()
+	booking.writer.WriteString("")
 }
 
-func (booking *bookingState) handleKeyinput(character rune, key keyboard.Key) state {
+func (booking *bookingState) HandleKeyinput(
+	character rune,
+	key keyboard.Key,
+) terminal.State {
 	switch booking.booking.substate {
 	case bookingConfirmation:
 		booking.confirmBooking(character)
 	case treatmentSelector:
-		booking.handleTreatmentSelector(character)
+		booking.booking.targetTreatment = booking.handleTreatmentSelector(character)
 	case patientSelector:
-		booking.handlePatientSelector(character)
+		booking.booking.targetPatient = booking.handlePatientSelector(character)
 	default:
-		keyHandler(key, &booking.currentBuffer, booking.triggerAutocomplete, booking.submit)
+		terminal.KeyHandler(
+			key,
+			&booking.currentBuffer,
+			booking.triggerAutocomplete,
+			booking.Submit,
+		)
 		if character != 0 {
 			booking.currentBuffer += string(character)
 		}
-		booking.writer.writeString(booking.currentBuffer)
+		booking.writer.WriteString(booking.currentBuffer)
 	}
 
 	if booking.booking.substate != argument {
@@ -108,19 +133,19 @@ func (booking *bookingState) handleKeyinput(character rune, key keyboard.Key) st
 			booking.booking.targetTreatment.Name,
 			booking.booking.appointmentDate.Format(bookingTimeFormat),
 		)
-		booking.writer.writeString(confirmationString)
+		booking.writer.WriteString(confirmationString)
 	case treatmentSelector:
 		treatmentList := "Select intended treatment\n"
 		for i, treatment := range booking.booking.treatments {
 			treatmentList += fmt.Sprintf("%v: %v \n", i+1, treatment.Name)
 		}
-		booking.writer.writeString(treatmentList)
+		booking.writer.WriteString(treatmentList)
 	case patientSelector:
 		patientList := "Select intended patient\n"
 		for i, patient := range booking.booking.patients {
 			patientList += fmt.Sprintf("%v: %v %v \n", i+1, patient.FirstName, patient.LastName)
 		}
-		booking.writer.writeString(patientList)
+		booking.writer.WriteString(patientList)
 	default:
 	}
 
@@ -130,20 +155,20 @@ func (booking *bookingState) handleKeyinput(character rune, key keyboard.Key) st
 func (booking *bookingState) handleTreatmentSelector(character rune) domain.Treatment {
 	index, err := strconv.Atoi(string(character))
 	if err != nil {
-		booking.writer.writeStringf(
+		booking.writer.WriteStringf(
 			"selector value of %v unacceptable. select a value between 1 and %v",
 			string(character),
 			len(booking.booking.treatments),
 		)
-		booking.writer.newLine()
+		booking.writer.NewLine()
 	}
 	if index > len(booking.booking.treatments) {
-		booking.writer.writeStringf(
+		booking.writer.WriteStringf(
 			"selector value of %v is too large.  select a value between 1 and %v",
 			index,
 			len(booking.booking.treatments),
 		)
-		booking.writer.newLine()
+		booking.writer.NewLine()
 	}
 	booking.logger.Debugf("selected treatment at index %v", index)
 	return booking.booking.treatments[index-1]
@@ -152,19 +177,19 @@ func (booking *bookingState) handleTreatmentSelector(character rune) domain.Trea
 func (booking *bookingState) handlePatientSelector(character rune) domain.Patient {
 	index, err := strconv.Atoi(string(character))
 	if err != nil {
-		booking.writer.writeStringf(
+		booking.writer.WriteStringf(
 			"selector value of %v unacceptable.  select a value between 1 and %v",
 			string(character),
 			len(booking.booking.patients),
 		)
-		booking.writer.newLine()
+		booking.writer.NewLine()
 	}
 	if index > len(booking.booking.patients) {
-		booking.writer.writeStringf(
+		booking.writer.WriteStringf(
 			"selector value of %v is too large.  select a value between 1 and %v",
 			index, len(booking.booking.patients),
 		)
-		booking.writer.newLine()
+		booking.writer.NewLine()
 	}
 	booking.logger.Debugf("selected patient at index %v", index)
 	return booking.booking.patients[index-1]
@@ -175,8 +200,8 @@ func (booking *bookingState) confirmBooking(character rune) {
 	case "y":
 		fallthrough
 	case "Y":
-		booking.writer.writeString("submitting booking")
-		booking.writer.newLine()
+		booking.writer.WriteString("submitting booking")
+		booking.writer.NewLine()
 		//TODO
 		//err := booking.fetcher.BookPatient(
 		//	booking.booking.targetPatient,
@@ -190,27 +215,27 @@ func (booking *bookingState) confirmBooking(character rune) {
 	case "n":
 		fallthrough
 	case "N":
-		booking.writer.writeString("aborting booking")
-		booking.writer.newLine()
+		booking.writer.WriteString("aborting booking")
+		booking.writer.NewLine()
 		booking.nextState = booking.rootState
 	default:
-		booking.writer.writeStringf(
+		booking.writer.WriteStringf(
 			"input of %v not support.  Confirm booking (Y/n)?",
 			string(character),
 		)
-		booking.writer.newLine()
+		booking.writer.NewLine()
 	}
-}
-
-func (booking *bookingState) shutdown() {
-	booking.currentBuffer = ""
 }
 
 func (booking *bookingState) triggerAutocomplete() {
 }
 
-func (booking *bookingState) submit() {
-	flags := parseFlags(booking.currentBuffer)
+func (booking *bookingState) Submit() {
+	if booking.currentBuffer == ".." {
+		booking.nextState = booking.rootState
+		return
+	}
+	flags := terminal.ParseFlags(booking.currentBuffer)
 	booking.logger.Debugf("submitting query flags: %v", flags)
 	missingFlags := map[string]string{
 		"-d": "",
@@ -222,10 +247,10 @@ func (booking *bookingState) submit() {
 		delete(missingFlags, key)
 	}
 	if len(missingFlags) != 0 {
-		joined := strings.Join(mapKeysString(missingFlags), ", ")
+		joined := strings.Join(terminal.MapKeysString(missingFlags), ", ")
 		notifcation := fmt.Sprintf("missing arguments %v", joined)
-		booking.writer.writeString(notifcation)
-		booking.writer.newLine()
+		booking.writer.WriteString(notifcation)
+		booking.writer.NewLine()
 		return
 	}
 
@@ -239,56 +264,56 @@ func (booking *bookingState) submit() {
 	booking.logger.Debugf("builder 1: %v", builder)
 	patientName := flags[patientFlag]
 	if patientName == "" {
-		booking.writer.writeStringf("no name provided, use the %v flag", patientFlag)
-		booking.writer.newLine()
+		booking.writer.WriteStringf("no name provided, use the %v flag", patientFlag)
+		booking.writer.NewLine()
 		return
 	}
 	patients, err := booking.fetcher.FindPatients(patientName)
 	if err != nil {
-		booking.writer.writeStringf("failed to lookup patient %v : %v", patientName, err)
-		booking.writer.newLine()
+		booking.writer.WriteStringf("failed to lookup patient %v : %v", patientName, err)
+		booking.writer.NewLine()
+		booking.nextState = booking.rootState
 		return
 	}
 	builder.patients = patients
 	if len(patients) == 0 {
-		booking.writer.writeStringf("no patients found for %v", patientName)
-		booking.writer.newLine()
+		booking.writer.WriteStringf("no patients found for %v", patientName)
+		booking.writer.NewLine()
 		return
 	} else if len(patients) == 1 {
 		builder.targetPatient = patients[0]
 	} else if len(patients) > 8 {
-		booking.writer.writeStringf("too many patients to render nicely for %v", patientName)
-		booking.writer.newLine()
+		booking.writer.WriteStringf("too many patients to render nicely for %v", patientName)
+		booking.writer.NewLine()
 		return
 	}
 
-	booking.logger.Debugf("builder 2: %v", builder)
 	treatmentName := flags[appointmentFlag]
 	if patientName == "" {
-		booking.writer.writeStringf("no name provided, use the %v flag", patientFlag)
-		booking.writer.newLine()
+		booking.writer.WriteStringf("no name provided, use the %v flag", patientFlag)
+		booking.writer.NewLine()
 		return
 	}
 	treatments, err := booking.fetcher.FindTreatment(treatmentName)
 	if err != nil {
-		booking.writer.writeStringf("failed to lookup treatments %v : %v", treatmentName, err)
-		booking.writer.newLine()
+		booking.writer.WriteStringf("failed to lookup treatments %v : %v", treatmentName, err)
+		booking.writer.NewLine()
+		booking.nextState = booking.rootState
 		return
 	}
 	builder.treatments = treatments
 	if len(treatments) == 0 {
-		booking.writer.writeStringf("no treatment found for %v", treatmentName)
-		booking.writer.newLine()
+		booking.writer.WriteStringf("no treatment found for %v", treatmentName)
+		booking.writer.NewLine()
 	} else if len(treatments) == 1 {
 		builder.targetTreatment = treatments[0]
 	} else if len(treatments) > 8 {
-		booking.writer.writeStringf(
+		booking.writer.WriteStringf(
 			"too many treatments to render nicely for %v",
 			treatmentName,
 		)
-		booking.writer.newLine()
+		booking.writer.NewLine()
 	}
 
-	booking.logger.Debugf("builder 3: %v", builder)
 	booking.booking = builder
 }

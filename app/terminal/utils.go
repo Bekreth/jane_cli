@@ -1,10 +1,10 @@
-package app
+package terminal
 
 import (
 	"github.com/eiannone/keyboard"
 )
 
-func mapKeysString(input map[string]string) []string {
+func MapKeysString(input map[string]string) []string {
 	output := []string{}
 	for key := range input {
 		output = append(output, key)
@@ -12,7 +12,7 @@ func mapKeysString(input map[string]string) []string {
 	return output
 }
 
-func mapKeys(input map[string]state) []string {
+func MapKeys(input map[string]State) []string {
 	output := []string{}
 	for key := range input {
 		output = append(output, key)
@@ -20,7 +20,7 @@ func mapKeys(input map[string]state) []string {
 	return output
 }
 
-func keyHandler(
+func KeyHandler(
 	key keyboard.Key,
 	buffer *string,
 	triggerAutocomplete func(),

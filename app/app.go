@@ -1,6 +1,12 @@
 package app
 
 import (
+	"github.com/Bekreth/jane_cli/app/auth"
+	"github.com/Bekreth/jane_cli/app/booking"
+	"github.com/Bekreth/jane_cli/app/initialize"
+	"github.com/Bekreth/jane_cli/app/root"
+	"github.com/Bekreth/jane_cli/app/schedule"
+	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/cache"
 	"github.com/Bekreth/jane_cli/client"
 	"github.com/Bekreth/jane_cli/domain"
@@ -10,9 +16,9 @@ import (
 
 type Application struct {
 	logger    logger.Logger
-	writer    screenWriter
-	state     state
-	allStates []state
+	writer    terminal.ScreenWriter
+	state     terminal.State
+	allStates []terminal.State
 }
 
 func NewApplication(
@@ -22,51 +28,55 @@ func NewApplication(
 	cache cache.Cache,
 ) Application {
 
-	root := rootState{
-		logger: logger.AddContext("state", "root"),
-		writer: screenWriter{"jane>"},
-	}
-	init := initState{
-		logger: logger.AddContext("state", "init"),
-		writer: screenWriter{"init>"},
-		user:   user,
-	}
-	auth := authState{
-		logger:        logger.AddContext("state", "auth"),
-		writer:        screenWriter{"auth>"},
-		authenticator: client,
-	}
-	schedule := scheduleState{
-		logger:  logger.AddContext("state", "schedule"),
-		writer:  screenWriter{"schedule>"},
-		fetcher: client,
-	}
-	booking := bookingState{
-		logger:  logger.AddContext("state", "booking"),
-		writer:  screenWriter{"booking>"},
-		fetcher: cache,
-		// TODO: Add interface for clients
-	}
+	rootState := root.NewState(
+		logger.AddContext("state", "root"),
+		terminal.NewScreenWriter("jane>"),
+	)
+	initState := initialize.NewState(
+		logger.AddContext("state", "init"),
+		terminal.NewScreenWriter("init>"),
+		user,
+		rootState,
+	)
+	authState := auth.NewState(
+		logger.AddContext("state", "auth"),
+		terminal.NewScreenWriter("auth>"),
+		client,
+		rootState,
+	)
 
-	root.states = map[string]state{
-		auth.name():     &auth,
-		schedule.name(): &schedule,
-		init.name():     &init,
-		booking.name():  &booking,
-	}
+	scheduleState := schedule.NewState(
+		logger.AddContext("state", "schedule"),
+		terminal.NewScreenWriter("schedule>"),
+		client,
+		rootState,
+	)
+	bookingState := booking.NewState(
+		logger.AddContext("state", "booking"),
+		terminal.NewScreenWriter("booking>"),
+		cache,
+		rootState,
+	)
 
-	auth.rootState = &root
-	schedule.rootState = &root
-	init.rootState = &root
-	booking.rootState = &root
-
-	root.initialize()
+	rootState.RegisterStates(map[string]terminal.State{
+		initState.Name():     initState,
+		authState.Name():     authState,
+		scheduleState.Name(): scheduleState,
+		bookingState.Name():  bookingState,
+	})
+	rootState.Initialize()
 
 	return Application{
-		logger:    logger,
-		writer:    screenWriter{},
-		state:     &root,
-		allStates: []state{&root, &schedule, &init, &auth},
+		logger: logger,
+		writer: terminal.NewScreenWriter(""),
+		state:  rootState,
+		allStates: []terminal.State{
+			rootState,
+			initState,
+			authState,
+			scheduleState,
+			bookingState,
+		},
 	}
 }
 
@@ -77,29 +87,25 @@ func (app *Application) HandleKeyinput(character rune, key keyboard.Key) bool {
 	switch key {
 	case keyboard.KeyCtrlC:
 		app.logger.Infoln("exiting the application")
-		for _, state := range app.allStates {
-			state.shutdown()
-		}
-		app.writer.newLine()
-		app.writer.writeString("Shutting down Jane CLI")
-		app.writer.newLine()
+		app.writer.NewLine()
+		app.writer.WriteString("Shutting down Jane CLI")
+		app.writer.NewLine()
 		return false
 	}
 
-	nextState := app.state.handleKeyinput(character, key)
-	if nextState.name() != app.state.name() {
+	nextState := app.state.HandleKeyinput(character, key)
+	if nextState.Name() != app.state.Name() {
 		app.logger.Debugf(
 			"transitioning from %v state to %v state",
-			app.state.name(),
-			nextState.name(),
+			app.state.Name(),
+			nextState.Name(),
 		)
-		nextState.initialize()
-		app.state.shutdown()
+		nextState.Initialize()
 		app.state = nextState
 	}
 	return true
 }
 
 func (app Application) CurrentState() string {
-	return app.state.name()
+	return app.state.Name()
 }

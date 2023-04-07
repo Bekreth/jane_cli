@@ -1,4 +1,4 @@
-package app
+package terminal
 
 import (
 	"fmt"
@@ -50,7 +50,7 @@ func TestParseFlags(t *testing.T) {
 
 	for _, trial := range trials {
 		t.Run(trial.description, func(tt *testing.T) {
-			actualOuptut := parseFlags(trial.input)
+			actualOuptut := ParseFlags(trial.input)
 			fmt.Println("actual", actualOuptut)
 			assert.Equal(tt, trial.expectedOutput, actualOuptut)
 		})

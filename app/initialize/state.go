@@ -1,47 +1,63 @@
-package app
+package initialize
 
 import (
 	"fmt"
 
+	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
 	"github.com/eiannone/keyboard"
 )
 
-type initState struct {
-	logger        logger.Logger
-	writer        screenWriter
-	rootState     state
-	user          *domain.User
-	currentBuffer string
-	nextState     state
-}
-
 const username = "-u"
 const clinicDomain = "-d"
 
-func (initState) name() string {
+type initState struct {
+	logger    logger.Logger
+	writer    terminal.ScreenWriter
+	user      *domain.User
+	rootState terminal.State
+
+	currentBuffer string
+	nextState     terminal.State
+}
+
+func NewState(
+	logger logger.Logger,
+	writer terminal.ScreenWriter,
+	user *domain.User,
+	rootState terminal.State,
+) terminal.State {
+	return &initState{
+		logger:    logger,
+		writer:    writer,
+		user:      user,
+		rootState: rootState,
+	}
+}
+
+func (initState) Name() string {
 	return "init"
 }
 
-func (init *initState) initialize() {
+func (init *initState) Initialize() {
 	init.logger.Debugf(
 		"entering init. available states %v",
-		init.rootState.name(),
+		init.rootState.Name(),
 	)
 	init.nextState = init
-	init.writer.newLine()
-	init.writer.writeString("")
+	init.writer.NewLine()
+	init.writer.WriteString("")
 }
 
-func (init *initState) handleKeyinput(character rune, key keyboard.Key) state {
-	keyHandler(key, &init.currentBuffer, init.triggerAutocomplete, init.submit)
+func (init *initState) HandleKeyinput(character rune, key keyboard.Key) terminal.State {
+	terminal.KeyHandler(key, &init.currentBuffer, init.triggerAutocomplete, init.submit)
 
 	if character != 0 {
 		init.currentBuffer += string(character)
 	}
 
-	init.writer.writeString(init.currentBuffer)
+	init.writer.WriteString(init.currentBuffer)
 	return init.nextState
 }
 
@@ -49,7 +65,7 @@ func (init *initState) triggerAutocomplete() {
 }
 
 func (init *initState) submit() {
-	flags := parseFlags(init.currentBuffer)
+	flags := terminal.ParseFlags(init.currentBuffer)
 	init.logger.Debugf("submitting query flags: %v", flags)
 
 	missingFlags := map[string]string{}
@@ -77,7 +93,7 @@ func (init *initState) submit() {
 		if _, exists := missingFlags[username]; exists {
 			missingParameters = append(missingParameters, "username")
 		}
-		init.writer.writeString(fmt.Sprintf("missing user data %v", missingParameters))
+		init.writer.WriteString(fmt.Sprintf("missing user data %v", missingParameters))
 	}
 
 	err := init.user.SaveUserFile()
@@ -86,8 +102,4 @@ func (init *initState) submit() {
 	}
 
 	init.nextState = init.rootState
-}
-
-func (init *initState) shutdown() {
-	init.currentBuffer = ""
 }

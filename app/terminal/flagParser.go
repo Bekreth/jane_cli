@@ -1,8 +1,8 @@
-package app
+package terminal
 
 import "strings"
 
-func parseFlags(input string) map[string]string {
+func ParseFlags(input string) map[string]string {
 	output := map[string]string{}
 
 	words := strings.Split(input, " ")

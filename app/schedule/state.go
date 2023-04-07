@@ -1,10 +1,11 @@
-package app
+package schedule
 
 import (
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain/schedule"
 	"github.com/Bekreth/jane_cli/logger"
 	"github.com/eiannone/keyboard"
@@ -19,6 +20,7 @@ type scheduleFetcher interface {
 
 var oneDay = 24 * time.Hour
 
+// TODO: Fill out more
 var autocompletes = map[string]func() (time.Time, time.Time){
 	"today": func() (time.Time, time.Time) {
 		return time.Now().Local(), time.Now().Local()
@@ -29,36 +31,51 @@ var autocompletes = map[string]func() (time.Time, time.Time){
 }
 
 type scheduleState struct {
-	logger        logger.Logger
-	writer        screenWriter
-	rootState     state
-	fetcher       scheduleFetcher
+	logger    logger.Logger
+	writer    terminal.ScreenWriter
+	fetcher   scheduleFetcher
+	rootState terminal.State
+
 	currentBuffer string
-	nextState     state
+	nextState     terminal.State
 }
 
-func (scheduleState) name() string {
+func NewState(
+	logger logger.Logger,
+	writer terminal.ScreenWriter,
+	fetcher scheduleFetcher,
+	rootState terminal.State,
+) terminal.State {
+	return &scheduleState{
+		logger:    logger,
+		writer:    writer,
+		fetcher:   fetcher,
+		rootState: rootState,
+	}
+}
+
+func (scheduleState) Name() string {
 	return "schedule"
 }
 
-func (schedule *scheduleState) initialize() {
+func (schedule *scheduleState) Initialize() {
 	schedule.logger.Debugf(
 		"entering schedule. available states %v",
-		schedule.rootState.name(),
+		schedule.rootState.Name(),
 	)
 	schedule.nextState = schedule
-	schedule.writer.newLine()
-	schedule.writer.writeString("")
+	schedule.writer.NewLine()
+	schedule.writer.WriteString("")
 }
 
-func (schedule *scheduleState) handleKeyinput(character rune, key keyboard.Key) state {
-	keyHandler(key, &schedule.currentBuffer, schedule.triggerAutocomplete, schedule.submit)
+func (schedule *scheduleState) HandleKeyinput(character rune, key keyboard.Key) terminal.State {
+	terminal.KeyHandler(key, &schedule.currentBuffer, schedule.triggerAutocomplete, schedule.submit)
 
 	if character != 0 {
 		schedule.currentBuffer += string(character)
 	}
 
-	schedule.writer.writeString(schedule.currentBuffer)
+	schedule.writer.WriteString(schedule.currentBuffer)
 	return schedule.nextState
 }
 
@@ -78,7 +95,7 @@ func (schedule *scheduleState) triggerAutocomplete() {
 }
 
 func (schedule *scheduleState) submit() {
-	flags := parseFlags(schedule.currentBuffer)
+	flags := terminal.ParseFlags(schedule.currentBuffer)
 	if _, exists := flags[".."]; exists {
 		schedule.nextState = schedule.rootState
 		return
@@ -101,8 +118,8 @@ func (schedule *scheduleState) submit() {
 			year := now.Year()
 			date, err := time.Parse(timeFormat, fmt.Sprintf("%v-%v", year, dateString))
 			if err != nil {
-				schedule.writer.writeString("Failed to parse time.  Use format MM-DD")
-				schedule.writer.newLine()
+				schedule.writer.WriteString("Failed to parse time.  Use format MM-DD")
+				schedule.writer.NewLine()
 				return
 			}
 			startAt = date
@@ -115,17 +132,17 @@ func (schedule *scheduleState) submit() {
 	if timeIsSet {
 		fetchedSchedule, err := schedule.fetcher.FetchSchedule(startAt, endAt)
 		if err != nil {
-			schedule.writer.writeString(fmt.Sprintf("failed to get schedule: %v", err))
+			schedule.writer.WriteString(fmt.Sprintf("failed to get schedule: %v", err))
 		}
 		if len(fetchedSchedule.Appointments) == 0 {
-			schedule.writer.writeString(fmt.Sprintf(
+			schedule.writer.WriteString(fmt.Sprintf(
 				"no shift between %v and %v",
 				startAt.Format(timeFormat),
 				endAt.Format(timeFormat),
 			))
-			schedule.writer.newLine()
+			schedule.writer.NewLine()
 		} else {
-			schedule.writer.writeString("\n" + fetchedSchedule.ToString())
+			schedule.writer.WriteString("\n" + fetchedSchedule.ToString())
 		}
 		schedule.currentBuffer = ""
 		return

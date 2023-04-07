@@ -1,4 +1,4 @@
-package app
+package schedule
 
 import (
 	"testing"
