@@ -47,6 +47,11 @@ func (client Client) FetchSchedule(
 		return schedule.Schedule{}, err
 	}
 
+	if err = checkStatusCode(response); err != nil {
+		client.logger.Infof("Bad response from Jane: %v", err)
+		return schedule.Schedule{}, err
+	}
+
 	bytes, err := io.ReadAll(response.Body)
 	if err != nil {
 		client.logger.Infof("failed to read response body: %v", err)

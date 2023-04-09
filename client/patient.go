@@ -32,7 +32,7 @@ func (client Client) FetchPatients(patientName string) ([]domain.Patient, error)
 
 	requestBody := PatientRequest{
 		Autocomplete: true,
-		Limit:        8,
+		Limit:        9,
 		Name:         patientName,
 	}
 
@@ -55,6 +55,11 @@ func (client Client) FetchPatients(patientName string) ([]domain.Patient, error)
 	response, err := client.janeClient.Do(request)
 	if err != nil {
 		client.logger.Infof("failed to get patient info from Jane")
+		return output, err
+	}
+
+	if err = checkStatusCode(response); err != nil {
+		client.logger.Infof("Bad response from Jane: %v", err)
 		return output, err
 	}
 

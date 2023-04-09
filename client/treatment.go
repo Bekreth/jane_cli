@@ -39,6 +39,11 @@ func (client Client) FetchTreatments() ([]domain.Treatment, error) {
 		return treatmentList, err
 	}
 
+	if err = checkStatusCode(response); err != nil {
+		client.logger.Infof("Bad response from Jane: %v", err)
+		return treatmentList, err
+	}
+
 	bytes, err := io.ReadAll(response.Body)
 	if err != nil {
 		client.logger.Infof("failed to read message body")

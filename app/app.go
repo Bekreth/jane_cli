@@ -7,8 +7,8 @@ import (
 	"github.com/Bekreth/jane_cli/app/root"
 	"github.com/Bekreth/jane_cli/app/schedule"
 	"github.com/Bekreth/jane_cli/app/terminal"
-	"github.com/Bekreth/jane_cli/cache"
-	"github.com/Bekreth/jane_cli/client"
+	Cache "github.com/Bekreth/jane_cli/cache"
+	Client "github.com/Bekreth/jane_cli/client"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
 	"github.com/eiannone/keyboard"
@@ -24,8 +24,8 @@ type Application struct {
 func NewApplication(
 	logger logger.Logger,
 	user *domain.User,
-	client client.Client,
-	cache cache.Cache,
+	client Client.Client,
+	cache Cache.Cache,
 ) Application {
 
 	rootState := root.NewState(
@@ -51,10 +51,18 @@ func NewApplication(
 		client,
 		rootState,
 	)
+
+	fetcher := struct {
+		Cache.Cache
+		Client.Client
+	}{
+		Cache:  cache,
+		Client: client,
+	}
 	bookingState := booking.NewState(
 		logger.AddContext("state", "booking"),
 		terminal.NewScreenWriter("booking>"),
-		cache,
+		fetcher,
 		rootState,
 	)
 

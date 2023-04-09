@@ -7,16 +7,18 @@ func (state *bookingState) confirmBooking(character rune) {
 	case "Y":
 		state.writer.WriteString("submitting booking")
 		state.writer.NewLine()
-		//TODO
-		//err := booking.fetcher.BookPatient(
-		//	booking.booking.targetPatient,
-		//	booking.booking.targetTreatment,
-		//	booking.booking.appointmentDate,
-		//)
-		//if err != nil {
-		//	booking.writer.writeStringf("failed to make appointment: %v", err)
-		//	booking.writer.newLine()
-		//}
+		err := state.fetcher.BookPatient(
+			state.booking.targetPatient,
+			state.booking.targetTreatment,
+			state.booking.appointmentDate,
+		)
+		if err != nil {
+			state.writer.WriteStringf("failed to make appointment: %v", err)
+			state.writer.NewLine()
+		} else {
+			state.writer.NewLine()
+			state.nextState = state.rootState
+		}
 	case "n":
 		fallthrough
 	case "N":
