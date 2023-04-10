@@ -18,20 +18,20 @@ type Client struct {
 	janeClient *http.Client
 	logger     logger.Logger
 	config     Config
-	auth       *domain.Auth
+	user       *domain.User
 	updateAuth func() error
 }
 
 func NewClient(
 	logger logger.Logger,
 	config Config,
-	auth *domain.Auth,
+	user *domain.User,
 	updateAuth func() error,
 ) (Client, error) {
 	output := Client{
 		logger:     logger,
 		config:     config,
-		auth:       auth,
+		user:       user,
 		updateAuth: updateAuth,
 	}
 
@@ -40,13 +40,13 @@ func NewClient(
 		return Client{}, err
 	}
 
-	if auth.AuthCookie != "" || auth.Expires.After(time.Now()) {
+	if user.Auth.AuthCookie != "" || user.Auth.Expires.After(time.Now()) {
 		authCookie := http.Cookie{
 			Name:     authCookieKey,
-			Value:    auth.AuthCookie,
+			Value:    user.Auth.AuthCookie,
 			Path:     "/",
 			Domain:   "",
-			Expires:  auth.Expires,
+			Expires:  user.Auth.Expires,
 			Secure:   true,
 			HttpOnly: true,
 			SameSite: http.SameSiteLaxMode,
@@ -55,7 +55,7 @@ func NewClient(
 		if err != nil {
 			return output, fmt.Errorf(
 				"provided domain %v doesn't correctly parse to URL: %v",
-				auth.Domain,
+				user.Auth.Domain,
 				err,
 			)
 		}
@@ -69,6 +69,5 @@ func NewClient(
 }
 
 func (client Client) getDomain() string {
-	//return "http://localhost:2345"
-	return fmt.Sprintf("https://%v.janeapp.com", client.auth.Domain)
+	return fmt.Sprintf("https://%v.janeapp.com", client.user.Auth.Domain)
 }

@@ -3,9 +3,9 @@ package booking
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/Bekreth/jane_cli/app/terminal"
+	"github.com/Bekreth/jane_cli/app/util"
 )
 
 const bookingTimeYearFormat = "06.01.02T15:04"
@@ -56,7 +56,11 @@ func (state *bookingState) Submit() {
 		return
 	}
 
-	builder, err = state.parseDateValue(flags[bookingDateFlag], builder)
+	builder.appointmentDate, err = util.ParseDate(
+		bookingTimeFormat,
+		bookingTimeYearFormat,
+		flags[bookingDateFlag],
+	)
 	if err != nil {
 		state.writer.WriteString(err.Error())
 		state.writer.NewLine()
@@ -71,7 +75,7 @@ func (state *bookingState) parsePatientValue(
 	builder bookingBuilder,
 ) (bookingBuilder, error) {
 	if patientName == "" {
-		return builder, fmt.Errorf("no name provided, use the %v flag", patientFlag)
+		return builder, fmt.Errorf("no patient provided, use the %v flag", patientFlag)
 	}
 	patients, err := state.fetcher.FindPatients(patientName)
 	if err != nil {
@@ -94,7 +98,7 @@ func (state *bookingState) parseTreatmentValue(
 	builder bookingBuilder,
 ) (bookingBuilder, error) {
 	if treatmentName == "" {
-		return builder, fmt.Errorf("no name provided, use the %v flag", patientFlag)
+		return builder, fmt.Errorf("no treatment provided, use the %v flag", treatmentFlag)
 	}
 	treatments, err := state.fetcher.FindTreatment(treatmentName)
 	if err != nil {
@@ -113,36 +117,4 @@ func (state *bookingState) parseTreatmentValue(
 		)
 	}
 	return builder, nil
-}
-
-func (state *bookingState) parseDateValue(
-	dateString string,
-	builder bookingBuilder,
-) (bookingBuilder, error) {
-
-	dateValue, err := time.Parse(bookingTimeYearFormat, dateString)
-	if err == nil {
-		builder.appointmentDate = dateValue
-		return builder, nil
-	} else {
-		dateValue, err = time.Parse(bookingTimeFormat, dateString)
-		if err != nil {
-			return builder, fmt.Errorf(
-				"unable to parse date %v, please write date in the format %v or %v",
-				dateString,
-				bookingTimeFormat,
-				bookingTimeYearFormat,
-			)
-		}
-
-		now := time.Now()
-		if now.Month() > dateValue.Month() {
-			dateValue = dateValue.AddDate(now.Year()+1, 0, 0)
-		} else {
-			dateValue = dateValue.AddDate(now.Year(), 0, 0)
-		}
-
-		builder.appointmentDate = dateValue
-		return builder, nil
-	}
 }

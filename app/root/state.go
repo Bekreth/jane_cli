@@ -41,6 +41,7 @@ func (root *rootState) Initialize() {
 		"entering root. available states: %v",
 		stateNames,
 	)
+	root.currentBuffer = ""
 	root.nextState = root
 	root.writer.NewLine()
 	root.writer.WriteString("")

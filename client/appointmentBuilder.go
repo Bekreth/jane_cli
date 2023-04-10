@@ -1,23 +1,29 @@
 package client
 
 import (
-	"time"
-
 	"github.com/Bekreth/jane_cli/domain"
+	"github.com/Bekreth/jane_cli/domain/schedule"
 )
 
 func (client Client) BookPatient(
 	patient domain.Patient,
 	treatment domain.Treatment,
-	startTime time.Time,
+	startTime schedule.JaneTime,
 ) error {
-	appointmentID, err := client.CreateAppointment(
+	endTime := schedule.JaneTime{
+		Time: startTime.Add(treatment.ScheduledDuration.Duration),
+	}
+	appointment, err := client.CreateAppointment(
 		startTime,
-		startTime.Add(treatment.ScheduledDuration.Duration),
+		endTime,
 		false,
 	)
 	if err != nil {
 		return err
 	}
-	return client.BookAppointment(appointmentID)
+	return client.BookAppointment(
+		appointment,
+		treatment,
+		patient,
+	)
 }

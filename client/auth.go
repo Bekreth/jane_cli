@@ -19,7 +19,11 @@ const idPath = "admin/api/v2/staff_members"
 func (client Client) Login(password string) error {
 	urlBase := fmt.Sprintf("%v/%v", client.getDomain(), authPath)
 	client.logger.Infof("logging in to %v", urlBase)
-	loginCredentials := fmt.Sprintf(authQueryParameters, client.auth.Username, password)
+	loginCredentials := fmt.Sprintf(
+		authQueryParameters,
+		client.user.Auth.Username,
+		password,
+	)
 	authBody := bytes.NewBufferString(loginCredentials)
 	request, err := http.NewRequest(
 		http.MethodPost,
@@ -46,13 +50,13 @@ func (client Client) Login(password string) error {
 	for _, cookie := range response.Cookies() {
 		if cookie.Name == authCookieKey {
 			client.logger.Debugf("Got a new auth cookie until %v", cookie.Expires)
-			client.auth.AuthCookie = cookie.Value
-			client.auth.Expires = cookie.Expires
+			client.user.Auth.AuthCookie = cookie.Value
+			client.user.Auth.Expires = cookie.Expires
 			userID, err := client.getUserID()
 			if err != nil {
 				return err
 			}
-			client.auth.UserID = userID
+			client.user.Auth.UserID = userID
 			return client.updateAuth()
 		}
 	}
@@ -62,7 +66,7 @@ func (client Client) Login(password string) error {
 
 func (client Client) getUserID() (int, error) {
 	urlBase := fmt.Sprintf("%v/%v", client.getDomain(), idPath)
-	client.logger.Infof("getting user ID for %v", client.auth.Username)
+	client.logger.Infof("getting user ID for %v", client.user.Auth.Username)
 	request, err := http.NewRequest(
 		http.MethodGet,
 		urlBase,
@@ -89,13 +93,13 @@ func (client Client) getUserID() (int, error) {
 	}
 
 	for _, staffMember := range output {
-		if staffMember.Email == client.auth.Username {
+		if staffMember.Email == client.user.Auth.Username {
 			client.logger.Debugf(
 				"got client ID of %v for user %v",
 				staffMember.ID,
-				client.auth.Username,
+				client.user.Auth.Username,
 			)
-			client.auth.UserID = staffMember.ID
+			client.user.Auth.UserID = staffMember.ID
 			return staffMember.ID, err
 		}
 	}

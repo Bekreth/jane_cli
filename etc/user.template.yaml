@@ -4,3 +4,5 @@ auth:
     userID:
     authCookie: 
     expires: 
+roomID:
+locationID:

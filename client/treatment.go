@@ -59,7 +59,7 @@ func (client Client) FetchTreatments() ([]domain.Treatment, error) {
 	output := []domain.Treatment{}
 	for _, treatment := range treatmentList {
 		client.logger.Debugf("%v %v", treatment.StaffMemberID, treatment.Name)
-		if treatment.StaffMemberID == client.auth.UserID {
+		if treatment.StaffMemberID == client.user.Auth.UserID {
 			output = append(output, treatment)
 		}
 	}

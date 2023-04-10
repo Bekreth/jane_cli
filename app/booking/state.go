@@ -1,10 +1,9 @@
 package booking
 
 import (
-	"time"
-
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain"
+	"github.com/Bekreth/jane_cli/domain/schedule"
 	"github.com/Bekreth/jane_cli/logger"
 )
 
@@ -14,7 +13,7 @@ type bookingDataFetcher interface {
 	BookPatient(
 		patient domain.Patient,
 		treatment domain.Treatment,
-		startTime time.Time,
+		startTime schedule.JaneTime,
 	) error
 }
 

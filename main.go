@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/Bekreth/jane_cli/app"
 	"github.com/Bekreth/jane_cli/cache"
@@ -16,6 +17,10 @@ import (
 func main() {
 	fmt.Println("Starting Jane CLI")
 	config, err := parseConfig()
+
+	// TODO: this needs to be configurable v.v.v.v.v.v.v
+	loc, err := time.LoadLocation("America/Vancouver")
+	time.Local = loc
 
 	if err != nil {
 		fmt.Printf("failed to load config: %v\n", err)
@@ -47,7 +52,7 @@ func main() {
 	client, err := client.NewClient(
 		logger.AddContext("service", "httpClient"),
 		config.Client,
-		&thisUser.Auth,
+		thisUser,
 		thisUser.SaveUserFile,
 	)
 

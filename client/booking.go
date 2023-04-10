@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
-	"time"
+
+	"github.com/Bekreth/jane_cli/domain"
+	"github.com/Bekreth/jane_cli/domain/schedule"
 )
 
 const bookingApi = "appointments/%v/book"
@@ -14,17 +16,17 @@ const bookingApi = "appointments/%v/book"
 type BookingRequest struct {
 	Book bool `json:"book"`
 }
+
 type Booking struct {
-	StaffMemberID int       `json:"staff_member_id"`
-	TreatmentID   int       `json:"treatment_id"`
-	BookerType    string    `json:"booker_type"` //StaffMember
-	PatientID     int       `json:"patient_id"`
-	StartAt       time.Time `json:"start_at"` // 2023-04-04T17:00:00-07:00
-	EndAt         time.Time `json:"end_at"`
-	//TODO: Fix this v.v.v.v.v.v
-	Duration int  `json:"duration"` //Duration in Seconds
-	Break    bool `json:"break"`
-	RoomID   int  `json:"room_id"`
+	StaffMemberID int               `json:"staff_member_id"`
+	TreatmentID   int               `json:"treatment_id"`
+	BookerType    string            `json:"booker_type"`
+	PatientID     int               `json:"patient_id"`
+	StartAt       schedule.JaneTime `json:"start_at"`
+	EndAt         schedule.JaneTime `json:"end_at"`
+	Duration      int               `json:"duration"`
+	Break         bool              `json:"break"`
+	RoomID        int               `json:"room_id"`
 }
 
 func (client Client) buildBookingRequest(appointmentID int) string {
@@ -35,11 +37,24 @@ func (client Client) buildBookingRequest(appointmentID int) string {
 	)
 }
 
-func (client Client) BookAppointment(appointmentID int) error {
+func (client Client) BookAppointment(
+	appointment Appointment,
+	treatment domain.Treatment,
+	patient domain.Patient,
+) error {
 	client.logger.Debugf("booking an appointment")
 
-	//TODO: Fix this v.v.v.v.v.v
-	requestBody := BookingRequest{}
+	requestBody := Booking{
+		StaffMemberID: client.user.Auth.UserID,
+		TreatmentID:   treatment.ID,
+		BookerType:    "StaffMember",
+		PatientID:     patient.ID,
+		StartAt:       appointment.StartAt,
+		EndAt:         appointment.EndAt,
+		Duration:      int(treatment.ScheduledDuration.Duration.Seconds()),
+		Break:         false,
+		RoomID:        client.user.RoomID,
+	}
 
 	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
@@ -49,7 +64,7 @@ func (client Client) BookAppointment(appointmentID int) error {
 
 	request, err := http.NewRequest(
 		http.MethodPut,
-		client.buildBookingRequest(appointmentID),
+		client.buildBookingRequest(appointment.ID),
 		strings.NewReader(string(jsonBody)),
 	)
 

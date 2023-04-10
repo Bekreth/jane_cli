@@ -1,9 +1,8 @@
 package booking
 
 import (
-	"time"
-
 	"github.com/Bekreth/jane_cli/domain"
+	"github.com/Bekreth/jane_cli/domain/schedule"
 )
 
 type substate = string
@@ -22,5 +21,5 @@ type bookingBuilder struct {
 	targetPatient   domain.Patient
 	treatments      []domain.Treatment
 	targetTreatment domain.Treatment
-	appointmentDate time.Time
+	appointmentDate schedule.JaneTime
 }

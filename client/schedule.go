@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"github.com/Bekreth/jane_cli/domain/schedule"
 )
@@ -13,7 +12,10 @@ import (
 const calendar = "calendar"
 const timeFormat = "2006-01-02"
 
-func (client Client) buildScheduleRequest(startDate time.Time, endDate time.Time) string {
+func (client Client) buildScheduleRequest(
+	startDate schedule.JaneTime,
+	endDate schedule.JaneTime,
+) string {
 	return fmt.Sprintf(
 		"%v/%v/%v?start_date=%v&end_date=%v&staff_member_ids[]=%v",
 		client.getDomain(),
@@ -21,13 +23,13 @@ func (client Client) buildScheduleRequest(startDate time.Time, endDate time.Time
 		calendar,
 		startDate.Format(timeFormat),
 		endDate.Format(timeFormat),
-		client.auth.UserID,
+		client.user.Auth.UserID,
 	)
 }
 
 func (client Client) FetchSchedule(
-	startDate time.Time,
-	endDate time.Time,
+	startDate schedule.JaneTime,
+	endDate schedule.JaneTime,
 ) (schedule.Schedule, error) {
 	client.logger.Debugf("fetching scheudle from %v to %v", startDate, endDate)
 

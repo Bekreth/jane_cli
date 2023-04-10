@@ -11,9 +11,11 @@ import (
 )
 
 type User struct {
-	filePath string
-	logger   logger.Logger
-	Auth     Auth `yaml:"auth"`
+	filePath   string
+	logger     logger.Logger
+	Auth       Auth `yaml:"auth"`
+	LocationID int  `yaml:"locationID"`
+	RoomID     int  `yaml:"roomID"`
 }
 
 func NewUser(logger logger.Logger, filePath string) (User, error) {

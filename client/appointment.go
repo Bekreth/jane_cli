@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"strings"
-	"time"
+
+	"github.com/Bekreth/jane_cli/domain/schedule"
 )
 
 const appointmentApi = "appointments"
@@ -17,16 +19,13 @@ type AppointmentRequest struct {
 }
 
 type Appointment struct {
-	StartAt       time.Time `json:"start_at"`
-	EndAt         time.Time `json:"end_at"`
-	Break         bool      `json:"break"`
-	LocationID    int       `json:"location_id"`
-	RoomID        int       `json:"room_id"`
-	StaffMemberID int       `json:"staff_member_id"`
-}
-
-type AppointmentResponse struct {
-	ID int `json:"id"`
+	ID            int               `json:"id,omitempty"`
+	StartAt       schedule.JaneTime `json:"start_at"`
+	EndAt         schedule.JaneTime `json:"end_at"`
+	Break         bool              `json:"break"`
+	LocationID    int               `json:"location_id"`
+	RoomID        int               `json:"room_id"`
+	StaffMemberID int               `json:"staff_member_id"`
 }
 
 func (client Client) buildAppointmentRequest() string {
@@ -38,20 +37,21 @@ func (client Client) buildAppointmentRequest() string {
 }
 
 func (client Client) CreateAppointment(
-	startDate time.Time,
-	endDate time.Time,
+	startDate schedule.JaneTime,
+	endDate schedule.JaneTime,
 	employeeBreak bool,
-) (int, error) {
+) (Appointment, error) {
 	client.logger.Debugf("creating appointment")
+	output := Appointment{}
 
 	requestBody := AppointmentRequest{
 		Appointment: Appointment{
 			StartAt:       startDate,
 			EndAt:         endDate,
 			Break:         employeeBreak,
-			LocationID:    1,
-			RoomID:        1,
-			StaffMemberID: client.auth.UserID,
+			LocationID:    client.user.LocationID,
+			RoomID:        client.user.RoomID,
+			StaffMemberID: client.user.Auth.UserID,
 		},
 		Book: false,
 	}
@@ -59,7 +59,7 @@ func (client Client) CreateAppointment(
 	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
 		client.logger.Infof("failed to serialize booking request")
-		return 0, err
+		return output, err
 	}
 
 	request, err := http.NewRequest(
@@ -69,32 +69,38 @@ func (client Client) CreateAppointment(
 	)
 	if err != nil {
 		client.logger.Infof("failed to serialize appointment request: %v", requestBody)
-		return 0, err
+		return output, err
 	}
+
+	client.logger.Debugf("JSON: \v", string(jsonBody))
 
 	response, err := client.janeClient.Do(request)
 	if err != nil {
 		client.logger.Infof("failed to create appoint in Jane: %v", err)
-		return 0, err
+		return output, err
 	}
+	client.logger.Debugf("RESPONSE CODE: \v", response.StatusCode)
 
 	if err = checkStatusCode(response); err != nil {
 		client.logger.Infof("bad response from Jane: %v", err)
-		return 0, err
+		return output, err
 	}
+	body, err := ioutil.ReadAll(response.Body)
+	client.logger.Debugf("RESPONSE : \v", string(body))
 
 	bytes, err := io.ReadAll(response.Body)
 	if err != nil {
 		client.logger.Infof("failed to read message body")
-		return 0, err
+		return output, err
 	}
 
-	output := AppointmentResponse{}
 	err = json.Unmarshal(bytes, &output)
 	if err != nil {
 		client.logger.Infof("failed to deserialize into patient struct")
-		return 0, err
+		return output, err
 	}
 
-	return output.ID, nil
+	client.logger.Infof("created appointment %v at %v", output.ID, output.StartAt)
+
+	return output, nil
 }
