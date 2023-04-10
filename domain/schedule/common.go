@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+const humanDateFormat = "Jan 02"
 const hourMinuteFormat = "15:04"
 const dateTimeFormat = "2006-01-02T15:04:05"
 const dateTimeFormatWithTimeStamp = "2006-01-02T15:04:05-07:00"
@@ -42,4 +43,8 @@ func (janeTime *JaneTime) UnmarshalJSON(bytes []byte) error {
 func (janeTime JaneTime) MarshalJSON() ([]byte, error) {
 	timeString := janeTime.Format(dateTimeFormatWithTimeStamp)
 	return []byte("\"" + timeString + "\""), nil
+}
+
+func (janeTime JaneTime) HumanDate() string {
+	return janeTime.Format(humanDateFormat)
 }

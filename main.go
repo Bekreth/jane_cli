@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"time"
+	_ "time/tzdata"
 
 	"github.com/Bekreth/jane_cli/app"
 	"github.com/Bekreth/jane_cli/cache"

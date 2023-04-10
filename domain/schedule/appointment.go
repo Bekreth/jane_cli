@@ -6,8 +6,6 @@ import (
 	"github.com/Bekreth/jane_cli/domain"
 )
 
-// state: booked, break
-
 type Appointment struct {
 	StartAt JaneTime       `json:"start_at"`
 	EndAt   JaneTime       `json:"end_at"`
@@ -17,10 +15,10 @@ type Appointment struct {
 
 func (appointment Appointment) ToString() string {
 	output := fmt.Sprintf(
-		"* %v from %v to %v",
-		appointment.State,
+		"%v to %v: %v",
 		appointment.StartAt.Format(hourMinuteFormat),
 		appointment.EndAt.Format(hourMinuteFormat),
+		appointment.State,
 	)
 	if appointment.State == "booked" || appointment.State == "arrived" {
 		output += fmt.Sprintf(" with %v", appointment.Patient.PreferredFirstName)

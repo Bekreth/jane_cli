@@ -47,7 +47,8 @@ func (pair pairedShiftAppointment) ToString() string {
 	}
 
 	return fmt.Sprintf(
-		"shift from %v to %v\n%v",
+		"shift on %v from %v to %v\n%v",
+		pair.shift.StartAt.Format(humanDateFormat),
 		pair.shift.StartAt.Format(hourMinuteFormat),
 		pair.shift.EndAt.Format(hourMinuteFormat),
 		strings.Join(appointmentString, "\n"),

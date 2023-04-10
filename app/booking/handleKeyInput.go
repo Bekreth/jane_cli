@@ -8,70 +8,70 @@ import (
 	"github.com/eiannone/keyboard"
 )
 
-func (booking *bookingState) HandleKeyinput(
+func (state *bookingState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
 ) terminal.State {
-	switch booking.booking.substate {
+	switch state.booking.substate {
 	case bookingConfirmation:
-		booking.confirmBooking(character)
+		state.confirmBooking(character)
 	case treatmentSelector:
-		booking.booking.targetTreatment = elementSelector[domain.Treatment](
+		state.booking.targetTreatment = elementSelector[domain.Treatment](
 			character,
-			booking.booking.treatments,
-			booking.writer,
+			state.booking.treatments,
+			state.writer,
 		)
 	case patientSelector:
-		booking.booking.targetPatient = elementSelector[domain.Patient](
+		state.booking.targetPatient = elementSelector[domain.Patient](
 			character,
-			booking.booking.patients,
-			booking.writer,
+			state.booking.patients,
+			state.writer,
 		)
 	default:
 		terminal.KeyHandler(
 			key,
-			&booking.currentBuffer,
-			booking.triggerAutocomplete,
-			booking.Submit,
+			&state.currentBuffer,
+			state.triggerAutocomplete,
+			state.Submit,
 		)
 		if character != 0 {
-			booking.currentBuffer += string(character)
+			state.currentBuffer += string(character)
 		}
-		booking.writer.WriteString(booking.currentBuffer)
+		state.writer.WriteString(state.currentBuffer)
 	}
 
-	if booking.booking.substate != argument {
-		if booking.booking.targetPatient == domain.DefaultPatient {
-			booking.booking.substate = patientSelector
-		} else if booking.booking.targetTreatment == domain.DefaultTreatment {
-			booking.booking.substate = treatmentSelector
+	if state.booking.substate != argument {
+		if state.booking.targetPatient == domain.DefaultPatient {
+			state.booking.substate = patientSelector
+		} else if state.booking.targetTreatment == domain.DefaultTreatment {
+			state.booking.substate = treatmentSelector
 		} else {
-			booking.booking.substate = bookingConfirmation
+			state.booking.substate = bookingConfirmation
 		}
 	}
 
-	switch booking.booking.substate {
+	switch state.booking.substate {
 	case bookingConfirmation:
-		booking.writer.WriteStringf(
+		state.writer.WriteStringf(
 			"Book %v for a %v at %v? (Y/n)",
-			booking.booking.targetPatient.PreferredFirstName,
-			booking.booking.targetTreatment.Name,
-			booking.booking.appointmentDate.Format(bookingTimeFormat),
+			state.booking.targetPatient.PreferredFirstName,
+			state.booking.targetTreatment.Name,
+			state.booking.appointmentDate.HumanDate(),
 		)
 	case treatmentSelector:
 		treatmentList := "Select intended treatment\n"
-		for i, treatment := range booking.booking.treatments {
+		for i, treatment := range state.booking.treatments {
 			treatmentList += fmt.Sprintf("%v: %v \n", i+1, treatment.Name)
 		}
-		booking.writer.WriteString(treatmentList)
+		state.writer.WriteString(treatmentList)
 	case patientSelector:
 		patientList := "Select intended patient\n"
-		for i, patient := range booking.booking.patients {
+		for i, patient := range state.booking.patients {
 			patientList += fmt.Sprintf("%v: %v %v \n", i+1, patient.FirstName, patient.LastName)
 		}
-		booking.writer.WriteString(patientList)
+		state.writer.WriteString(patientList)
 	default:
 	}
 
-	return booking.nextState
+	return state.nextState
 }

@@ -30,24 +30,24 @@ func NewApplication(
 
 	rootState := root.NewState(
 		logger.AddContext("state", "root"),
-		terminal.NewScreenWriter("jane>"),
+		terminal.NewScreenWriter("jane:"),
 	)
 	initState := initialize.NewState(
 		logger.AddContext("state", "init"),
-		terminal.NewScreenWriter("init>"),
+		terminal.NewScreenWriter("init:"),
 		user,
 		rootState,
 	)
 	authState := auth.NewState(
 		logger.AddContext("state", "auth"),
-		terminal.NewScreenWriter("auth>"),
+		terminal.NewScreenWriter("auth:"),
 		client,
 		rootState,
 	)
 
 	scheduleState := schedule.NewState(
 		logger.AddContext("state", "schedule"),
-		terminal.NewScreenWriter("schedule>"),
+		terminal.NewScreenWriter("schedule:"),
 		client,
 		rootState,
 	)
@@ -61,7 +61,7 @@ func NewApplication(
 	}
 	bookingState := booking.NewState(
 		logger.AddContext("state", "booking"),
-		terminal.NewScreenWriter("booking>"),
+		terminal.NewScreenWriter("booking:"),
 		fetcher,
 		rootState,
 	)

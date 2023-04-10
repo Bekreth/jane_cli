@@ -1,6 +1,11 @@
+//go:build linux
+
 package terminal
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+)
 
 type ScreenWriter struct {
 	contextName string
@@ -17,8 +22,8 @@ func (writer ScreenWriter) WriteStringf(input string, args ...any) {
 }
 
 func (writer ScreenWriter) WriteString(input string) {
-	fmt.Print("\n\033[1A\033[K")
-	fmt.Print("\r", writer.contextName, " ", input)
+	output := fmt.Sprintf("\u001B[2K\u000D%v %v", writer.contextName, input)
+	os.Stdout.Write([]byte(output))
 }
 
 func (writer ScreenWriter) NewLine() {
