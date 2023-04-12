@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -71,6 +70,7 @@ func (client Client) CreateAppointment(
 		client.logger.Infof("failed to serialize appointment request: %v", requestBody)
 		return output, err
 	}
+	request.Header = commonHeaders
 
 	client.logger.Debugf("JSON: \v", string(jsonBody))
 
@@ -85,10 +85,8 @@ func (client Client) CreateAppointment(
 		client.logger.Infof("bad response from Jane: %v", err)
 		return output, err
 	}
-	body, err := ioutil.ReadAll(response.Body)
-	client.logger.Debugf("RESPONSE : \v", string(body))
-
 	bytes, err := io.ReadAll(response.Body)
+
 	if err != nil {
 		client.logger.Infof("failed to read message body")
 		return output, err
@@ -96,7 +94,7 @@ func (client Client) CreateAppointment(
 
 	err = json.Unmarshal(bytes, &output)
 	if err != nil {
-		client.logger.Infof("failed to deserialize into patient struct")
+		client.logger.Infof("failed to deserialize into appointment struct: %v", err)
 		return output, err
 	}
 

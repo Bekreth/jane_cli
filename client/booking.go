@@ -3,7 +3,6 @@ package client
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -14,7 +13,8 @@ import (
 const bookingApi = "appointments/%v/book"
 
 type BookingRequest struct {
-	Book bool `json:"book"`
+	Book        bool    `json:"book"`
+	Appointment Booking `json:"appointment"`
 }
 
 type Booking struct {
@@ -24,6 +24,7 @@ type Booking struct {
 	PatientID     int               `json:"patient_id"`
 	StartAt       schedule.JaneTime `json:"start_at"`
 	EndAt         schedule.JaneTime `json:"end_at"`
+	State         string            `json:"state"`
 	Duration      int               `json:"duration"`
 	Break         bool              `json:"break"`
 	RoomID        int               `json:"room_id"`
@@ -44,16 +45,20 @@ func (client Client) BookAppointment(
 ) error {
 	client.logger.Debugf("booking an appointment")
 
-	requestBody := Booking{
-		StaffMemberID: client.user.Auth.UserID,
-		TreatmentID:   treatment.ID,
-		BookerType:    "StaffMember",
-		PatientID:     patient.ID,
-		StartAt:       appointment.StartAt,
-		EndAt:         appointment.EndAt,
-		Duration:      int(treatment.ScheduledDuration.Duration.Seconds()),
-		Break:         false,
-		RoomID:        client.user.RoomID,
+	requestBody := BookingRequest{
+		Book: true,
+		Appointment: Booking{
+			StaffMemberID: client.user.Auth.UserID,
+			TreatmentID:   treatment.ID,
+			BookerType:    "StaffMember",
+			PatientID:     patient.ID,
+			StartAt:       appointment.StartAt,
+			EndAt:         appointment.EndAt,
+			State:         "reserved",
+			Duration:      int(treatment.ScheduledDuration.Duration.Seconds()),
+			Break:         false,
+			RoomID:        client.user.RoomID,
+		},
 	}
 
 	jsonBody, err := json.Marshal(requestBody)
@@ -67,16 +72,17 @@ func (client Client) BookAppointment(
 		client.buildBookingRequest(appointment.ID),
 		strings.NewReader(string(jsonBody)),
 	)
+	if err != nil {
+		client.logger.Infof("failed to build booking request")
+		return err
+	}
+	request.Header = http.Header(commonHeaders)
 
 	response, err := client.janeClient.Do(request)
 	if err != nil {
 		client.logger.Infof("failed to get patient info from Jane")
 		return err
 	}
-	//TODO v.v.v.v.v.v.v.v
-	rBody, _ := ioutil.ReadAll(response.Body)
-	client.logger.Debugf("RESPONSE: %v", string(rBody))
-	//TODO ^.^.^.^.^.^.^.^
 
 	if err = checkStatusCode(response); err != nil {
 		client.logger.Infof("Bad response from Jane: %v", err)

@@ -5,33 +5,48 @@ package terminal
 import (
 	"fmt"
 	"os"
-	"syscall"
 )
 
 type ScreenWriter struct {
 	contextName string
 }
 
+/*
+TODO: This section needs to be uncommented, but there's currently a problem with
+JAWS that causes the first letter of a strings starting with /u001B[nK to be read
+several times in a row.  This can be replicated in powershell or command prompt with
+the command `echo ^[[2Khello` which reads as "h h hello".  Until this issue is resolved,
+the text manipulation for the sighted is deprioritized for those requiring screen
+readers
+
 var (
+
 	kernel         *syscall.LazyDLL  = syscall.NewLazyDLL("Kernel32.dll")
 	setConsoleMode *syscall.LazyProc = kernel.NewProc("SetConsoleMode")
+
 )
 
 const ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x4
 
+	func NewScreenWriter(contextName string) ScreenWriter {
+		var mode uint32
+		err := syscall.GetConsoleMode(syscall.Stdout, &mode)
+		if err != nil {
+			panic(err) //TODO: Handle this better
+		}
+
+		mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING
+		returnCode, _, err := setConsoleMode.Call(uintptr(syscall.Stdout), uintptr(mode))
+		if returnCode == 0 {
+			panic(err)
+		}
+
+		return ScreenWriter{
+			contextName: contextName,
+		}
+	}
+*/
 func NewScreenWriter(contextName string) ScreenWriter {
-	var mode uint32
-	err := syscall.GetConsoleMode(syscall.Stdout, &mode)
-	if err != nil {
-		panic(err) //TODO: Handle this better
-	}
-
-	mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING
-	returnCode, _, err := setConsoleMode.Call(uintptr(syscall.Stdout), uintptr(mode))
-	if returnCode == 0 {
-		panic(err)
-	}
-
 	return ScreenWriter{
 		contextName: contextName,
 	}
@@ -42,7 +57,7 @@ func (writer ScreenWriter) WriteStringf(input string, args ...any) {
 }
 
 func (writer ScreenWriter) WriteString(input string) {
-	output := fmt.Sprintf("\u001B[2K\u000D%v %v", writer.contextName, input)
+	output := fmt.Sprintf("\u000D%v %v%v", writer.contextName, input, " ")
 	os.Stdout.Write([]byte(output))
 }
 

@@ -51,6 +51,7 @@ func (client Client) FetchPatients(patientName string) ([]domain.Patient, error)
 		client.logger.Infof("failed to build patient request")
 		return output, err
 	}
+	request.Header = http.Header(commonHeaders)
 
 	response, err := client.janeClient.Do(request)
 	if err != nil {

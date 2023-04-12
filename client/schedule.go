@@ -38,10 +38,10 @@ func (client Client) FetchSchedule(
 		client.buildScheduleRequest(startDate, endDate),
 		nil,
 	)
-
 	if err != nil {
 		client.logger.Infof("failed to build fetch schedule request: %v", err)
 	}
+	request.Header = commonHeaders
 
 	response, err := client.janeClient.Do(request)
 	if err != nil {

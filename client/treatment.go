@@ -32,6 +32,7 @@ func (client Client) FetchTreatments() ([]domain.Treatment, error) {
 		client.logger.Infof("failed to build treatment request")
 		return treatmentList, err
 	}
+	request.Header = commonHeaders
 
 	response, err := client.janeClient.Do(request)
 	if err != nil {
@@ -58,8 +59,8 @@ func (client Client) FetchTreatments() ([]domain.Treatment, error) {
 
 	output := []domain.Treatment{}
 	for _, treatment := range treatmentList {
-		client.logger.Debugf("%v %v", treatment.StaffMemberID, treatment.Name)
-		if treatment.StaffMemberID == client.user.Auth.UserID {
+		id := treatment.StaffMemberID
+		if id == 0 || id == client.user.Auth.UserID {
 			output = append(output, treatment)
 		}
 	}

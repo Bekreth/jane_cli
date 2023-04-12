@@ -36,6 +36,9 @@ func (janeTime *JaneTime) UnmarshalJSON(bytes []byte) error {
 		return nil
 	}
 	parsedTime, err := time.Parse(dateTimeFormat, timeString)
+	if err != nil {
+		parsedTime, err = time.Parse(dateTimeFormatWithTimeStamp, timeString)
+	}
 	janeTime.Time = parsedTime
 	return err
 }

@@ -14,6 +14,11 @@ import (
 const apiBase2 = "admin/api/v2"
 const apiBase3 = "admin/api/v3"
 
+var commonHeaders = http.Header(map[string][]string{
+	"Accept":       {"application/json"},
+	"Content-Type": {"application/json"},
+})
+
 type Client struct {
 	janeClient *http.Client
 	logger     logger.Logger
