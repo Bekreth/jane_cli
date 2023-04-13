@@ -10,7 +10,7 @@ import (
 )
 
 const username = "-u"
-const clinicDomain = "-d"
+const clinicDomain = "-c"
 
 type initState struct {
 	logger    logger.Logger
@@ -40,49 +40,55 @@ func (initState) Name() string {
 	return "init"
 }
 
-func (init *initState) Initialize() {
-	init.logger.Debugf(
+func (state *initState) Initialize() {
+	state.logger.Debugf(
 		"entering init. available states %v",
-		init.rootState.Name(),
+		state.rootState.Name(),
 	)
-	init.nextState = init
-	init.writer.NewLine()
-	init.writer.WriteString("")
+	state.nextState = state
+	state.writer.NewLine()
+	state.writer.WriteString("")
 }
 
-func (init *initState) HandleKeyinput(character rune, key keyboard.Key) terminal.State {
-	terminal.KeyHandler(key, &init.currentBuffer, init.triggerAutocomplete, init.submit)
+func (state *initState) HandleKeyinput(character rune, key keyboard.Key) terminal.State {
+	terminal.KeyHandler(key, &state.currentBuffer, state.triggerAutocomplete, state.submit)
 
 	if character != 0 {
-		init.currentBuffer += string(character)
+		state.currentBuffer += string(character)
 	}
 
-	init.writer.WriteString(init.currentBuffer)
-	return init.nextState
+	state.writer.WriteString(state.currentBuffer)
+	return state.nextState
 }
 
-func (init *initState) triggerAutocomplete() {
+func (state *initState) triggerAutocomplete() {
 }
 
-func (init *initState) submit() {
-	flags := terminal.ParseFlags(init.currentBuffer)
-	init.logger.Debugf("submitting query flags: %v", flags)
+func (state *initState) submit() {
+	flags := terminal.ParseFlags(state.currentBuffer)
+	state.logger.Debugf("submitting query flags: %v", flags)
+
+	if _, exists := flags["help"]; exists {
+		state.printHelp()
+		state.currentBuffer = ""
+		return
+	}
 
 	missingFlags := map[string]string{}
-	if init.user.Auth.Domain == "" {
+	if state.user.Auth.Domain == "" {
 		missingFlags[clinicDomain] = ""
 	}
-	if init.user.Auth.Username == "" {
+	if state.user.Auth.Username == "" {
 		missingFlags[username] = ""
 	}
 
 	if domain, exists := flags[clinicDomain]; exists {
 		delete(missingFlags, clinicDomain)
-		init.user.Auth.Domain = domain
+		state.user.Auth.Domain = domain
 	}
 	if providedUserName, exists := flags[username]; exists {
 		delete(missingFlags, username)
-		init.user.Auth.Username = providedUserName
+		state.user.Auth.Username = providedUserName
 	}
 
 	if len(missingFlags) != 0 {
@@ -93,13 +99,23 @@ func (init *initState) submit() {
 		if _, exists := missingFlags[username]; exists {
 			missingParameters = append(missingParameters, "username")
 		}
-		init.writer.WriteString(fmt.Sprintf("missing user data %v", missingParameters))
+		state.writer.WriteString(fmt.Sprintf("missing user data %v", missingParameters))
 	}
 
-	err := init.user.SaveUserFile()
+	err := state.user.SaveUserFile()
 	if err != nil {
-		init.logger.Infof("error writing userfile: %v", err)
+		state.logger.Infof("error writing userfile: %v", err)
 	}
 
-	init.nextState = init.rootState
+	state.nextState = state.rootState
+}
+
+func (state *initState) printHelp() {
+	// TODO: automate this list of elements
+	state.writer.WriteStringf(
+		"init should only need to be run the first time your setup your client:\n%v\n%v\n",
+		"\t-u\tusername used to log in to Jane",
+		"\t-c\tthe name of the clinic",
+	)
+	state.writer.NewLine()
 }

@@ -20,6 +20,11 @@ func (state *bookingState) Submit() {
 		return
 	}
 	flags := terminal.ParseFlags(state.currentBuffer)
+	if _, exists := flags["help"]; exists {
+		state.printHelp()
+		state.currentBuffer = ""
+		return
+	}
 	state.logger.Debugf("submitting query flags: %v", flags)
 	missingFlags := map[string]string{
 		"-d": "",
@@ -68,6 +73,17 @@ func (state *bookingState) Submit() {
 	}
 
 	state.booking = builder
+}
+
+func (state *bookingState) printHelp() {
+	// TODO: automate this list of elements
+	state.writer.WriteStringf(
+		"booking command is used to create new bookings:\n%v\n%v\n%v",
+		"\t-d\tWhen to creating the appointment in the format of MM.DDTHH.MM",
+		"\t-t\tThe treatment to use",
+		"\t-p\tThe name of the patient (First, last, or preffered)",
+	)
+	state.writer.NewLine()
 }
 
 func (state *bookingState) parsePatientValue(

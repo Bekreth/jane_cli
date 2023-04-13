@@ -32,56 +32,67 @@ func (rootState) Name() string {
 	return "root"
 }
 
-func (root *rootState) Initialize() {
+func (state *rootState) Initialize() {
 	stateNames := []string{}
-	for key := range root.states {
+	for key := range state.states {
 		stateNames = append(stateNames, key)
 	}
-	root.logger.Debugf(
+	state.logger.Debugf(
 		"entering root. available states: %v",
 		stateNames,
 	)
-	root.currentBuffer = ""
-	root.nextState = root
-	root.writer.NewLine()
-	root.writer.WriteString("")
+	state.currentBuffer = ""
+	state.nextState = state
+	state.writer.NewLine()
+	state.writer.WriteString("")
 }
 
-func (root *rootState) HandleKeyinput(character rune, key keyboard.Key) terminal.State {
-	terminal.KeyHandler(key, &root.currentBuffer, root.triggerAutocomplete, root.Submit)
+func (state *rootState) HandleKeyinput(character rune, key keyboard.Key) terminal.State {
+	terminal.KeyHandler(key, &state.currentBuffer, state.triggerAutocomplete, state.Submit)
 
 	if character != 0 {
-		root.currentBuffer += string(character)
+		state.currentBuffer += string(character)
 	}
-	root.writer.WriteString(root.currentBuffer)
-	return root.nextState
+	state.writer.WriteString(state.currentBuffer)
+	return state.nextState
 }
 
-func (root *rootState) triggerAutocomplete() {
-	for _, stateName := range terminal.MapKeys(root.states) {
-		if strings.HasPrefix(stateName, root.currentBuffer) {
-			root.currentBuffer = stateName
+func (state *rootState) triggerAutocomplete() {
+	for _, stateName := range terminal.MapKeys(state.states) {
+		if strings.HasPrefix(stateName, state.currentBuffer) {
+			state.currentBuffer = stateName
 		}
 	}
 }
 
-func (root *rootState) Submit() {
-	words := strings.Split(root.currentBuffer, " ")
-	for _, stateName := range terminal.MapKeys(root.states) {
-		if words[0] == stateName {
-			// TODO: deal with passing arguments forward
-			//root.arguments = words[1 : len(words)-1]
-			root.nextState = root.states[stateName]
-			return
+func (state *rootState) Submit() {
+	words := strings.Split(state.currentBuffer, " ")
+	if words[0] == "help" {
+		state.printHelp()
+		state.currentBuffer = ""
+	} else {
+		for _, stateName := range terminal.MapKeys(state.states) {
+			if words[0] == stateName {
+				// TODO: deal with passing arguments forward
+				//root.arguments = words[1 : len(words)-1]
+				state.nextState = state.states[stateName]
+				return
+			}
 		}
+		// TODO: Deal with failed command
+		state.currentBuffer = ""
+		state.writer.WriteString(fmt.Sprintf("'%v' is not a valid command", words[0]))
+		state.writer.NewLine()
+		state.nextState = state
 	}
-	// TODO: Deal with failed command
-	root.currentBuffer = ""
-	root.writer.WriteString(fmt.Sprintf("'%v' is not a valid command", words[0]))
-	root.writer.NewLine()
-	root.nextState = root
 }
 
-func (root *rootState) RegisterStates(states map[string]terminal.State) {
-	root.states = states
+func (state *rootState) RegisterStates(states map[string]terminal.State) {
+	state.states = states
+}
+
+func (state *rootState) printHelp() {
+	// TODO: automate this list of elements
+	state.writer.WriteStringf("available commands: auth, init, schedule, booking")
+	state.writer.NewLine()
 }

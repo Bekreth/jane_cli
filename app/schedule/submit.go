@@ -15,6 +15,10 @@ func (state *scheduleState) submit() {
 	if _, exists := flags[".."]; exists {
 		state.nextState = state.rootState
 		return
+	} else if _, exists := flags["help"]; exists {
+		state.currentBuffer = ""
+		state.printHelp()
+		return
 	}
 
 	var startAt schedule.JaneTime
@@ -57,13 +61,22 @@ func (state *scheduleState) submit() {
 				startAt.Format(scheduleTimeFormat),
 				endAt.Format(scheduleTimeFormat),
 			)
-			state.writer.NewLine()
 		} else {
 			state.writer.WriteString("\n" + fetchedSchedule.ToString())
 		}
 		state.currentBuffer = ""
+		state.writer.NewLine()
 		return
 	}
 
 	state.nextState = state.rootState
+}
+
+func (state *scheduleState) printHelp() {
+	// TODO: automate this list of elements
+	state.writer.WriteStringf(
+		"schedule command takes a date arguemnt:\n%v",
+		"\t-d\tMM.DD",
+	)
+	state.writer.NewLine()
 }

@@ -23,7 +23,6 @@ type Appointment struct {
 	EndAt         schedule.JaneTime `json:"end_at"`
 	Break         bool              `json:"break"`
 	LocationID    int               `json:"location_id"`
-	RoomID        int               `json:"room_id"`
 	StaffMemberID int               `json:"staff_member_id"`
 }
 
@@ -49,7 +48,6 @@ func (client Client) CreateAppointment(
 			EndAt:         endDate,
 			Break:         employeeBreak,
 			LocationID:    client.user.LocationID,
-			RoomID:        client.user.RoomID,
 			StaffMemberID: client.user.Auth.UserID,
 		},
 		Book: false,
@@ -72,14 +70,11 @@ func (client Client) CreateAppointment(
 	}
 	request.Header = commonHeaders
 
-	client.logger.Debugf("JSON: \v", string(jsonBody))
-
 	response, err := client.janeClient.Do(request)
 	if err != nil {
 		client.logger.Infof("failed to create appoint in Jane: %v", err)
 		return output, err
 	}
-	client.logger.Debugf("RESPONSE CODE: \v", response.StatusCode)
 
 	if err = checkStatusCode(response); err != nil {
 		client.logger.Infof("bad response from Jane: %v", err)

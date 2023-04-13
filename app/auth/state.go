@@ -42,48 +42,62 @@ func (authState) Name() string {
 	return "auth"
 }
 
-func (auth *authState) Initialize() {
-	auth.logger.Debugf(
+func (state *authState) Initialize() {
+	state.logger.Debugf(
 		"entering authenticator. available states %v",
-		auth.rootState.Name(),
+		state.rootState.Name(),
 	)
-	auth.nextState = auth
-	auth.writer.NewLine()
-	auth.writer.WriteString("")
+	state.nextState = state
+	state.writer.NewLine()
+	state.writer.WriteString("")
 }
 
-func (auth *authState) HandleKeyinput(character rune, key keyboard.Key) terminal.State {
-	terminal.KeyHandler(key, &auth.currentBuffer, auth.triggerAutocomplete, auth.submit)
+func (state *authState) HandleKeyinput(character rune, key keyboard.Key) terminal.State {
+	terminal.KeyHandler(key, &state.currentBuffer, state.triggerAutocomplete, state.submit)
 
 	if character != 0 {
-		auth.currentBuffer += string(character)
+		state.currentBuffer += string(character)
 	}
 
-	auth.writer.WriteString(auth.currentBuffer)
-	return auth.nextState
+	state.writer.WriteString(state.currentBuffer)
+	return state.nextState
 }
 
-func (auth *authState) triggerAutocomplete() {
+func (state *authState) triggerAutocomplete() {
 }
 
-func (auth *authState) submit() {
-	flags := terminal.ParseFlags(auth.currentBuffer)
+func (state *authState) submit() {
+	flags := terminal.ParseFlags(state.currentBuffer)
+	if _, exists := flags["help"]; exists {
+		state.printHelp()
+		state.currentBuffer = ""
+		return
+	}
 	var err error
 	if password, ok := flags[passwordFlag]; ok {
-		err = auth.authenticator.Login(password)
+		err = state.authenticator.Login(password)
 	} else {
-		auth.writer.WriteString("password not provided")
+		state.writer.WriteString("password not provided")
 	}
 
-	auth.currentBuffer = ""
+	state.currentBuffer = ""
 
 	if err != nil {
-		auth.writer.WriteString(fmt.Sprintf("failed to login: %v", err))
-		auth.writer.NewLine()
+		state.writer.WriteString(fmt.Sprintf("failed to login: %v", err))
+		state.writer.NewLine()
 	} else {
-		auth.writer.WriteString("login successful")
-		auth.writer.NewLine()
+		state.writer.WriteString("login successful")
+		state.writer.NewLine()
 	}
 
-	auth.nextState = auth.rootState
+	state.nextState = state.rootState
+}
+
+func (state *authState) printHelp() {
+	// TODO: automate this list of elements
+	state.writer.WriteStringf(
+		"auth is used to login to your account:\n%v",
+		"\t-p\tYour password",
+	)
+	state.writer.NewLine()
 }
