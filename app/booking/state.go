@@ -19,13 +19,12 @@ type bookingDataFetcher interface {
 
 type bookingState struct {
 	logger    logger.Logger
-	writer    terminal.ScreenWriter
 	fetcher   bookingDataFetcher
+	booking   bookingBuilder
 	rootState terminal.State
 
-	currentBuffer string
-	nextState     terminal.State
-	booking       bookingBuilder
+	nextState terminal.State
+	buffer    *terminal.Buffer
 }
 
 func NewState(
@@ -34,11 +33,12 @@ func NewState(
 	fetcher bookingDataFetcher,
 	rootState terminal.State,
 ) terminal.State {
+	buffer := terminal.NewBuffer(writer)
 	return &bookingState{
 		logger:    logger,
-		writer:    writer,
 		fetcher:   fetcher,
 		rootState: rootState,
+		buffer:    &buffer,
 	}
 }
 
@@ -51,19 +51,22 @@ func (state *bookingState) Initialize() {
 		"entering booking. available states %v",
 		state.rootState.Name(),
 	)
-	state.nextState = state
 	state.booking = bookingBuilder{
 		substate: argument,
 	}
-	state.writer.NewLine()
-	state.writer.WriteString("")
+	state.nextState = state
+	state.buffer.Clear()
+	state.buffer.PrintHeader()
 }
 
 func (state *bookingState) triggerAutocomplete() {
 }
 
 func (state *bookingState) ClearBuffer() {
-	state.currentBuffer = ""
-	state.writer.NewLine()
-	state.writer.WriteString("")
+	state.buffer.Clear()
+	state.buffer.PrintHeader()
+}
+
+func (state *bookingState) RepeatLastOutput() {
+	state.buffer.WritePrevious()
 }

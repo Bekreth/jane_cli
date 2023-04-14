@@ -22,13 +22,13 @@ func MapKeys(input map[string]State) []string {
 
 func KeyHandler(
 	key keyboard.Key,
-	buffer *string,
+	buffer *Buffer,
 	triggerAutocomplete func(),
 	submit func(),
 ) {
 	switch key {
 	case keyboard.KeySpace:
-		*buffer += string(" ")
+		buffer.AddCharacter(rune(' '))
 
 	case keyboard.KeyTab:
 		triggerAutocomplete()
@@ -38,10 +38,7 @@ func KeyHandler(
 	case keyboard.KeyBackspace2:
 		fallthrough
 	case keyboard.KeyBackspace:
-		if len(*buffer) != 0 {
-			currentValue := *buffer
-			*buffer = currentValue[0 : len(currentValue)-1]
-		}
+		buffer.RemoveCharacter()
 
 	case keyboard.KeyEnter:
 		submit()

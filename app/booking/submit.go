@@ -15,16 +15,16 @@ const treatmentFlag = "-t"
 const patientFlag = "-p"
 
 func (state *bookingState) Submit() {
-	if state.currentBuffer == ".." {
+	flags := terminal.ParseFlags(state.buffer.Read())
+	state.buffer.Clear()
+	if _, exists := flags[".."]; exists {
 		state.nextState = state.rootState
 		return
-	}
-	flags := terminal.ParseFlags(state.currentBuffer)
-	if _, exists := flags["help"]; exists {
+	} else if _, exists := flags["help"]; exists {
 		state.printHelp()
-		state.currentBuffer = ""
 		return
 	}
+
 	state.logger.Debugf("submitting query flags: %v", flags)
 	missingFlags := map[string]string{
 		"-d": "",
@@ -38,26 +38,22 @@ func (state *bookingState) Submit() {
 	if len(missingFlags) != 0 {
 		joined := strings.Join(terminal.MapKeysString(missingFlags), ", ")
 		notifcation := fmt.Sprintf("missing arguments %v", joined)
-		state.writer.WriteString(notifcation)
-		state.writer.NewLine()
+		state.buffer.WriteStoreString(notifcation)
 		return
 	}
-	state.currentBuffer = ""
 	builder := bookingBuilder{
 		substate: unknown,
 	}
 
 	builder, err := state.parsePatientValue(flags[patientFlag], builder)
 	if err != nil {
-		state.writer.WriteString(err.Error())
-		state.writer.NewLine()
+		state.buffer.WriteStoreString(err.Error())
 		return
 	}
 
 	builder, err = state.parseTreatmentValue(flags[treatmentFlag], builder)
 	if err != nil {
-		state.writer.WriteString(err.Error())
-		state.writer.NewLine()
+		state.buffer.WriteStoreString(err.Error())
 		return
 	}
 
@@ -67,8 +63,7 @@ func (state *bookingState) Submit() {
 		flags[bookingDateFlag],
 	)
 	if err != nil {
-		state.writer.WriteString(err.Error())
-		state.writer.NewLine()
+		state.buffer.WriteStoreString(err.Error())
 		return
 	}
 
@@ -77,13 +72,12 @@ func (state *bookingState) Submit() {
 
 func (state *bookingState) printHelp() {
 	// TODO: automate this list of elements
-	state.writer.WriteStringf(
+	state.buffer.WriteStoreString(fmt.Sprintf(
 		"booking command is used to create new bookings:\n%v\n%v\n%v",
 		"\t-d\tWhen to creating the appointment in the format of MM.DDTHH.MM",
 		"\t-t\tThe treatment to use",
 		"\t-p\tThe name of the patient (First, last, or preffered)",
-	)
-	state.writer.NewLine()
+	))
 }
 
 func (state *bookingState) parsePatientValue(
@@ -95,7 +89,6 @@ func (state *bookingState) parsePatientValue(
 	}
 	patients, err := state.fetcher.FindPatients(patientName)
 	if err != nil {
-		state.nextState = state.rootState
 		return builder, fmt.Errorf("failed to lookup patient %v : %v", patientName, err)
 	}
 	builder.patients = patients
@@ -118,7 +111,6 @@ func (state *bookingState) parseTreatmentValue(
 	}
 	treatments, err := state.fetcher.FindTreatment(treatmentName)
 	if err != nil {
-		state.nextState = state.rootState
 		return builder, fmt.Errorf("failed to lookup treatments %v : %v", treatmentName, err)
 	}
 	builder.treatments = treatments

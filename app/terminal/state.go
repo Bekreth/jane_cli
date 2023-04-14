@@ -7,4 +7,5 @@ type State interface {
 	Initialize()
 	HandleKeyinput(character rune, key keyboard.Key) State
 	ClearBuffer()
+	RepeatLastOutput()
 }

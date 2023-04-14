@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-const humanDateFormat = "Jan 02"
+const humanDateFormat = "Jan 02 15:04"
 const hourMinuteFormat = "15:04"
 const dateTimeFormat = "2006-01-02T15:04:05"
 const dateTimeFormatWithTimeStamp = "2006-01-02T15:04:05-07:00"

@@ -1,6 +1,8 @@
 package schedule
 
 import (
+	"fmt"
+
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/Bekreth/jane_cli/domain/schedule"
@@ -11,12 +13,13 @@ const scheduleTimeFormat = "01.02"
 const dateFlag = "-d"
 
 func (state *scheduleState) submit() {
-	flags := terminal.ParseFlags(state.currentBuffer)
+	flags := terminal.ParseFlags(state.buffer.Read())
+	state.buffer.Clear()
+
 	if _, exists := flags[".."]; exists {
 		state.nextState = state.rootState
 		return
 	} else if _, exists := flags["help"]; exists {
-		state.currentBuffer = ""
 		state.printHelp()
 		return
 	}
@@ -39,9 +42,7 @@ func (state *scheduleState) submit() {
 			flags[dateFlag],
 		)
 		if err != nil {
-			state.currentBuffer = ""
-			state.writer.WriteString(err.Error())
-			state.writer.NewLine()
+			state.buffer.WriteStoreString(err.Error())
 			return
 		}
 		startAt = parsedTime
@@ -52,31 +53,25 @@ func (state *scheduleState) submit() {
 	if timeIsSet {
 		fetchedSchedule, err := state.fetcher.FetchSchedule(startAt, endAt)
 		if err != nil {
-			state.writer.WriteStringf("failed to get schedule: %v", err)
-			state.writer.NewLine()
+			state.buffer.WriteStoreString(fmt.Sprintf("failed to get schedule: %v", err))
 		}
 		if len(fetchedSchedule.Appointments) == 0 {
-			state.writer.WriteStringf(
+			state.buffer.WriteStoreString(fmt.Sprintf(
 				"no shift between %v and %v",
 				startAt.Format(scheduleTimeFormat),
 				endAt.Format(scheduleTimeFormat),
-			)
+			))
 		} else {
-			state.writer.WriteString("\n" + fetchedSchedule.ToString())
+			state.buffer.WriteStoreString("\n" + fetchedSchedule.ToString())
 		}
-		state.currentBuffer = ""
-		state.writer.NewLine()
 		return
 	}
-
-	state.nextState = state.rootState
 }
 
 func (state *scheduleState) printHelp() {
 	// TODO: automate this list of elements
-	state.writer.WriteStringf(
+	state.buffer.WriteStoreString(fmt.Sprintf(
 		"schedule command takes a date arguemnt:\n%v",
 		"\t-d\tMM.DD",
-	)
-	state.writer.NewLine()
+	))
 }

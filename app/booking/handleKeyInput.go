@@ -2,6 +2,7 @@ package booking
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain"
@@ -16,28 +17,26 @@ func (state *bookingState) HandleKeyinput(
 	case bookingConfirmation:
 		state.confirmBooking(character)
 	case treatmentSelector:
-		state.booking.targetTreatment = elementSelector[domain.Treatment](
+		state.booking.targetTreatment = elementSelector(
 			character,
 			state.booking.treatments,
-			state.writer,
+			state.buffer,
 		)
 	case patientSelector:
-		state.booking.targetPatient = elementSelector[domain.Patient](
+		state.booking.targetPatient = elementSelector(
 			character,
 			state.booking.patients,
-			state.writer,
+			state.buffer,
 		)
 	default:
 		terminal.KeyHandler(
 			key,
-			&state.currentBuffer,
+			state.buffer,
 			state.triggerAutocomplete,
 			state.Submit,
 		)
-		if character != 0 {
-			state.currentBuffer += string(character)
-		}
-		state.writer.WriteString(state.currentBuffer)
+		state.buffer.AddCharacter(character)
+		state.buffer.Write()
 	}
 
 	if state.booking.substate != argument {
@@ -52,24 +51,30 @@ func (state *bookingState) HandleKeyinput(
 
 	switch state.booking.substate {
 	case bookingConfirmation:
-		state.writer.WriteStringf(
+		state.buffer.WriteStoreString(fmt.Sprintf(
 			"Book %v for a %v at %v? (Y/n)",
 			state.booking.targetPatient.PreferredFirstName,
 			state.booking.targetTreatment.Name,
 			state.booking.appointmentDate.HumanDate(),
-		)
+		))
 	case treatmentSelector:
-		treatmentList := "Select intended treatment\n"
+		treatmentList := []string{"Select intended treatment"}
 		for i, treatment := range state.booking.treatments {
-			treatmentList += fmt.Sprintf("%v: %v \n", i+1, treatment.Name)
+			treatmentList = append(
+				treatmentList,
+				fmt.Sprintf("%v: %v", i+1, treatment.Name),
+			)
 		}
-		state.writer.WriteString(treatmentList)
+		state.buffer.WriteStoreString(strings.Join(treatmentList, "\n"))
 	case patientSelector:
-		patientList := "Select intended patient\n"
+		patientList := []string{"Select intended patient"}
 		for i, patient := range state.booking.patients {
-			patientList += fmt.Sprintf("%v: %v %v \n", i+1, patient.FirstName, patient.LastName)
+			patientList = append(
+				patientList,
+				fmt.Sprintf("%v: %v %v", i+1, patient.FirstName, patient.LastName),
+			)
 		}
-		state.writer.WriteString(patientList)
+		state.buffer.WriteStoreString(strings.Join(patientList, "\n"))
 	default:
 	}
 

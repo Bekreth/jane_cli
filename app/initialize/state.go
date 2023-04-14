@@ -1,6 +1,8 @@
 package initialize
 
 import (
+	"fmt"
+
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
@@ -12,12 +14,11 @@ const clinicDomain = "-c"
 
 type initState struct {
 	logger    logger.Logger
-	writer    terminal.ScreenWriter
 	user      *domain.User
 	rootState terminal.State
 
-	currentBuffer string
-	nextState     terminal.State
+	nextState terminal.State
+	buffer    *terminal.Buffer
 }
 
 func NewState(
@@ -26,11 +27,12 @@ func NewState(
 	user *domain.User,
 	rootState terminal.State,
 ) terminal.State {
+	buffer := terminal.NewBuffer(writer)
 	return &initState{
 		logger:    logger,
-		writer:    writer,
 		user:      user,
 		rootState: rootState,
+		buffer:    &buffer,
 	}
 }
 
@@ -44,18 +46,14 @@ func (state *initState) Initialize() {
 		state.rootState.Name(),
 	)
 	state.nextState = state
-	state.writer.NewLine()
-	state.writer.WriteString("")
+	state.buffer.Clear()
+	state.buffer.PrintHeader()
 }
 
 func (state *initState) HandleKeyinput(character rune, key keyboard.Key) terminal.State {
-	terminal.KeyHandler(key, &state.currentBuffer, state.triggerAutocomplete, state.submit)
-
-	if character != 0 {
-		state.currentBuffer += string(character)
-	}
-
-	state.writer.WriteString(state.currentBuffer)
+	terminal.KeyHandler(key, state.buffer, state.triggerAutocomplete, state.submit)
+	state.buffer.AddCharacter(character)
+	state.buffer.Write()
 	return state.nextState
 }
 
@@ -63,17 +61,19 @@ func (state *initState) triggerAutocomplete() {
 }
 
 func (state *initState) ClearBuffer() {
-	state.currentBuffer = ""
-	state.writer.NewLine()
-	state.writer.WriteString("")
+	state.buffer.Clear()
+	state.buffer.PrintHeader()
+}
+
+func (state *initState) RepeatLastOutput() {
+	state.buffer.WritePrevious()
 }
 
 func (state *initState) printHelp() {
 	// TODO: automate this list of elements
-	state.writer.WriteStringf(
-		"init should only need to be run the first time your setup your client:\n%v\n%v\n",
+	state.buffer.WriteStoreString(fmt.Sprintf(
+		"init should only need to be run the first time your setup your client:\n%v\n%v",
 		"\t-u\tusername used to log in to Jane",
 		"\t-c\tthe name of the clinic",
-	)
-	state.writer.NewLine()
+	))
 }

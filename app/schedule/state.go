@@ -31,12 +31,11 @@ var autocompletes = map[string]func() (schedule.JaneTime, schedule.JaneTime){
 
 type scheduleState struct {
 	logger    logger.Logger
-	writer    terminal.ScreenWriter
 	fetcher   scheduleFetcher
 	rootState terminal.State
 
-	currentBuffer string
-	nextState     terminal.State
+	buffer    *terminal.Buffer
+	nextState terminal.State
 }
 
 func NewState(
@@ -45,11 +44,12 @@ func NewState(
 	fetcher scheduleFetcher,
 	rootState terminal.State,
 ) terminal.State {
+	buffer := terminal.NewBuffer(writer)
 	return &scheduleState{
 		logger:    logger,
-		writer:    writer,
 		fetcher:   fetcher,
 		rootState: rootState,
+		buffer:    &buffer,
 	}
 }
 
@@ -62,48 +62,37 @@ func (state *scheduleState) Initialize() {
 		"entering schedule. available states %v",
 		state.rootState.Name(),
 	)
-	state.currentBuffer = ""
 	state.nextState = state
-	state.writer.NewLine()
-	state.writer.WriteString("")
+	state.buffer.Clear()
+	state.buffer.PrintHeader()
 }
 
 func (state *scheduleState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
 ) terminal.State {
-	terminal.KeyHandler(
-		key,
-		&state.currentBuffer,
-		state.triggerAutocomplete,
-		state.submit,
-	)
-
-	if character != 0 {
-		state.currentBuffer += string(character)
-	}
-
-	state.writer.WriteString(state.currentBuffer)
+	terminal.KeyHandler(key, state.buffer, state.triggerAutocomplete, state.submit)
+	state.buffer.AddCharacter(character)
+	state.buffer.Write()
 	return state.nextState
 }
 
-func (state *scheduleState) shutdown() {
-	state.currentBuffer = ""
-}
-
 func (state *scheduleState) triggerAutocomplete() {
-	words := strings.Split(state.currentBuffer, " ")
+	words := strings.Split(state.buffer.Read(), " ")
 
 	for key := range autocompletes {
 		if strings.HasPrefix(key, words[len(words)-1]) {
 			arguments := append(words[0:len(words)-1], key)
-			state.currentBuffer = strings.Join(arguments, " ")
+			state.buffer.WriteString(strings.Join(arguments, " "))
 		}
 	}
 }
 
 func (state *scheduleState) ClearBuffer() {
-	state.currentBuffer = ""
-	state.writer.NewLine()
-	state.writer.WriteString("")
+	state.buffer.Clear()
+	state.buffer.PrintHeader()
+}
+
+func (state *scheduleState) RepeatLastOutput() {
+	state.buffer.WritePrevious()
 }

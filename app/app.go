@@ -100,6 +100,9 @@ func (app *Application) HandleKeyinput(character rune, key keyboard.Key) bool {
 	case keyboard.KeyCtrlU:
 		app.state.ClearBuffer()
 		return true
+	case keyboard.KeyCtrlR:
+		app.state.RepeatLastOutput()
+		return true
 	}
 
 	nextState := app.state.HandleKeyinput(character, key)

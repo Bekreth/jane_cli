@@ -38,5 +38,5 @@ func (cache Cache) FindTreatment(treatmentName string) ([]domain.Treatment, erro
 }
 
 func matchingTreatment(treatment domain.Treatment, nameToCheck string) bool {
-	return strings.Contains(treatment.Name, nameToCheck)
+	return strings.Contains(strings.ToLower(treatment.Name), strings.ToLower(nameToCheck))
 }

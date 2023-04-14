@@ -1,6 +1,7 @@
 package booking
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/Bekreth/jane_cli/app/terminal"
@@ -10,24 +11,22 @@ import (
 func elementSelector[R domain.Treatment | domain.Patient](
 	character rune,
 	input []R,
-	writer terminal.ScreenWriter,
+	buffer *terminal.Buffer,
 ) R {
 	index, err := strconv.Atoi(string(character))
 	if err != nil {
-		writer.WriteStringf(
+		buffer.WriteStoreString(fmt.Sprintf(
 			"selector value of %v unacceptable. select a value between 1 and %v",
 			string(character),
 			len(input),
-		)
-		writer.NewLine()
+		))
 	}
 	if index > len(input) {
-		writer.WriteStringf(
+		buffer.WriteStoreString(fmt.Sprintf(
 			"selector value of %v is too large.  select a value between 1 and %v",
 			index,
 			len(input),
-		)
-		writer.NewLine()
+		))
 	}
 	return input[index-1]
 }
