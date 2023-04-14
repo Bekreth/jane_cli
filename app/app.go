@@ -88,8 +88,6 @@ func NewApplication(
 	}
 }
 
-const ctrlC = rune(0x03)
-
 func (app *Application) HandleKeyinput(character rune, key keyboard.Key) bool {
 
 	switch key {
@@ -99,6 +97,9 @@ func (app *Application) HandleKeyinput(character rune, key keyboard.Key) bool {
 		app.writer.WriteString("Shutting down Jane CLI")
 		app.writer.NewLine()
 		return false
+	case keyboard.KeyCtrlU:
+		app.state.ClearBuffer()
+		return true
 	}
 
 	nextState := app.state.HandleKeyinput(character, key)

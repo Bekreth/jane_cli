@@ -1,7 +1,6 @@
 package terminal
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -51,7 +50,6 @@ func TestParseFlags(t *testing.T) {
 	for _, trial := range trials {
 		t.Run(trial.description, func(tt *testing.T) {
 			actualOuptut := ParseFlags(trial.input)
-			fmt.Println("actual", actualOuptut)
 			assert.Equal(tt, trial.expectedOutput, actualOuptut)
 		})
 	}

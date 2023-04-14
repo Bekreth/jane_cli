@@ -1,7 +1,6 @@
 package root
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/Bekreth/jane_cli/app/terminal"
@@ -81,7 +80,7 @@ func (state *rootState) Submit() {
 		}
 		// TODO: Deal with failed command
 		state.currentBuffer = ""
-		state.writer.WriteString(fmt.Sprintf("'%v' is not a valid command", words[0]))
+		state.writer.WriteStringf("'%v' is not a valid command", words[0])
 		state.writer.NewLine()
 		state.nextState = state
 	}
@@ -89,6 +88,12 @@ func (state *rootState) Submit() {
 
 func (state *rootState) RegisterStates(states map[string]terminal.State) {
 	state.states = states
+}
+
+func (state *rootState) ClearBuffer() {
+	state.currentBuffer = ""
+	state.writer.NewLine()
+	state.writer.WriteString("")
 }
 
 func (state *rootState) printHelp() {

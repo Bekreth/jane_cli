@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"fmt"
-
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/logger"
 	"github.com/eiannone/keyboard"
@@ -83,7 +81,7 @@ func (state *authState) submit() {
 	state.currentBuffer = ""
 
 	if err != nil {
-		state.writer.WriteString(fmt.Sprintf("failed to login: %v", err))
+		state.writer.WriteStringf("failed to login: %v", err)
 		state.writer.NewLine()
 	} else {
 		state.writer.WriteString("login successful")
@@ -91,6 +89,12 @@ func (state *authState) submit() {
 	}
 
 	state.nextState = state.rootState
+}
+
+func (state *authState) ClearBuffer() {
+	state.currentBuffer = ""
+	state.writer.NewLine()
+	state.writer.WriteString("")
 }
 
 func (state *authState) printHelp() {

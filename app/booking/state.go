@@ -46,18 +46,24 @@ func (bookingState) Name() string {
 	return "booking"
 }
 
-func (booking *bookingState) Initialize() {
-	booking.logger.Debugf(
+func (state *bookingState) Initialize() {
+	state.logger.Debugf(
 		"entering booking. available states %v",
-		booking.rootState.Name(),
+		state.rootState.Name(),
 	)
-	booking.nextState = booking
-	booking.booking = bookingBuilder{
+	state.nextState = state
+	state.booking = bookingBuilder{
 		substate: argument,
 	}
-	booking.writer.NewLine()
-	booking.writer.WriteString("")
+	state.writer.NewLine()
+	state.writer.WriteString("")
 }
 
-func (booking *bookingState) triggerAutocomplete() {
+func (state *bookingState) triggerAutocomplete() {
+}
+
+func (state *bookingState) ClearBuffer() {
+	state.currentBuffer = ""
+	state.writer.NewLine()
+	state.writer.WriteString("")
 }
