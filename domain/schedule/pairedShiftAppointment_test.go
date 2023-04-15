@@ -203,6 +203,7 @@ func TestPairedShiftAppointment(t *testing.T) {
 	for _, trial := range trials {
 		t.Run(trial.description, func(tt *testing.T) {
 			trial.pairUndertest.include = includeAll
+			trial.pairUndertest.showPassedAppointment = true
 			actualOutput := trial.pairUndertest.ToString()
 			assert.Equal(tt, trial.expectedOutput, actualOutput)
 		})

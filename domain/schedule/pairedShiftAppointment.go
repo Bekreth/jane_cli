@@ -8,9 +8,10 @@ import (
 )
 
 type pairedShiftAppointment struct {
-	shift       Shift
-	appointment []Appointment
-	include     map[AppointmentType]interface{}
+	shift                 Shift
+	appointment           []Appointment
+	showPassedAppointment bool
+	include               map[AppointmentType]interface{}
 }
 
 func (pair pairedShiftAppointment) ToString() string {
@@ -45,6 +46,9 @@ func (pair pairedShiftAppointment) ToString() string {
 	appointmentString := []string{}
 	for _, appointment := range updatedAppointments {
 		if _, exists := pair.include[appointment.State]; exists {
+			if !pair.showPassedAppointment && appointment.HasPassed() {
+				continue
+			}
 			appointmentString = append(appointmentString, appointment.ToString())
 		}
 	}

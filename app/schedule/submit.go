@@ -15,6 +15,7 @@ const dateFlag = "-d"
 const appointmentFlag = "-a"
 const breakFlag = "-b"
 const openFlag = "-o"
+const showAllFlag = "-s"
 
 func (state *scheduleState) submit() {
 	flags := terminal.ParseFlags(state.buffer.Read())
@@ -68,6 +69,10 @@ func (state *scheduleState) submit() {
 				endAt.Format(scheduleTimeFormat),
 			))
 		} else {
+			if _, exists := flags[showAllFlag]; exists {
+				state.logger.Debugf("show all appointments")
+				fetchedSchedule = fetchedSchedule.ShowAll()
+			}
 			output := fetchedSchedule.OnlyInclude(flagsToAppointmentFilters(flags)).ToString()
 			state.buffer.WriteStoreString("\n" + output)
 		}
@@ -121,6 +126,7 @@ func (state *scheduleState) printHelp() {
 		"\t-o\tflag to include only the openings in the schedule",
 		"\t-b\tflag to include only the breaks in the schedule",
 		"\t-a\tflag to include only the appointments in the schedule",
+		"\t-s\tshow all appointments, not just those that are upcomming",
 	}, "\n")
 	state.buffer.WriteStoreString(helpString)
 }

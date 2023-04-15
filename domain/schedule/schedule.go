@@ -8,12 +8,18 @@ type Schedule struct {
 	Appointments []Appointment `json:"appointments"`
 	Shifts       []Shift       `json:"shifts"`
 	include      map[AppointmentType]interface{}
+	showAll      bool
 }
 
 func New() Schedule {
 	return Schedule{
 		include: make(map[AppointmentType]interface{}),
 	}
+}
+
+func (schedule Schedule) ShowAll() Schedule {
+	schedule.showAll = true
+	return schedule
 }
 
 func (schedule Schedule) OnlyInclude(include []AppointmentType) Schedule {
@@ -26,6 +32,7 @@ func (schedule Schedule) OnlyInclude(include []AppointmentType) Schedule {
 
 func (schedule Schedule) ToString() string {
 	pairings := map[int]pairedShiftAppointment{}
+	showPassedAppointment := schedule.showAll
 
 	for _, shift := range schedule.Shifts {
 		pairings[shift.StartAt.Day()] = pairedShiftAppointment{
@@ -37,9 +44,10 @@ func (schedule Schedule) ToString() string {
 		pair := pairings[appointment.StartAt.Day()]
 		updatedAppointment := append(pair.appointment, appointment)
 		pairings[appointment.StartAt.Day()] = pairedShiftAppointment{
-			shift:       pair.shift,
-			appointment: updatedAppointment,
-			include:     schedule.include,
+			shift:                 pair.shift,
+			appointment:           updatedAppointment,
+			include:               schedule.include,
+			showPassedAppointment: showPassedAppointment,
 		}
 	}
 

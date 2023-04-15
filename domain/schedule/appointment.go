@@ -2,6 +2,7 @@ package schedule
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Bekreth/jane_cli/domain"
 )
@@ -20,6 +21,10 @@ type Appointment struct {
 	EndAt   JaneTime        `json:"end_at"`
 	State   AppointmentType `json:"state"`
 	Patient domain.Patient  `json:"patient"`
+}
+
+func (appointment Appointment) HasPassed() bool {
+	return time.Now().After(appointment.StartAt.Time)
 }
 
 func (appointment Appointment) ToString() string {
