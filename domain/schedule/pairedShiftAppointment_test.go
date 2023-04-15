@@ -18,6 +18,13 @@ func makeTime(t *testing.T, timeAsString string) JaneTime {
 
 func TestPairedShiftAppointment(t *testing.T) {
 
+	includeAll := map[AppointmentType]interface{}{
+		Booked:      "",
+		Arrived:     "",
+		Unscheduled: "",
+		Break:       "",
+	}
+
 	trials := []struct {
 		description    string
 		pairUndertest  pairedShiftAppointment
@@ -54,10 +61,10 @@ func TestPairedShiftAppointment(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: `shift from 09:00 to 17:00
-* booked from 09:00 to 12:00 with Roy
-* break from 12:00 to 13:00
-* booked from 13:00 to 17:00 with Mary`,
+			expectedOutput: `shift on Jan 01 from 09:00 to 17:00
+09:00 to 12:00: booked with Roy
+12:00 to 13:00: break
+13:00 to 17:00: booked with Mary`,
 		},
 		{
 			description: "Shift with a hole in the middle of the schedule",
@@ -85,10 +92,10 @@ func TestPairedShiftAppointment(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: `shift from 09:00 to 17:00
-* booked from 09:00 to 12:00 with Roy
-* unscheduled from 12:00 to 13:00
-* booked from 13:00 to 17:00 with Mary`,
+			expectedOutput: `shift on Jan 01 from 09:00 to 17:00
+09:00 to 12:00: booked with Roy
+12:00 to 13:00: unscheduled
+13:00 to 17:00: booked with Mary`,
 		},
 		{
 			description: "Shift with a hole at the end of the schedule",
@@ -116,10 +123,10 @@ func TestPairedShiftAppointment(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: `shift from 09:00 to 17:00
-* booked from 09:00 to 12:00 with Roy
-* booked from 12:00 to 14:00 with Mary
-* unscheduled from 14:00 to 17:00`,
+			expectedOutput: `shift on Jan 01 from 09:00 to 17:00
+09:00 to 12:00: booked with Roy
+12:00 to 14:00: booked with Mary
+14:00 to 17:00: unscheduled`,
 		},
 		{
 			description: "Shift with a hole at the beggining of the schedule",
@@ -147,10 +154,10 @@ func TestPairedShiftAppointment(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: `shift from 09:00 to 17:00
-* unscheduled from 09:00 to 10:00
-* booked from 10:00 to 12:00 with Roy
-* booked from 12:00 to 17:00 with Mary`,
+			expectedOutput: `shift on Jan 01 from 09:00 to 17:00
+09:00 to 10:00: unscheduled
+10:00 to 12:00: booked with Roy
+12:00 to 17:00: booked with Mary`,
 		},
 		{
 			description: "Schedule out of schedule",
@@ -186,15 +193,16 @@ func TestPairedShiftAppointment(t *testing.T) {
 					},
 				},
 			},
-			expectedOutput: `shift from 09:00 to 17:00
-* booked from 09:00 to 10:00 with Mark
-* booked from 10:00 to 12:00 with Roy
-* booked from 12:00 to 17:00 with Mary`,
+			expectedOutput: `shift on Jan 01 from 09:00 to 17:00
+09:00 to 10:00: booked with Mark
+10:00 to 12:00: booked with Roy
+12:00 to 17:00: booked with Mary`,
 		},
 	}
 
 	for _, trial := range trials {
 		t.Run(trial.description, func(tt *testing.T) {
+			trial.pairUndertest.include = includeAll
 			actualOutput := trial.pairUndertest.ToString()
 			assert.Equal(tt, trial.expectedOutput, actualOutput)
 		})

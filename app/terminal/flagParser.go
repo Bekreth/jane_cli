@@ -10,14 +10,16 @@ func ParseFlags(input string) map[string]string {
 	words := strings.Split(input, " ")
 	previousKey := ""
 	for _, word := range words {
-		if previousKey != "" {
+
+		isFlag := strings.HasPrefix(word, "-")
+		if isFlag {
+			output[word] = ""
+			previousKey = word
+		} else if previousKey == "" {
+			output[word] = ""
+		} else {
 			output[previousKey] = word
 			previousKey = ""
-		} else {
-			output[word] = ""
-		}
-		if strings.HasPrefix(word, "-") {
-			previousKey = word
 		}
 	}
 

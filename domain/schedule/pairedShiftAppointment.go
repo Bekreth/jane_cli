@@ -10,6 +10,7 @@ import (
 type pairedShiftAppointment struct {
 	shift       Shift
 	appointment []Appointment
+	include     map[AppointmentType]interface{}
 }
 
 func (pair pairedShiftAppointment) ToString() string {
@@ -26,7 +27,7 @@ func (pair pairedShiftAppointment) ToString() string {
 			updatedAppointments = append(updatedAppointments, Appointment{
 				StartAt: JaneTime{timePointer},
 				EndAt:   appointment.StartAt,
-				State:   "unscheduled",
+				State:   Unscheduled,
 			})
 		}
 		updatedAppointments = append(updatedAppointments, appointment)
@@ -37,13 +38,15 @@ func (pair pairedShiftAppointment) ToString() string {
 		updatedAppointments = append(updatedAppointments, Appointment{
 			StartAt: JaneTime{timePointer},
 			EndAt:   pair.shift.EndAt,
-			State:   "unscheduled",
+			State:   Unscheduled,
 		})
 	}
 
 	appointmentString := []string{}
 	for _, appointment := range updatedAppointments {
-		appointmentString = append(appointmentString, appointment.ToString())
+		if _, exists := pair.include[appointment.State]; exists {
+			appointmentString = append(appointmentString, appointment.ToString())
+		}
 	}
 
 	return fmt.Sprintf(

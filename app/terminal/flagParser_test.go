@@ -37,6 +37,14 @@ func TestParseFlags(t *testing.T) {
 			},
 		},
 		{
+			description: "flags without arguments",
+			input:       "-flag1 -flag2",
+			expectedOutput: map[string]string{
+				"-flag1": "",
+				"-flag2": "",
+			},
+		},
+		{
 			description: "flags and values",
 			input:       "other1 -flag1 value1 -flag2 value2",
 			expectedOutput: map[string]string{

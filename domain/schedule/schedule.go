@@ -7,6 +7,21 @@ import (
 type Schedule struct {
 	Appointments []Appointment `json:"appointments"`
 	Shifts       []Shift       `json:"shifts"`
+	include      map[AppointmentType]interface{}
+}
+
+func New() Schedule {
+	return Schedule{
+		include: make(map[AppointmentType]interface{}),
+	}
+}
+
+func (schedule Schedule) OnlyInclude(include []AppointmentType) Schedule {
+	output := schedule
+	for _, appointmentType := range include {
+		output.include[appointmentType] = struct{}{}
+	}
+	return output
 }
 
 func (schedule Schedule) ToString() string {
@@ -24,6 +39,7 @@ func (schedule Schedule) ToString() string {
 		pairings[appointment.StartAt.Day()] = pairedShiftAppointment{
 			shift:       pair.shift,
 			appointment: updatedAppointment,
+			include:     schedule.include,
 		}
 	}
 
@@ -35,6 +51,7 @@ func (schedule Schedule) ToString() string {
 	return strings.Join(pairingStrings, "\n\n")
 }
 
+// TODO: Extract into its own file and have it deserialized
 type Shift struct {
 	StartAt JaneTime `json:"start_at"`
 	EndAt   JaneTime `json:"end_at"`

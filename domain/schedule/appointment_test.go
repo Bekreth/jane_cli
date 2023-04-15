@@ -30,7 +30,7 @@ func TestToString(t *testing.T) {
 				EndAt:   JaneTime{endAt},
 				State:   "unscheduled",
 			},
-			expectedOutput: "* unscheduled from 12:12 to 15:15",
+			expectedOutput: "12:12 to 15:15: unscheduled",
 		},
 		{
 			description: "Appointment with person",
@@ -42,7 +42,7 @@ func TestToString(t *testing.T) {
 					PreferredFirstName: "Billy",
 				},
 			},
-			expectedOutput: "* booked from 12:12 to 15:15 with Billy",
+			expectedOutput: "12:12 to 15:15: booked with Billy",
 		},
 	}
 

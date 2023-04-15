@@ -6,11 +6,20 @@ import (
 	"github.com/Bekreth/jane_cli/domain"
 )
 
+type AppointmentType string
+
+const (
+	Booked      AppointmentType = "booked"
+	Arrived     AppointmentType = "arrived"
+	Break       AppointmentType = "break"
+	Unscheduled AppointmentType = "unscheduled"
+)
+
 type Appointment struct {
-	StartAt JaneTime       `json:"start_at"`
-	EndAt   JaneTime       `json:"end_at"`
-	State   string         `json:"state"`
-	Patient domain.Patient `json:"patient"`
+	StartAt JaneTime        `json:"start_at"`
+	EndAt   JaneTime        `json:"end_at"`
+	State   AppointmentType `json:"state"`
+	Patient domain.Patient  `json:"patient"`
 }
 
 func (appointment Appointment) ToString() string {

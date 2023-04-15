@@ -2,6 +2,7 @@ package schedule
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/app/util"
@@ -11,6 +12,9 @@ import (
 const scheduleTimeYearFormat = "2006.01.02"
 const scheduleTimeFormat = "01.02"
 const dateFlag = "-d"
+const appointmentFlag = "-a"
+const breakFlag = "-b"
+const openFlag = "-o"
 
 func (state *scheduleState) submit() {
 	flags := terminal.ParseFlags(state.buffer.Read())
@@ -23,6 +27,8 @@ func (state *scheduleState) submit() {
 		state.printHelp()
 		return
 	}
+
+	setIncludeFlags(flags)
 
 	var startAt schedule.JaneTime
 	var endAt schedule.JaneTime
@@ -62,16 +68,59 @@ func (state *scheduleState) submit() {
 				endAt.Format(scheduleTimeFormat),
 			))
 		} else {
-			state.buffer.WriteStoreString("\n" + fetchedSchedule.ToString())
+			output := fetchedSchedule.OnlyInclude(flagsToAppointmentFilters(flags)).ToString()
+			state.buffer.WriteStoreString("\n" + output)
 		}
 		return
 	}
 }
 
+func setIncludeFlags(input map[string]string) {
+	flagSet := false
+	if _, exists := input[openFlag]; exists {
+		flagSet = true
+	}
+	if _, exists := input[breakFlag]; exists {
+		flagSet = true
+	}
+	if _, exists := input[appointmentFlag]; exists {
+		flagSet = true
+	}
+
+	if !flagSet {
+		input[openFlag] = string(schedule.Unscheduled)
+		input[breakFlag] = string(schedule.Break)
+		input[appointmentFlag] = string(schedule.Booked)
+	}
+}
+
+func flagsToAppointmentFilters(flags map[string]string) []schedule.AppointmentType {
+	output := []schedule.AppointmentType{}
+	if _, exists := flags[openFlag]; exists {
+		output = append(output, schedule.Unscheduled)
+	}
+	if _, exists := flags[breakFlag]; exists {
+		output = append(output, schedule.Break)
+	}
+	if _, exists := flags[appointmentFlag]; exists {
+		output = append(output, schedule.Booked)
+		output = append(output, schedule.Arrived)
+	}
+	return output
+}
+
 func (state *scheduleState) printHelp() {
 	// TODO: automate this list of elements
-	state.buffer.WriteStoreString(fmt.Sprintf(
-		"schedule command takes a date arguemnt:\n%v",
-		"\t-d\tMM.DD",
-	))
+	helpString := strings.Join([]string{
+		"",
+		"available commands for schedule:",
+		"\ttoday\t\tthe schedule for today which excluding appointments that have happened",
+		"\ttomorrow\tthe schedulee for tomorrow",
+		"available flags for schedule:",
+		"\t-d\tspecific day to lookup the schedule for. Takes date as 'MM.DD'",
+		"\t-o\tflag to include only the openings in the schedule",
+		"\t-b\tflag to include only the breaks in the schedule",
+		"\t-a\tflag to include only the appointments in the schedule",
+	}, "\n")
+	state.buffer.WriteStoreString(helpString)
 }

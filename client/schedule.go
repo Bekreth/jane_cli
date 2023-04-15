@@ -59,7 +59,7 @@ func (client Client) FetchSchedule(
 		client.logger.Infof("failed to read response body: %v", err)
 	}
 
-	fetchedSchedule := schedule.Schedule{}
+	fetchedSchedule := schedule.New()
 	err = json.Unmarshal(bytes, &fetchedSchedule)
 	if err != nil {
 		client.logger.Infof("failed to read schedule: %v", err)
