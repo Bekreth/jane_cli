@@ -63,7 +63,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	cache, err := cache.NewCache(logger.AddContext("service", "cache"), client, client)
+	cache, err := cache.NewCache(
+		logger.AddContext("service", "cache"),
+		client,
+	)
 
 	if err != nil {
 		logger.Infof("failed to build patient cache: %v", err)

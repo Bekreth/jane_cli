@@ -26,11 +26,28 @@ type Appointment struct {
 	StaffMemberID int               `json:"staff_member_id"`
 }
 
+type CancelRequest struct {
+	WithNotifcations bool   `json:"with_notifications"`
+	SendWlns         bool   `json:"send_wlns"`
+	CancelledReason  string `json:"cancelled_reason"`
+}
+
 func (client Client) buildAppointmentRequest() string {
-	return fmt.Sprintf("%v/%v/%v",
+	return fmt.Sprintf(
+		"%v/%v/%v",
 		client.getDomain(),
 		apiBase2,
 		appointmentApi,
+	)
+}
+
+func (client Client) buildCancelRequest(appointmentID int) string {
+	return fmt.Sprintf(
+		"%v/%v/%v/%v",
+		client.getDomain(),
+		apiBase2,
+		appointmentApi,
+		appointmentID,
 	)
 }
 
@@ -39,7 +56,7 @@ func (client Client) CreateAppointment(
 	endDate schedule.JaneTime,
 	employeeBreak bool,
 ) (Appointment, error) {
-	client.logger.Debugf("creating appointment")
+	client.logger.Infof("creating appointment")
 	output := Appointment{}
 
 	requestBody := AppointmentRequest{
@@ -77,7 +94,7 @@ func (client Client) CreateAppointment(
 	}
 
 	if err = checkStatusCode(response); err != nil {
-		client.logger.Infof("bad response from Jane: %v", err)
+		client.logger.Infof("bad response from Jane %v: %v", response.StatusCode, err)
 		return output, err
 	}
 	bytes, err := io.ReadAll(response.Body)
@@ -96,4 +113,49 @@ func (client Client) CreateAppointment(
 	client.logger.Infof("created appointment %v at %v", output.ID, output.StartAt)
 
 	return output, nil
+}
+
+func (client Client) CancelAppointment(appointmentID int, cancelMessage string) error {
+	client.logger.Infof("canceling appointment %v", appointmentID)
+
+	requestBody := CancelRequest{
+		WithNotifcations: true,
+		SendWlns:         true,
+		CancelledReason:  cancelMessage,
+	}
+
+	jsonBody, err := json.Marshal(requestBody)
+	if err != nil {
+		client.logger.Infof("failed to serialize booking request")
+		return err
+	}
+
+	request, err := http.NewRequest(
+		http.MethodDelete,
+		client.buildCancelRequest(appointmentID),
+		strings.NewReader(string(jsonBody)),
+	)
+	if err != nil {
+		client.logger.Infof(
+			"failed to serialize appointment cancel request: %v",
+			requestBody,
+		)
+		return err
+	}
+	request.Header = commonHeaders
+
+	response, err := client.janeClient.Do(request)
+	if err != nil {
+		client.logger.Infof("failed to cancel appoint in Jane: %v", err)
+		return err
+	}
+
+	client.logger.Debugf("HEADER: %v ", response.StatusCode)
+	if err = checkStatusCode(response); err != nil {
+		client.logger.Infof("bad response from Jane %v: %v", response.StatusCode, err)
+		return err
+	}
+	client.logger.Infof("succesfully canceled appointment %v", appointmentID)
+
+	return nil
 }

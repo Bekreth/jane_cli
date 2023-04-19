@@ -1,6 +1,8 @@
 package booking
 
 import (
+	"strings"
+
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/domain/schedule"
@@ -10,11 +12,17 @@ import (
 type bookingDataFetcher interface {
 	FindPatients(patientName string) ([]domain.Patient, error)
 	FindTreatment(treatmentName string) ([]domain.Treatment, error)
+	FindAppointments(
+		startDate schedule.JaneTime,
+		endDate schedule.JaneTime,
+		patientName string,
+	) ([]schedule.Appointment, error)
 	BookPatient(
 		patient domain.Patient,
 		treatment domain.Treatment,
 		startTime schedule.JaneTime,
 	) error
+	CancelAppointment(appointmentID int, cancelMessage string) error
 }
 
 type bookingState struct {
@@ -53,13 +61,26 @@ func (state *bookingState) Initialize() {
 	)
 	state.booking = bookingBuilder{
 		substate: argument,
+		flow:     undefined,
 	}
 	state.nextState = state
 	state.buffer.Clear()
 	state.buffer.PrintHeader()
 }
 
+var autocompletes = map[string]string{
+	helpCommand:   "",
+	cancelCommand: "",
+}
+
 func (state *bookingState) triggerAutocomplete() {
+	words := strings.Split(state.buffer.Read(), " ")
+	for key := range autocompletes {
+		if strings.HasPrefix(key, words[len(words)-1]) {
+			arguments := append(words[0:len(words)-1], key)
+			state.buffer.WriteString(strings.Join(arguments, " ") + " ")
+		}
+	}
 }
 
 func (state *bookingState) ClearBuffer() {

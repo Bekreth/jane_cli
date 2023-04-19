@@ -6,6 +6,7 @@ import (
 
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain"
+	"github.com/Bekreth/jane_cli/domain/schedule"
 	"github.com/eiannone/keyboard"
 )
 
@@ -14,8 +15,8 @@ func (state *bookingState) HandleKeyinput(
 	key keyboard.Key,
 ) terminal.State {
 	switch state.booking.substate {
-	case bookingConfirmation:
-		state.confirmBooking(character)
+	case actionConfirmation:
+		state.confirmAction(character)
 	case treatmentSelector:
 		state.booking.targetTreatment = elementSelector(
 			character,
@@ -26,6 +27,12 @@ func (state *bookingState) HandleKeyinput(
 		state.booking.targetPatient = elementSelector(
 			character,
 			state.booking.patients,
+			state.buffer,
+		)
+	case appointmentSelector:
+		state.booking.targetAppointment = elementSelector(
+			character,
+			state.booking.appointments,
 			state.buffer,
 		)
 	default:
@@ -40,23 +47,27 @@ func (state *bookingState) HandleKeyinput(
 	}
 
 	if state.booking.substate != argument {
-		if state.booking.targetPatient == domain.DefaultPatient {
-			state.booking.substate = patientSelector
-		} else if state.booking.targetTreatment == domain.DefaultTreatment {
-			state.booking.substate = treatmentSelector
-		} else {
-			state.booking.substate = bookingConfirmation
+		switch state.booking.flow {
+		case booking:
+			if state.booking.targetPatient == domain.DefaultPatient {
+				state.booking.substate = patientSelector
+			} else if state.booking.targetTreatment == domain.DefaultTreatment {
+				state.booking.substate = treatmentSelector
+			} else {
+				state.booking.substate = actionConfirmation
+			}
+		case canceling:
+			if state.booking.targetAppointment == schedule.DefaultAppointment {
+				state.booking.substate = appointmentSelector
+			} else {
+				state.booking.substate = actionConfirmation
+			}
 		}
 	}
 
 	switch state.booking.substate {
-	case bookingConfirmation:
-		state.buffer.WriteStoreString(fmt.Sprintf(
-			"Book %v for a %v at %v? (Y/n)",
-			state.booking.targetPatient.PreferredFirstName,
-			state.booking.targetTreatment.Name,
-			state.booking.appointmentDate.HumanDate(),
-		))
+	case actionConfirmation:
+		state.buffer.WriteStoreString(state.booking.confirmationMessage())
 	case treatmentSelector:
 		treatmentList := []string{"Select intended treatment"}
 		for i, treatment := range state.booking.treatments {
@@ -75,6 +86,21 @@ func (state *bookingState) HandleKeyinput(
 			)
 		}
 		state.buffer.WriteStoreString(strings.Join(patientList, "\n"))
+	case appointmentSelector:
+		appointmentList := []string{"Select intended appointment"}
+		for i, appointment := range state.booking.appointments {
+			appointmentList = append(
+				appointmentList,
+				fmt.Sprintf(
+					"%v: %v with %v %v",
+					i+1,
+					appointment.StartAt.HumanDateTime(),
+					appointment.Patient.PreferredFirstName,
+					appointment.Patient.LastName,
+				),
+			)
+		}
+		state.buffer.WriteStoreString(strings.Join(appointmentList, "\n"))
 	default:
 	}
 

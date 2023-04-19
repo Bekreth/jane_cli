@@ -6,9 +6,10 @@ import (
 
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain"
+	"github.com/Bekreth/jane_cli/domain/schedule"
 )
 
-func elementSelector[R domain.Treatment | domain.Patient](
+func elementSelector[R domain.Treatment | domain.Patient | schedule.Appointment](
 	character rune,
 	input []R,
 	buffer *terminal.Buffer,
