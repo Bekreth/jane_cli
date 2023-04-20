@@ -15,6 +15,7 @@ const patientFlag = "-p"
 const cancelFlag = "-c"
 
 const cancelCommand = "cancel"
+const bookCommand = "book"
 const helpCommand = "help"
 const backCommand = ".."
 

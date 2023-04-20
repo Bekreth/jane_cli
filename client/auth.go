@@ -45,7 +45,6 @@ func (client Client) Login(password string) error {
 		client.logger.Infof("got a bad auth response: %v", err)
 		return err
 	}
-	client.logger.Debugf("%v", response)
 
 	for _, cookie := range response.Cookies() {
 		if cookie.Name == authCookieKey {

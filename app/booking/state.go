@@ -71,6 +71,7 @@ func (state *bookingState) Initialize() {
 var autocompletes = map[string]string{
 	helpCommand:   "",
 	cancelCommand: "",
+	bookCommand:   "",
 }
 
 func (state *bookingState) triggerAutocomplete() {

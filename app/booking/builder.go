@@ -58,7 +58,7 @@ func (builder bookingBuilder) confirmationMessage() string {
 			"Cancel appointment with %v %v at %v? (Y/n)",
 			builder.targetAppointment.Patient.PreferredFirstName,
 			builder.targetAppointment.Patient.LastName,
-			builder.appointmentDate.HumanDate(),
+			builder.appointmentDate.HumanDateTime(),
 		)
 	}
 	return ""
