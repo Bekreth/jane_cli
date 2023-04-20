@@ -17,10 +17,12 @@ const (
 )
 
 type Appointment struct {
-	StartAt JaneTime        `json:"start_at"`
-	EndAt   JaneTime        `json:"end_at"`
-	State   AppointmentType `json:"state"`
-	Patient domain.Patient  `json:"patient"`
+	ID        int             `json:"id"`
+	PatientID int             `json:"patient_id"`
+	StartAt   JaneTime        `json:"start_at"`
+	EndAt     JaneTime        `json:"end_at"`
+	State     AppointmentType `json:"state"`
+	Patient   domain.Patient  `json:"patient"`
 }
 
 func (appointment Appointment) HasPassed() bool {
@@ -39,3 +41,5 @@ func (appointment Appointment) ToString() string {
 	}
 	return output
 }
+
+var DefaultAppointment = Appointment{}

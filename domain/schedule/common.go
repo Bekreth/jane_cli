@@ -49,6 +49,55 @@ func (janeTime JaneTime) MarshalJSON() ([]byte, error) {
 	return []byte("\"" + timeString + "\""), nil
 }
 
+func (janeTime JaneTime) NextDay() JaneTime {
+	return JaneTime{
+		Time: time.Date(
+			janeTime.Year(),
+			janeTime.Month(),
+			janeTime.Day()+1,
+			0,
+			0,
+			0,
+			0,
+			time.Local,
+		),
+	}
+}
+
+func (janeTime JaneTime) ThisDay() JaneTime {
+	return JaneTime{
+		Time: time.Date(
+			janeTime.Year(),
+			janeTime.Month(),
+			janeTime.Day(),
+			0,
+			0,
+			0,
+			0,
+			time.Local,
+		),
+	}
+}
+
+func (janeTime JaneTime) PreviousDay() JaneTime {
+	return JaneTime{
+		Time: time.Date(
+			janeTime.Year(),
+			janeTime.Month(),
+			janeTime.Day()-1,
+			0,
+			0,
+			0,
+			0,
+			time.Local,
+		),
+	}
+}
+
 func (janeTime JaneTime) HumanDate() string {
 	return janeTime.Format(humanDateFormat)
+}
+
+func (janeTime JaneTime) HumanDateTime() string {
+	return janeTime.Format(humanDateTimeFormat)
 }

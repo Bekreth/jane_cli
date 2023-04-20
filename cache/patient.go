@@ -7,12 +7,7 @@ import (
 )
 
 func (cache Cache) FindPatients(patientName string) ([]domain.Patient, error) {
-	possibleMatches := []domain.Patient{}
-	for _, patient := range cache.patients {
-		if matchingPatient(patient, patientName) {
-			possibleMatches = append(possibleMatches, patient)
-		}
-	}
+	possibleMatches := cache.patientsFromCache(patientName)
 	if len(possibleMatches) > 0 {
 		return possibleMatches, nil
 	}
@@ -27,6 +22,7 @@ func (cache Cache) FindPatients(patientName string) ([]domain.Patient, error) {
 		cache.patients[patient.ID] = patient
 	}
 	cache.logger.Debugf("searching for patients again")
+	possibleMatches = cache.patientsFromCache(patientName)
 	for _, patient := range cache.patients {
 		if matchingPatient(patient, patientName) {
 			possibleMatches = append(possibleMatches, patient)
@@ -34,6 +30,16 @@ func (cache Cache) FindPatients(patientName string) ([]domain.Patient, error) {
 	}
 
 	return possibleMatches, err
+}
+
+func (cache Cache) patientsFromCache(patientName string) []domain.Patient {
+	possibleMatches := []domain.Patient{}
+	for _, patient := range cache.patients {
+		if matchingPatient(patient, patientName) {
+			possibleMatches = append(possibleMatches, patient)
+		}
+	}
+	return possibleMatches
 }
 
 func matchingPatient(patient domain.Patient, nameToCheck string) bool {
