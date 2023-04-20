@@ -126,7 +126,7 @@ func (client Client) CancelAppointment(appointmentID int, cancelMessage string) 
 
 	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
-		client.logger.Infof("failed to serialize booking request")
+		client.logger.Infof("failed to serialize booking request: %v", err)
 		return err
 	}
 
@@ -150,7 +150,6 @@ func (client Client) CancelAppointment(appointmentID int, cancelMessage string) 
 		return err
 	}
 
-	client.logger.Debugf("HEADER: %v ", response.StatusCode)
 	if err = checkStatusCode(response); err != nil {
 		client.logger.Infof("bad response from Jane %v: %v", response.StatusCode, err)
 		return err

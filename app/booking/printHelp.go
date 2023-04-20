@@ -4,7 +4,6 @@ import (
 	"strings"
 )
 
-// TODO: Add the subcommands
 func (state *bookingState) printHelp() {
 	helpString := []string{
 		"Booking command is used for managing your schedule",
