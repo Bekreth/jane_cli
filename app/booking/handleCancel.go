@@ -11,7 +11,6 @@ import (
 func (state *bookingState) handleCancel(flags map[string]string) {
 	missingFlags := map[string]string{
 		bookingDateFlag: "",
-		patientFlag:     "",
 	}
 
 	for key := range missingFlags {

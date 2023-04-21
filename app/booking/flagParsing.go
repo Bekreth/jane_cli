@@ -63,15 +63,16 @@ func (state *bookingState) parseAppointmentValue(
 	}
 	builder.appointments = appointments
 	if len(builder.appointments) == 0 {
-		return builder, fmt.Errorf(
-			"no appointments found in %v",
-			builder.appointmentDate.HumanDate(),
-		)
+		outputMessage := "no appointments found on %v"
+		if patientName != "" {
+			outputMessage += " for " + patientName
+		}
+		return builder, fmt.Errorf(outputMessage, builder.appointmentDate.HumanDate())
 	} else if len(builder.appointments) == 1 {
 		builder.targetAppointment = builder.appointments[0]
 	} else if len(builder.appointments) > 8 {
 		return builder, fmt.Errorf(
-			"too many treatments to render nicely on %v",
+			"too many appointments to render nicely on %v",
 			builder.appointmentDate.HumanDate(),
 		)
 	}
