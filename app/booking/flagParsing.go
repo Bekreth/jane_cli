@@ -70,7 +70,7 @@ func (state *bookingState) parseAppointmentValue(
 		return builder, fmt.Errorf(outputMessage, builder.appointmentDate.HumanDate())
 	} else if len(builder.appointments) == 1 {
 		builder.targetAppointment = builder.appointments[0]
-	} else if len(builder.appointments) > 20 {
+	} else if len(builder.appointments) > 8 {
 		return builder, fmt.Errorf(
 			"too many appointments to render nicely on %v",
 			builder.appointmentDate.HumanDate(),
