@@ -41,14 +41,11 @@ func (cache Cache) appointmentsFromCache(
 	patientName string,
 ) []schedule.Appointment {
 	possibleMatches := []schedule.Appointment{}
-	cache.logger.Debugf("TIME: \n%v \n%v", startDate.HumanDateTime(), endDate.HumanDateTime())
 	for _, appointment := range cache.appointments {
 		thisAppointment := appointment
 		thisAppointment.Patient = cache.patients[appointment.PatientID]
-		cache.logger.Debugln("APPOINTMENT: ", thisAppointment)
 
-		if matchingAppointment(startDate, endDate, patientName, appointment) {
-			cache.logger.Debugln("HIT: ", thisAppointment)
+		if matchingAppointment(startDate, endDate, patientName, thisAppointment) {
 			possibleMatches = append(possibleMatches, thisAppointment)
 		}
 	}
@@ -61,11 +58,14 @@ func matchingAppointment(
 	patientName string,
 	appointment schedule.Appointment,
 ) bool {
+	if appointment.State != schedule.Booked {
+		return false
+	}
 	inTimeWindow := appointment.StartAt.After(startDate.Time) &&
 		appointment.EndAt.Before(endDate.Time)
-	return inTimeWindow
-	if inTimeWindow {
-		return matchingPatient(appointment.Patient, patientName)
+	if patientName == "" {
+		return inTimeWindow
+	} else {
+		return inTimeWindow && matchingPatient(appointment.Patient, patientName)
 	}
-	return false
 }
