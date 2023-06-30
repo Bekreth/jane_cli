@@ -53,12 +53,30 @@ func TestParseFlags(t *testing.T) {
 				"-flag2": "value2",
 			},
 		},
+		{
+			description: "flags and values inside quotes",
+			input:       "other1 -flag1 \"value1\" -flag2 \"value2\"",
+			expectedOutput: map[string]string{
+				"other1": "",
+				"-flag1": "value1",
+				"-flag2": "value2",
+			},
+		},
+		{
+			description: "flags and values inside quotes with spaces",
+			input:       "other1 -flag1 \"value 1\" -flag2 \"value 2\"",
+			expectedOutput: map[string]string{
+				"other1": "",
+				"-flag1": "value 1",
+				"-flag2": "value 2",
+			},
+		},
 	}
 
 	for _, trial := range trials {
 		t.Run(trial.description, func(tt *testing.T) {
-			actualOuptut := ParseFlags(trial.input)
-			assert.Equal(tt, trial.expectedOutput, actualOuptut)
+			actualOutput := ParseFlags(trial.input)
+			assert.Equal(tt, trial.expectedOutput, actualOutput)
 		})
 	}
 }
