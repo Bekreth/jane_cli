@@ -1,5 +1,8 @@
 GO_FILES=$(shell find . -type f -name "*.go")
 
+test:
+	go test ./...
+
 output/:
 	@mkdir $@
 
