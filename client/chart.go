@@ -17,8 +17,8 @@ const newChartApi = "chart_entries/new"
 func (client Client) buildChartLookupRequest(patientID int) string {
 	pageID := 1
 	return fmt.Sprintf(
-		"%v/%v/%v?treatment_plan_id=null&patient_id=%v&page=%v", 
-		client.getDomain(), 
+		"%v/%v/%v?treatment_plan_id=null&patient_id=%v&page=%v",
+		client.getDomain(),
 		apiBase2,
 		chartLookupApi,
 		patientID,
@@ -31,8 +31,8 @@ func (client Client) buildNewChartRequest(
 	appointmentID int,
 ) string {
 	return fmt.Sprintf(
-		"%v/%v/%v?patient_id=%v&appointment_id=%v&template_identifier=system_template_note", 
-		client.getDomain(), 
+		"%v/%v/%v?patient_id=%v&appointment_id=%v&template_identifier=system_template_note",
+		client.getDomain(),
 		apiBase2,
 		newChartApi,
 		patientID,
@@ -42,8 +42,8 @@ func (client Client) buildNewChartRequest(
 
 func (client Client) buildChartUpdateRequest(chartPartID int) string {
 	return fmt.Sprintf(
-		"%v/%v/%v/%v", 
-		client.getDomain(), 
+		"%v/%v/%v/%v",
+		client.getDomain(),
 		apiBase2,
 		updateChartApi,
 		chartPartID,
@@ -52,7 +52,7 @@ func (client Client) buildChartUpdateRequest(chartPartID int) string {
 
 func (client Client) FetchPatientCharts(
 	patientID int,
-) ([]charts.Chart, error){
+) ([]charts.ChartEntry, error) {
 	client.logger.Debugf("fetching patient charts")
 	request, err := http.NewRequest(
 		http.MethodGet,
@@ -67,12 +67,12 @@ func (client Client) FetchPatientCharts(
 	response, err := client.janeClient.Do(request)
 	if err != nil {
 		client.logger.Infof("got a bad fetch patient charts response: %v", err)
-		return []charts.Chart{}, err
+		return []charts.ChartEntry{}, err
 	}
 
 	if err = checkStatusCode(response); err != nil {
 		client.logger.Infof("Bad response from Jane: %v", err)
-		return []charts.Chart{}, err
+		return []charts.ChartEntry{}, err
 	}
 
 	bytes, err := io.ReadAll(response.Body)
@@ -80,14 +80,14 @@ func (client Client) FetchPatientCharts(
 		client.logger.Infof("failed to read response body: %v", err)
 	}
 
-	patientCharts := []charts.Chart{}
+	patientCharts := charts.Chart{}
 	err = json.Unmarshal(bytes, &patientCharts)
 	if err != nil {
 		client.logger.Infof("failed to read patient charts: %v", err)
 	}
 
 	client.logger.Infof("Got patient chart")
-	return patientCharts, nil
+	return patientCharts.ChartEntries, nil
 }
 
 func (client Client) CreatePatientCharts(
@@ -161,7 +161,7 @@ func (client Client) UpdatePatientChart(
 		return err
 	}
 	request.Header = commonHeaders
-	
+
 	response, err := client.janeClient.Do(request)
 	if err != nil {
 		client.logger.Infof("failed to update chart in Jane: %v", err)

@@ -1,19 +1,18 @@
-package booking
+package util
 
 import (
 	"fmt"
 	"strconv"
 
 	"github.com/Bekreth/jane_cli/app/terminal"
-	"github.com/Bekreth/jane_cli/domain"
-	"github.com/Bekreth/jane_cli/domain/schedule"
 )
 
-func elementSelector[R domain.Treatment | domain.Patient | schedule.Appointment](
+func ElementSelector[R interface{}](
 	character rune,
 	input []R,
 	buffer *terminal.Buffer,
 ) R {
+	//TODO: handle the errors _correctly_
 	index, err := strconv.Atoi(string(character))
 	if err != nil {
 		buffer.WriteStoreString(fmt.Sprintf(

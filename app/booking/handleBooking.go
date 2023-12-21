@@ -29,7 +29,11 @@ func (state *bookingState) handleBooking(flags map[string]string) {
 		flow:     booking,
 	}
 
-	builder, err := state.parsePatientValue(flags[patientFlag], builder)
+	var err error
+	builder.targetPatient, builder.patients, err = util.ParsePatientValue(
+		state.fetcher,
+		flags[patientFlag],
+	)
 	if err != nil {
 		state.buffer.WriteStoreString(err.Error())
 		return
@@ -51,5 +55,5 @@ func (state *bookingState) handleBooking(flags map[string]string) {
 		return
 	}
 
-	state.booking = builder
+	state.builder = builder
 }

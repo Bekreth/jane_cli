@@ -44,5 +44,5 @@ func (state *bookingState) handleCancel(flags map[string]string) {
 		return
 	}
 
-	state.booking = builder
+	state.builder = builder
 }

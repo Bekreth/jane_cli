@@ -7,14 +7,14 @@ func (state *bookingState) confirmAction(character rune) {
 	case "y":
 		fallthrough
 	case "Y":
-		switch state.booking.flow {
+		switch state.builder.flow {
 		case booking:
 			state.confirmBooking()
 		case canceling:
 			state.confirmCancelation()
 		}
-		state.booking.substate = argument
-		state.booking.flow = undefined
+		state.builder.substate = argument
+		state.builder.flow = undefined
 	case "n":
 		fallthrough
 	case "N":
@@ -31,9 +31,9 @@ func (state *bookingState) confirmAction(character rune) {
 func (state *bookingState) confirmBooking() {
 	state.buffer.WriteStoreString("submitting booking")
 	err := state.fetcher.BookPatient(
-		state.booking.targetPatient,
-		state.booking.targetTreatment,
-		state.booking.appointmentDate,
+		state.builder.targetPatient,
+		state.builder.targetTreatment,
+		state.builder.appointmentDate,
 	)
 	if err != nil {
 		state.buffer.WriteStoreString(fmt.Sprintf("failed to make appointment: %v", err))
@@ -46,8 +46,8 @@ func (state *bookingState) confirmBooking() {
 func (state *bookingState) confirmCancelation() {
 	state.buffer.WriteStoreString("canceling appointment")
 	err := state.fetcher.CancelAppointment(
-		state.booking.targetAppointment.ID,
-		state.booking.cancelMessage,
+		state.builder.targetAppointment.ID,
+		state.builder.cancelMessage,
 	)
 	if err != nil {
 		state.buffer.WriteStoreString(fmt.Sprintf("failed to cancel appointment: %v", err))

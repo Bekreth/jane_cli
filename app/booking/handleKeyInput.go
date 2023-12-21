@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Bekreth/jane_cli/app/terminal"
+	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/domain/schedule"
 	"github.com/eiannone/keyboard"
@@ -14,25 +15,25 @@ func (state *bookingState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
 ) terminal.State {
-	switch state.booking.substate {
+	switch state.builder.substate {
 	case actionConfirmation:
 		state.confirmAction(character)
 	case treatmentSelector:
-		state.booking.targetTreatment = elementSelector(
+		state.builder.targetTreatment = util.ElementSelector(
 			character,
-			state.booking.treatments,
+			state.builder.treatments,
 			state.buffer,
 		)
 	case patientSelector:
-		state.booking.targetPatient = elementSelector(
+		state.builder.targetPatient = util.ElementSelector(
 			character,
-			state.booking.patients,
+			state.builder.patients,
 			state.buffer,
 		)
 	case appointmentSelector:
-		state.booking.targetAppointment = elementSelector(
+		state.builder.targetAppointment = util.ElementSelector(
 			character,
-			state.booking.appointments,
+			state.builder.appointments,
 			state.buffer,
 		)
 	default:
@@ -46,31 +47,31 @@ func (state *bookingState) HandleKeyinput(
 		state.buffer.Write()
 	}
 
-	if state.booking.substate != argument {
-		switch state.booking.flow {
+	if state.builder.substate != argument {
+		switch state.builder.flow {
 		case booking:
-			if state.booking.targetPatient == domain.DefaultPatient {
-				state.booking.substate = patientSelector
-			} else if state.booking.targetTreatment == domain.DefaultTreatment {
-				state.booking.substate = treatmentSelector
+			if state.builder.targetPatient == domain.DefaultPatient {
+				state.builder.substate = patientSelector
+			} else if state.builder.targetTreatment == domain.DefaultTreatment {
+				state.builder.substate = treatmentSelector
 			} else {
-				state.booking.substate = actionConfirmation
+				state.builder.substate = actionConfirmation
 			}
 		case canceling:
-			if state.booking.targetAppointment == schedule.DefaultAppointment {
-				state.booking.substate = appointmentSelector
+			if state.builder.targetAppointment == schedule.DefaultAppointment {
+				state.builder.substate = appointmentSelector
 			} else {
-				state.booking.substate = actionConfirmation
+				state.builder.substate = actionConfirmation
 			}
 		}
 	}
 
-	switch state.booking.substate {
+	switch state.builder.substate {
 	case actionConfirmation:
-		state.buffer.WriteStoreString(state.booking.confirmationMessage())
+		state.buffer.WriteStoreString(state.builder.confirmationMessage())
 	case treatmentSelector:
 		treatmentList := []string{"Select intended treatment"}
-		for i, treatment := range state.booking.treatments {
+		for i, treatment := range state.builder.treatments {
 			treatmentList = append(
 				treatmentList,
 				fmt.Sprintf("%v: %v", i+1, treatment.Name),
@@ -79,7 +80,7 @@ func (state *bookingState) HandleKeyinput(
 		state.buffer.WriteStoreString(strings.Join(treatmentList, "\n"))
 	case patientSelector:
 		patientList := []string{"Select intended patient"}
-		for i, patient := range state.booking.patients {
+		for i, patient := range state.builder.patients {
 			patientList = append(
 				patientList,
 				fmt.Sprintf("%v: %v %v", i+1, patient.FirstName, patient.LastName),
@@ -88,7 +89,7 @@ func (state *bookingState) HandleKeyinput(
 		state.buffer.WriteStoreString(strings.Join(patientList, "\n"))
 	case appointmentSelector:
 		appointmentList := []string{"Select intended appointment"}
-		for i, appointment := range state.booking.appointments {
+		for i, appointment := range state.builder.appointments {
 			appointmentList = append(
 				appointmentList,
 				fmt.Sprintf(

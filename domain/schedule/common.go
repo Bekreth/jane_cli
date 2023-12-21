@@ -8,6 +8,7 @@ import (
 const humanDateFormat = "Jan 02"
 const humanDateTimeFormat = "Jan 02 15:04"
 const hourMinuteFormat = "15:04"
+const dateFormat = "2006-01-02"
 const dateTimeFormat = "2006-01-02T15:04:05"
 const dateTimeFormatWithTimeStamp = "2006-01-02T15:04:05-07:00"
 
@@ -39,6 +40,9 @@ func (janeTime *JaneTime) UnmarshalJSON(bytes []byte) error {
 	parsedTime, err := time.Parse(dateTimeFormat, timeString)
 	if err != nil {
 		parsedTime, err = time.Parse(dateTimeFormatWithTimeStamp, timeString)
+		if err != nil {
+			parsedTime, err = time.Parse(dateFormat, timeString)
+		}
 	}
 	janeTime.Time = NewJaneTime(parsedTime).Time
 	return err

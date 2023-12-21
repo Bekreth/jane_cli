@@ -28,7 +28,7 @@ type bookingDataFetcher interface {
 type bookingState struct {
 	logger    logger.Logger
 	fetcher   bookingDataFetcher
-	booking   bookingBuilder
+	builder   bookingBuilder
 	rootState terminal.State
 
 	nextState terminal.State
@@ -59,7 +59,7 @@ func (state *bookingState) Initialize() {
 		"entering booking. available states %v",
 		state.rootState.Name(),
 	)
-	state.booking = bookingBuilder{
+	state.builder = bookingBuilder{
 		substate: argument,
 		flow:     undefined,
 	}

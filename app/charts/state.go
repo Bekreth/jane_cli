@@ -1,55 +1,86 @@
 package charts
 
 import (
+	"strings"
+
 	"github.com/Bekreth/jane_cli/app/terminal"
+	"github.com/Bekreth/jane_cli/domain"
+	"github.com/Bekreth/jane_cli/domain/charts"
 	"github.com/Bekreth/jane_cli/logger"
-	"github.com/eiannone/keyboard"
 )
 
-type chartState struct {
-	logger logger.Logger
+type chartingDataFetcher interface {
+	FindPatients(patientName string) ([]domain.Patient, error)
+
+	FetchPatientCharts(patientID int) ([]charts.ChartEntry, error)
+	CreatePatientCharts(patientID int, appointmentID int) (charts.Chart, error)
+	UpdatePatientChart(chartPartID int, chartText string) error
+}
+
+type chartingState struct {
+	logger    logger.Logger
+	fetcher   chartingDataFetcher
 	rootState terminal.State
 
-	buffer    *terminal.Buffer
+	builder   chartingBuilder
 	nextState terminal.State
+	buffer    *terminal.Buffer
 }
 
 func NewState(
 	logger logger.Logger,
+	fetcher chartingDataFetcher,
 	writer terminal.ScreenWriter,
 	rootState terminal.State,
 ) terminal.State {
 	buffer := terminal.NewBuffer(writer)
-	return &chartState{
+	return &chartingState{
 		logger:    logger,
+		fetcher:   fetcher,
 		rootState: rootState,
 		buffer:    &buffer,
 	}
 }
 
-func (chartState) Name() string {
-	return "charts"
+func (chartingState) Name() string {
+	return "charting"
 }
 
-func (state *chartState) Initialize() {
+func (state *chartingState) Initialize() {
 	state.logger.Debugf(
-		"entering schedule. available states %v",
+		"entering charting. available states %v",
 		state.rootState.Name(),
 	)
+	state.builder = chartingBuilder{
+		substate: argument,
+		flow:     undefined,
+	}
 	state.nextState = state
 	state.buffer.Clear()
 	state.buffer.PrintHeader()
 }
 
-func (*chartState) HandleKeyinput(character rune, key keyboard.Key) terminal.State {
-	panic("unimplemented")
+var autocompletes = map[string]string{
+	helpCommand:   "",
+	readCommand:   "",
+	createCommand: "",
 }
 
-func (state *chartState) ClearBuffer() {
+func (state *chartingState) triggerAutocomplete() {
+	words := strings.Split(state.buffer.Read(), " ")
+	for key := range autocompletes {
+		if strings.HasPrefix(key, words[len(words)-1]) {
+			arguments := append(words[0:len(words)-1], key)
+			state.buffer.WriteString(strings.Join(arguments, " ") + " ")
+		}
+	}
+}
+
+func (state *chartingState) ClearBuffer() {
 	state.buffer.Clear()
 	state.buffer.PrintHeader()
 }
 
-func (state *chartState) RepeatLastOutput() {
+func (state *chartingState) RepeatLastOutput() {
 	state.buffer.WritePrevious()
 }
