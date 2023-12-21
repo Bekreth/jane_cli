@@ -1,4 +1,4 @@
-package charts
+package charting
 
 import (
 	"strings"

@@ -3,7 +3,7 @@ package app
 import (
 	"github.com/Bekreth/jane_cli/app/auth"
 	"github.com/Bekreth/jane_cli/app/booking"
-	"github.com/Bekreth/jane_cli/app/charts"
+	"github.com/Bekreth/jane_cli/app/charting"
 	"github.com/Bekreth/jane_cli/app/initialize"
 	"github.com/Bekreth/jane_cli/app/root"
 	"github.com/Bekreth/jane_cli/app/schedule"
@@ -67,7 +67,7 @@ func NewApplication(
 		rootState,
 	)
 
-	chartingState := charts.NewState(
+	chartingState := charting.NewState(
 		logger.AddContext("state", "charting"),
 		fetcher,
 		terminal.NewScreenWriter("charting:"),

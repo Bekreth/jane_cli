@@ -1,4 +1,4 @@
-package charts
+package charting
 
 import (
 	"github.com/Bekreth/jane_cli/app/terminal"
