@@ -50,6 +50,16 @@ func (client Client) buildChartUpdateRequest(chartPartID int) string {
 	)
 }
 
+func (client Client) buildChartAppointmentSetter(chartID int) string {
+	return fmt.Sprintf(
+		"%v/%v/%v/%v/set_appointment",
+		client.getDomain(),
+		apiBase2,
+		chartLookupApi,
+		chartID,
+	)
+}
+
 func (client Client) FetchPatientCharts(
 	patientID int,
 ) ([]charts.ChartEntry, error) {
@@ -90,10 +100,13 @@ func (client Client) FetchPatientCharts(
 	return patientCharts.ChartEntries, nil
 }
 
+/**
+* CreatePatientCharts uses a GET request against Jane to create a new, empty chart.
+ */
 func (client Client) CreatePatientCharts(
 	patientID int,
 	appointmentID int,
-) (charts.Chart, error) {
+) (charts.ChartEntry, error) {
 	client.logger.Debugf("fetching new patient chart")
 	request, err := http.NewRequest(
 		http.MethodGet,
@@ -105,12 +118,13 @@ func (client Client) CreatePatientCharts(
 	response, err := client.janeClient.Do(request)
 	if err != nil {
 		client.logger.Infof("got a bad new chart response: %v", err)
-		return charts.Chart{}, err
+		return charts.ChartEntry{}, err
 	}
+	client.logger.Debugf("RAW: %v", response)
 
 	if err = checkStatusCode(response); err != nil {
 		client.logger.Infof("Bad response from Jane: %v", err)
-		return charts.Chart{}, err
+		return charts.ChartEntry{}, err
 	}
 
 	bytes, err := io.ReadAll(response.Body)
@@ -118,22 +132,26 @@ func (client Client) CreatePatientCharts(
 		client.logger.Infof("failed to read response body: %v", err)
 	}
 
-	newChart := charts.Chart{}
+	newChart := charts.ChartEntry{}
 	err = json.Unmarshal(bytes, &newChart)
 	if err != nil {
 		client.logger.Infof("failed to read patient charts: %v", err)
 	}
+	client.logger.Debugf("Processed: %v", newChart)
 
 	client.logger.Infof("Got new patient chart")
 	return newChart, err
 }
 
+/**
+ * UpdatePatientChart sends a PUT request for the chart **part** on its ID
+ */
 func (client Client) UpdatePatientChart(
 	chartPartID int,
 	chartText string,
 ) error {
 	client.logger.Infof("updating patient chart")
-	requestBody := charts.ChartPart{
+	requestBody := charts.ChartPartUpdate{
 		TextDelta: charts.TextDelta{
 			Ops: []charts.Ops{
 				{
@@ -173,6 +191,46 @@ func (client Client) UpdatePatientChart(
 		return err
 	}
 	client.logger.Infof("Updated chart part %v", chartPartID)
+
+	return nil
+}
+
+func (client Client) SetChartingAppointment(chartID int, appointmentID int) error {
+	client.logger.Infof("setting appointment ID on chart %v", chartID)
+	requestBody := struct {
+		AppointmentID int `json:"appointment_id"`
+	}{
+		AppointmentID: appointmentID,
+	}
+
+	jsonBody, err := json.Marshal(requestBody)
+	if err != nil {
+		client.logger.Infof("failed to serialize chart set appointment ID")
+		return err
+	}
+
+	request, err := http.NewRequest(
+		http.MethodPut,
+		client.buildChartAppointmentSetter(chartID),
+		strings.NewReader(string(jsonBody)),
+	)
+	if err != nil {
+		client.logger.Infoln("failed to serialize chart set appointment request")
+		return err
+	}
+	request.Header = commonHeaders
+
+	response, err := client.janeClient.Do(request)
+	if err != nil {
+		client.logger.Infof("failed to set chart appointment in Jane: %v", err)
+		return err
+	}
+
+	if err = checkStatusCode(response); err != nil {
+		client.logger.Infof("bad response from Jane %v: %v", response.StatusCode, err)
+		return err
+	}
+	client.logger.Infof("Updated chart %v with appointment %v", chartID, appointmentID)
 
 	return nil
 }

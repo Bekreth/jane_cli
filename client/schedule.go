@@ -31,7 +31,7 @@ func (client Client) FetchSchedule(
 	startDate schedule.JaneTime,
 	endDate schedule.JaneTime,
 ) (schedule.Schedule, error) {
-	client.logger.Infof("fetching scheudle from %v to %v", startDate, endDate)
+	client.logger.Infof("fetching scheudle from %v to %v for %v", startDate, endDate, client.user.Auth.UserID)
 
 	request, err := http.NewRequest(
 		http.MethodGet,

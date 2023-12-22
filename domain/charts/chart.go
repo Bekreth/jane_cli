@@ -20,7 +20,7 @@ type ChartEntry struct {
 	TreatmentID   int                  `json:"treatment_id"`
 	CreatedAt     schedule.JaneTime    `json:"create_at"`
 	EnteredOn     schedule.JaneTime    `json:"entered_on"`
-	ChartParts    []ChartPart          `json:"chart_part"`
+	ChartParts    []ChartPart          `json:"chart_parts"`
 	Snippet       string               `json:"snippet"`
 }
 
@@ -31,6 +31,11 @@ var DefaultChartEntry = ChartEntry{}
 // Chart::Part::CheckBoxes
 // Chart::Part::Note
 type ChartPart struct {
+	ID int `json:"id"`
+}
+
+type ChartPartUpdate struct {
+	ID        int
 	TextDelta TextDelta `json:"text_delta"`
 	Text      string    `json:"text"`
 	Label     string    `json:"note"`

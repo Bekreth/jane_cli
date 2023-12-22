@@ -6,15 +6,22 @@ import (
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/domain/charts"
+	"github.com/Bekreth/jane_cli/domain/schedule"
 	"github.com/Bekreth/jane_cli/logger"
 )
 
 type chartingDataFetcher interface {
 	FindPatients(patientName string) ([]domain.Patient, error)
+	FindAppointments(
+		startDate schedule.JaneTime,
+		endDate schedule.JaneTime,
+		patientName string,
+	) ([]schedule.Appointment, error)
 
 	FetchPatientCharts(patientID int) ([]charts.ChartEntry, error)
-	CreatePatientCharts(patientID int, appointmentID int) (charts.Chart, error)
+	CreatePatientCharts(patientID int, appointmentID int) (charts.ChartEntry, error)
 	UpdatePatientChart(chartPartID int, chartText string) error
+	SetChartingAppointment(chartID int, appointmentID int) error
 }
 
 type chartingState struct {

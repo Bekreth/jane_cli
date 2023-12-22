@@ -12,7 +12,7 @@ func ElementSelector[R interface{}](
 	input []R,
 	buffer *terminal.Buffer,
 ) R {
-	//TODO: handle the errors _correctly_
+	//TODO: Handle errors _correctly_
 	index, err := strconv.Atoi(string(character))
 	if err != nil {
 		buffer.WriteStoreString(fmt.Sprintf(

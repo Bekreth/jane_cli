@@ -22,6 +22,9 @@ func (cache Cache) FindAppointments(
 	}
 
 	for _, appointment := range fetchedSchedule.Appointments {
+		if appointment.PatientID == 0 {
+			continue
+		}
 		thisAppointment := appointment
 		thisAppointment.Patient = domain.Patient{}
 		cache.appointments[appointment.ID] = thisAppointment
@@ -58,9 +61,10 @@ func matchingAppointment(
 	patientName string,
 	appointment schedule.Appointment,
 ) bool {
-	if appointment.State != schedule.Booked {
-		return false
-	}
+	//TODO: why was this initially included?
+	//if appointment.State != schedule.Booked {
+	//	return false
+	//}
 	inTimeWindow := appointment.StartAt.After(startDate.Time) &&
 		appointment.EndAt.Before(endDate.Time)
 	if patientName == "" {
