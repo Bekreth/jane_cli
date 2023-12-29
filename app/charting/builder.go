@@ -45,6 +45,13 @@ type chartingBuilder struct {
 	targetAppointment schedule.Appointment
 }
 
+func newChartingBuilder() chartingBuilder {
+	return chartingBuilder{
+		substate: argument,
+		flow:     undefined,
+	}
+}
+
 func (builder chartingBuilder) confirmationMessage() string {
 	return fmt.Sprintf(
 		"Would you like to sign the chart for %v for appointment on %v with contents:\n%v\n(Y/n/E)",

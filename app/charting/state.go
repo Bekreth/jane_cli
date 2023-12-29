@@ -59,10 +59,7 @@ func (state *chartingState) Initialize() {
 		"entering charting. available states %v",
 		state.rootState.Name(),
 	)
-	state.builder = chartingBuilder{
-		substate: argument,
-		flow:     undefined,
-	}
+	state.builder = newChartingBuilder()
 	state.nextState = state
 	state.buffer.Clear()
 	state.buffer.PrintHeader()

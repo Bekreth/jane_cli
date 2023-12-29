@@ -59,10 +59,7 @@ func (state *bookingState) Initialize() {
 		"entering booking. available states %v",
 		state.rootState.Name(),
 	)
-	state.builder = bookingBuilder{
-		substate: argument,
-		flow:     undefined,
-	}
+	state.builder = newBookingBuilder()
 	state.nextState = state
 	state.buffer.Clear()
 	state.buffer.PrintHeader()

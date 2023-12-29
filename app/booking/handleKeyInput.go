@@ -15,27 +15,41 @@ func (state *bookingState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
 ) terminal.State {
+	var selectorErr error
 	switch state.builder.substate {
 	case actionConfirmation:
 		state.confirmAction(character)
+
 	case treatmentSelector:
-		state.builder.targetTreatment = util.ElementSelector(
+		possibleTreatment, err := util.ElementSelector(
 			character,
 			state.builder.treatments,
-			state.buffer,
 		)
+		selectorErr = err
+		if err == nil {
+			state.builder.targetTreatment = *possibleTreatment
+		}
+
 	case patientSelector:
-		state.builder.targetPatient = util.ElementSelector(
+		possiblePatient, err := util.ElementSelector(
 			character,
 			state.builder.patients,
-			state.buffer,
 		)
+		selectorErr = err
+		if err == nil {
+			state.builder.targetPatient = *possiblePatient
+		}
+
 	case appointmentSelector:
-		state.builder.targetAppointment = util.ElementSelector(
+		possibleAppointment, err := util.ElementSelector(
 			character,
 			state.builder.appointments,
-			state.buffer,
 		)
+		selectorErr = err
+		if err == nil {
+			state.builder.targetAppointment = *possibleAppointment
+		}
+
 	default:
 		terminal.KeyHandler(
 			key,
@@ -45,6 +59,12 @@ func (state *bookingState) HandleKeyinput(
 		)
 		state.buffer.AddCharacter(character)
 		state.buffer.Write()
+	}
+
+	if selectorErr != nil {
+		state.buffer.WriteStoreString(selectorErr.Error())
+		state.builder = newBookingBuilder()
+		return state.nextState
 	}
 
 	if state.builder.substate != argument {

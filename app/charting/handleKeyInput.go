@@ -15,27 +15,41 @@ func (state *chartingState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
 ) terminal.State {
+	var selectorErr error
 	switch state.builder.substate {
 	case actionConfirmation:
 		state.confirmAction(character)
+
 	case patientSelector:
-		state.builder.targetPatient = util.ElementSelector(
+		possiblePatient, err := util.ElementSelector(
 			character,
 			state.builder.patients,
-			state.buffer,
 		)
+		selectorErr = err
+		if err == nil {
+			state.builder.targetPatient = *possiblePatient
+		}
+
 	case chartSelector:
-		state.builder.targetChart = util.ElementSelector(
+		possibleChart, err := util.ElementSelector(
 			character,
 			state.builder.charts,
-			state.buffer,
 		)
+		selectorErr = err
+		if err == nil {
+			state.builder.targetChart = *possibleChart
+		}
+
 	case appointmentSelector:
-		state.builder.targetAppointment = util.ElementSelector(
+		possibleAppointment, err := util.ElementSelector(
 			character,
 			state.builder.appointments,
-			state.buffer,
 		)
+		selectorErr = err
+		if err == nil {
+			state.builder.targetAppointment = *possibleAppointment
+		}
+
 	case noteEditor:
 		//TODO: Limit to standard keys
 		switch key {
@@ -63,6 +77,12 @@ func (state *chartingState) HandleKeyinput(
 		)
 		state.buffer.AddCharacter(character)
 		state.buffer.Write()
+	}
+
+	if selectorErr != nil {
+		state.buffer.WriteStoreString(selectorErr.Error())
+		state.builder = newChartingBuilder()
+		return state.nextState
 	}
 
 	if state.builder.substate != argument {
