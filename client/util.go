@@ -13,6 +13,8 @@ func checkStatusCode(response *http.Response) error {
 		return fmt.Errorf("bad authentication.  Login with 'auth -p ${password}'")
 	case 404:
 		return fmt.Errorf("bad request to Jane.  Please file a ticket")
+	case 422:
+		return fmt.Errorf("bad request to Jane.  Please file a ticket")
 
 	case 500:
 		fallthrough

@@ -10,16 +10,20 @@ func (state *chartingState) confirmAction(character rune) {
 		state.confirmSign()
 		state.builder.substate = argument
 		state.builder.flow = undefined
+		state.nextState = state.rootState
+
 	case "n":
 		fallthrough
 	case "N":
 		state.buffer.WriteStoreString("aborting")
 		state.nextState = state.rootState
+
 	case "e":
 		fallthrough
 	case "E":
 		state.builder.note = ""
 		state.builder.substate = noteEditor
+
 	default:
 		state.buffer.WriteStoreString(fmt.Sprintf(
 			"input of %v not support. Confirm, deny, or edit (Y/n/E)?",
@@ -37,6 +41,7 @@ func (state *chartingState) confirmSign() {
 
 	if err != nil {
 		state.buffer.WriteStoreString(fmt.Sprintf("failed to create chart: %v", err))
+		return
 	}
 	state.logger.Debugf("created chart: %v", chart)
 
@@ -45,11 +50,20 @@ func (state *chartingState) confirmSign() {
 		state.builder.note,
 	)
 
-	//TODO: add siging
 	if err != nil {
 		state.buffer.WriteStoreString(fmt.Sprintf("failed to update chart: %v", err))
-	} else {
-		state.buffer.WriteStoreString("Successfully created chart!")
-		state.ClearBuffer()
+		return
 	}
+
+	err = state.fetcher.SignChart(
+		chart,
+		state.builder.targetPatient.ID,
+	)
+	if err != nil {
+		state.buffer.WriteStoreString(fmt.Sprintf("failed to sign chart: %v", err))
+		return
+	}
+
+	state.buffer.WriteStoreString("Successfully created chart!")
+	state.ClearBuffer()
 }

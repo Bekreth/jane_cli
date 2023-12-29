@@ -15,11 +15,14 @@ func (state *bookingState) confirmAction(character rune) {
 		}
 		state.builder.substate = argument
 		state.builder.flow = undefined
+		state.nextState = state.rootState
+
 	case "n":
 		fallthrough
 	case "N":
 		state.buffer.WriteStoreString("aborting")
 		state.nextState = state.rootState
+
 	default:
 		state.buffer.WriteStoreString(fmt.Sprintf(
 			"input of %v not support. Confirm or deny (Y/n)?",

@@ -48,8 +48,10 @@ func (state *chartingState) HandleKeyinput(
 			state.builder.noteUnderEdit = currentNote[:len(currentNote)-1]
 		case keyboard.KeyEnter:
 			state.builder.note = state.builder.noteUnderEdit
+		case keyboard.KeySpace:
+			state.builder.noteUnderEdit = state.builder.noteUnderEdit + " "
 		default:
-			state.builder.noteUnderEdit = state.builder.noteUnderEdit + fmt.Sprint(key)
+			state.builder.noteUnderEdit = state.builder.noteUnderEdit + string(character)
 		}
 
 	default:
@@ -92,7 +94,6 @@ func (state *chartingState) HandleKeyinput(
 					state.buffer.WriteStoreString(err.Error())
 					state.builder.substate = argument
 				} else {
-					state.logger.Debugf("Saved apps: %v", state.builder.appointments)
 					state.builder.substate = appointmentSelector
 				}
 			} else if state.builder.note == "" {
@@ -143,6 +144,12 @@ func (state *chartingState) HandleKeyinput(
 			)
 		}
 		state.buffer.WriteStoreString(strings.Join(appointmentList, "\n"))
+	case noteEditor:
+		if state.builder.noteUnderEdit == "" {
+			state.buffer.WriteStoreString("Write chart notes: ")
+		} else {
+			state.buffer.WriteString(state.builder.noteUnderEdit)
+		}
 	default:
 	}
 

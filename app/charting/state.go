@@ -22,6 +22,7 @@ type chartingDataFetcher interface {
 	CreatePatientCharts(patientID int, appointmentID int) (charts.ChartEntry, error)
 	UpdatePatientChart(chartPartID int, chartText string) error
 	SetChartingAppointment(chartID int, appointmentID int) error
+	SignChart(chart charts.ChartEntry, patientID int) error
 }
 
 type chartingState struct {

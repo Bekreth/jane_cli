@@ -10,6 +10,7 @@ func (client Client) BookPatient(
 	treatment domain.Treatment,
 	startTime schedule.JaneTime,
 ) error {
+	client.logger.Debugf("Booking patient %v for %v at %v", patient.ID, treatment, startTime)
 	endTime := schedule.JaneTime{
 		Time: startTime.Add(treatment.ScheduledDuration.Duration),
 	}
@@ -18,6 +19,7 @@ func (client Client) BookPatient(
 		endTime,
 		false,
 	)
+	client.logger.Debugf("Appointment after make: %v", appointment)
 	if err != nil {
 		return err
 	}

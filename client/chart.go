@@ -13,6 +13,7 @@ import (
 const chartLookupApi = "chart_entries"
 const updateChartApi = "chart_parts"
 const newChartApi = "chart_entries/new"
+const signChartApi = "patients/%v/chart_entries/%v"
 
 func (client Client) buildChartLookupRequest(patientID int) string {
 	pageID := 1
@@ -57,6 +58,19 @@ func (client Client) buildChartAppointmentSetter(chartID int) string {
 		apiBase2,
 		chartLookupApi,
 		chartID,
+	)
+}
+
+func (client Client) buildChartSignRequest(patientID int, chartID int) string {
+	return fmt.Sprintf(
+		"%v/%v/%v",
+		client.getDomain(),
+		apiBase2,
+		fmt.Sprintf(
+			signChartApi,
+			patientID,
+			chartID,
+		),
 	)
 }
 
@@ -231,6 +245,41 @@ func (client Client) SetChartingAppointment(chartID int, appointmentID int) erro
 		return err
 	}
 	client.logger.Infof("Updated chart %v with appointment %v", chartID, appointmentID)
+
+	return nil
+}
+
+func (client Client) SignChart(chart charts.ChartEntry, patientID int) error {
+	client.logger.Infof("signing chart %v", chart.ID)
+
+	jsonBody, err := json.Marshal(chart)
+	if err != nil {
+		client.logger.Infof("failed to serialize chart for signing")
+		return err
+	}
+
+	request, err := http.NewRequest(
+		http.MethodPut,
+		client.buildChartSignRequest(patientID, chart.ID),
+		strings.NewReader(string(jsonBody)),
+	)
+	if err != nil {
+		client.logger.Infoln("failed to serialize chart signing request")
+		return err
+	}
+	request.Header = commonHeaders
+
+	response, err := client.janeClient.Do(request)
+	if err != nil {
+		client.logger.Infof("failed to sign chart: %v", err)
+		return err
+	}
+
+	if err = checkStatusCode(response); err != nil {
+		client.logger.Infof("bad response from Jane %v: %v", response.StatusCode, err)
+		return err
+	}
+	client.logger.Infof("Successfully signed chart %v", chart.ID)
 
 	return nil
 }
