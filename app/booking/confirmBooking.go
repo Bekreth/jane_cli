@@ -13,8 +13,7 @@ func (state *bookingState) confirmAction(character rune) {
 		case canceling:
 			state.confirmCancelation()
 		}
-		state.builder.substate = argument
-		state.builder.flow = undefined
+		state.builder = newBookingBuilder()
 		state.nextState = state.rootState
 
 	case "n":

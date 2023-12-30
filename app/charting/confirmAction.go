@@ -8,8 +8,7 @@ func (state *chartingState) confirmAction(character rune) {
 		fallthrough
 	case "Y":
 		state.confirmSign()
-		state.builder.substate = argument
-		state.builder.flow = undefined
+		state.builder = newChartingBuilder()
 		state.nextState = state.rootState
 
 	case "n":

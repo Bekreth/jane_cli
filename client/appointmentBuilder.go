@@ -19,7 +19,6 @@ func (client Client) BookPatient(
 		endTime,
 		false,
 	)
-	client.logger.Debugf("Appointment after make: %v", appointment)
 	if err != nil {
 		return err
 	}
