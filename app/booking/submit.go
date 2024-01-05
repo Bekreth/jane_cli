@@ -4,11 +4,6 @@ import (
 	"github.com/Bekreth/jane_cli/app/terminal"
 )
 
-const bookingTimeYearFormat = "06.01.02T15:04"
-const bookingTimeFormat = "01.02T15:04"
-const cancelTimeFormatDay = "01.02"
-const cancelTimeFormatYear = "06.01.02"
-
 const bookingDateFlag = "-d"
 const treatmentFlag = "-t"
 const patientFlag = "-p"

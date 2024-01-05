@@ -46,8 +46,8 @@ func (state *bookingState) handleBooking(flags map[string]string) {
 	}
 
 	builder.appointmentDate, err = util.ParseDate(
-		bookingTimeFormat,
-		bookingTimeYearFormat,
+		util.DateTimeFormat,
+		util.YearDateTimeFormat,
 		flags[bookingDateFlag],
 	)
 	if err != nil {

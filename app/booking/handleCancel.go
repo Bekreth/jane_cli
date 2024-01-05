@@ -28,8 +28,8 @@ func (state *bookingState) handleCancel(flags map[string]string) {
 	}
 
 	dateValue, err := util.ParseDate(
-		cancelTimeFormatDay,
-		cancelTimeFormatYear,
+		util.DateFormat,
+		util.YearDateFormat,
 		flags[bookingDateFlag],
 	)
 	if err != nil {

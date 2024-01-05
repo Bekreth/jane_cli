@@ -7,6 +7,11 @@ import (
 	"github.com/Bekreth/jane_cli/domain/schedule"
 )
 
+const DateFormat = "01.02"
+const DateTimeFormat = "01.02T15:04"
+const YearDateFormat = "2006.01.02"
+const YearDateTimeFormat = "2006.01.02T15:04"
+
 func ParseDate(
 	dayFormat string,
 	yearFormat string,

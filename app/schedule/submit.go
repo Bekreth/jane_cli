@@ -9,8 +9,6 @@ import (
 	"github.com/Bekreth/jane_cli/domain/schedule"
 )
 
-const scheduleTimeYearFormat = "2006.01.02"
-const scheduleTimeFormat = "01.02"
 const dateFlag = "-d"
 const appointmentFlag = "-a"
 const breakFlag = "-b"
@@ -44,8 +42,8 @@ func (state *scheduleState) submit() {
 
 	if !timeIsSet {
 		parsedTime, err := util.ParseDate(
-			scheduleTimeFormat,
-			scheduleTimeYearFormat,
+			util.DateFormat,
+			util.YearDateFormat,
 			flags[dateFlag],
 		)
 		if err != nil {
@@ -65,8 +63,8 @@ func (state *scheduleState) submit() {
 		if len(fetchedSchedule.Appointments) == 0 {
 			state.buffer.WriteStoreString(fmt.Sprintf(
 				"no shift between %v and %v",
-				startAt.Format(scheduleTimeFormat),
-				endAt.Format(scheduleTimeFormat),
+				startAt.Format(util.DateFormat),
+				endAt.Format(util.DateFormat),
 			))
 		} else {
 			if _, exists := flags[showAllFlag]; exists {
