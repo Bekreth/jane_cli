@@ -30,7 +30,7 @@ func splitWords(input string) []string {
 	var words []string
 	insideQuotes := false
 	currentWord := ""
-	for _, char := range input {
+	for _, char := range input + " " {
 		if char == '"' {
 			insideQuotes = !insideQuotes
 			continue

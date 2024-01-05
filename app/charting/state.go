@@ -1,48 +1,48 @@
-package booking
+package charting
 
 import (
 	"strings"
 
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain"
+	"github.com/Bekreth/jane_cli/domain/charts"
 	"github.com/Bekreth/jane_cli/domain/schedule"
 	"github.com/Bekreth/jane_cli/logger"
 )
 
-type bookingDataFetcher interface {
+type chartingDataFetcher interface {
 	FindPatients(patientName string) ([]domain.Patient, error)
-	FindTreatment(treatmentName string) ([]domain.Treatment, error)
 	FindAppointments(
 		startDate schedule.JaneTime,
 		endDate schedule.JaneTime,
 		patientName string,
 	) ([]schedule.Appointment, error)
-	BookPatient(
-		patient domain.Patient,
-		treatment domain.Treatment,
-		startTime schedule.JaneTime,
-	) error
-	CancelAppointment(appointmentID int, cancelMessage string) error
+
+	FetchPatientCharts(patientID int) ([]charts.ChartEntry, error)
+	CreatePatientCharts(patientID int, appointmentID int) (charts.ChartEntry, error)
+	UpdatePatientChart(chartPartID int, chartText string) error
+	SetChartingAppointment(chartID int, appointmentID int) error
+	SignChart(chart charts.ChartEntry, patientID int) error
 }
 
-type bookingState struct {
+type chartingState struct {
 	logger    logger.Logger
-	fetcher   bookingDataFetcher
-	builder   bookingBuilder
+	fetcher   chartingDataFetcher
 	rootState terminal.State
 
+	builder   chartingBuilder
 	nextState terminal.State
 	buffer    *terminal.Buffer
 }
 
 func NewState(
 	logger logger.Logger,
+	fetcher chartingDataFetcher,
 	writer terminal.ScreenWriter,
-	fetcher bookingDataFetcher,
 	rootState terminal.State,
 ) terminal.State {
 	buffer := terminal.NewBuffer(writer)
-	return &bookingState{
+	return &chartingState{
 		logger:    logger,
 		fetcher:   fetcher,
 		rootState: rootState,
@@ -50,16 +50,16 @@ func NewState(
 	}
 }
 
-func (bookingState) Name() string {
-	return "booking"
+func (chartingState) Name() string {
+	return "charting"
 }
 
-func (state *bookingState) Initialize() {
+func (state *chartingState) Initialize() {
 	state.logger.Debugf(
-		"entering booking. available states %v",
+		"entering charting. available states %v",
 		state.rootState.Name(),
 	)
-	state.builder = newBookingBuilder()
+	state.builder = newChartingBuilder()
 	state.nextState = state
 	state.buffer.Clear()
 	state.buffer.PrintHeader()
@@ -67,11 +67,11 @@ func (state *bookingState) Initialize() {
 
 var autocompletes = map[string]string{
 	helpCommand:   "",
-	cancelCommand: "",
-	bookCommand:   "",
+	readCommand:   "",
+	createCommand: "",
 }
 
-func (state *bookingState) triggerAutocomplete() {
+func (state *chartingState) triggerAutocomplete() {
 	words := strings.Split(state.buffer.Read(), " ")
 	for key := range autocompletes {
 		if strings.HasPrefix(key, words[len(words)-1]) {
@@ -81,11 +81,11 @@ func (state *bookingState) triggerAutocomplete() {
 	}
 }
 
-func (state *bookingState) ClearBuffer() {
+func (state *chartingState) ClearBuffer() {
 	state.buffer.Clear()
 	state.buffer.PrintHeader()
 }
 
-func (state *bookingState) RepeatLastOutput() {
+func (state *chartingState) RepeatLastOutput() {
 	state.buffer.WritePrevious()
 }

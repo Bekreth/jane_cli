@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime/debug"
 	"time"
 	_ "time/tzdata"
 
@@ -77,6 +78,13 @@ func main() {
 	application := app.NewApplication(logger, thisUser, client, cache)
 
 	logger.Infoln("Application initialized, starting run loop")
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Jane CLI has crashed ungracefully.  Notify author of this issue")
+			logger.Infof("Crash: %v", r)
+			logger.Infof("Trace: %v", string(debug.Stack()))
+		}
+	}()
 	for {
 		char, key, err := keyboard.GetSingleKey()
 		if err != nil {

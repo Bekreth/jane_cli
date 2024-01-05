@@ -94,7 +94,7 @@ func (state *rootState) RepeatLastOutput() {
 func (state *rootState) printHelp() {
 	// TODO: automate this list of elements
 	output := strings.Join([]string{
-		"available commands: auth, init, schedule, booking",
+		"available commands: auth, init, schedule, booking, charting",
 		"available autocommands:",
 		"\tctrl+c\tclose Jane App",
 		"\tctrl+u\tclear the current line",

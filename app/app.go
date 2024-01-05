@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/Bekreth/jane_cli/app/auth"
 	"github.com/Bekreth/jane_cli/app/booking"
+	"github.com/Bekreth/jane_cli/app/charting"
 	"github.com/Bekreth/jane_cli/app/initialize"
 	"github.com/Bekreth/jane_cli/app/root"
 	"github.com/Bekreth/jane_cli/app/schedule"
@@ -66,11 +67,19 @@ func NewApplication(
 		rootState,
 	)
 
+	chartingState := charting.NewState(
+		logger.AddContext("state", "charting"),
+		fetcher,
+		terminal.NewScreenWriter("charting:"),
+		rootState,
+	)
+
 	rootState.RegisterStates(map[string]terminal.State{
 		initState.Name():     initState,
 		authState.Name():     authState,
 		scheduleState.Name(): scheduleState,
 		bookingState.Name():  bookingState,
+		chartingState.Name(): chartingState,
 	})
 	rootState.Initialize()
 
@@ -84,6 +93,7 @@ func NewApplication(
 			authState,
 			scheduleState,
 			bookingState,
+			chartingState,
 		},
 	}
 }

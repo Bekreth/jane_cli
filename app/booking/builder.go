@@ -43,6 +43,13 @@ type bookingBuilder struct {
 	cancelMessage   string
 }
 
+func newBookingBuilder() bookingBuilder {
+	return bookingBuilder{
+		substate: argument,
+		flow:     undefined,
+	}
+}
+
 func (builder bookingBuilder) confirmationMessage() string {
 	switch builder.flow {
 	case booking:
