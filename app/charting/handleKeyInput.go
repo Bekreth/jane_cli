@@ -21,6 +21,11 @@ func (state *chartingState) HandleKeyinput(
 		state.confirmAction(character)
 
 	case patientSelector:
+		if key == keyboard.KeyEsc {
+			state.builder = newChartingBuilder()
+			state.buffer.PrintHeader()
+			return state.nextState
+		}
 		possiblePatient, err := util.ElementSelector(
 			character,
 			state.builder.patients,
@@ -31,6 +36,11 @@ func (state *chartingState) HandleKeyinput(
 		}
 
 	case chartSelector:
+		if key == keyboard.KeyEsc {
+			state.builder = newChartingBuilder()
+			state.buffer.PrintHeader()
+			return state.nextState
+		}
 		possibleChart, err := util.ElementSelector(
 			character,
 			state.builder.charts,
@@ -41,6 +51,11 @@ func (state *chartingState) HandleKeyinput(
 		}
 
 	case appointmentSelector:
+		if key == keyboard.KeyEsc {
+			state.builder = newChartingBuilder()
+			state.buffer.PrintHeader()
+			return state.nextState
+		}
 		possibleAppointment, err := util.ElementSelector(
 			character,
 			state.builder.appointments,
@@ -128,7 +143,7 @@ func (state *chartingState) HandleKeyinput(
 	case actionConfirmation:
 		state.buffer.WriteStoreString(state.builder.confirmationMessage())
 	case patientSelector:
-		patientList := []string{"Select intended patient"}
+		patientList := []string{"Select intended patient (or ESC to back out)"}
 		for i, patient := range state.builder.patients {
 			patientList = append(
 				patientList,
@@ -136,9 +151,10 @@ func (state *chartingState) HandleKeyinput(
 			)
 		}
 		state.buffer.WriteStoreString(strings.Join(patientList, "\n"))
+
 	case chartSelector:
 		chartList := []string{fmt.Sprintf(
-			"Select desired chart for %v",
+			"Select desired chart for %v (or ESC to back out)",
 			state.builder.targetPatient.PrintName(),
 		)}
 		state.logger.Debugf("Total charts: %v", len(state.builder.charts))
@@ -149,8 +165,9 @@ func (state *chartingState) HandleKeyinput(
 			)
 		}
 		state.buffer.WriteStoreString(strings.Join(chartList, "\n"))
+
 	case appointmentSelector:
-		appointmentList := []string{"Select intended appointment"}
+		appointmentList := []string{"Select intended appointment (or ESC to back out)"}
 		for i, appointment := range state.builder.appointments {
 			appointmentList = append(
 				appointmentList,

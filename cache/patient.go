@@ -46,12 +46,16 @@ func matchingPatient(patient domain.Patient, nameToCheck string) bool {
 	firstName := strings.ToLower(patient.FirstName)
 	lastName := strings.ToLower(patient.LastName)
 	preferred := strings.ToLower(patient.PreferredFirstName)
-	loweredName := strings.ToLower(nameToCheck)
-
-	byFirst := strings.HasPrefix(firstName, loweredName)
-	byLast := strings.HasPrefix(lastName, loweredName)
-	byPref := strings.HasPrefix(preferred, loweredName)
-
-	output := byFirst || byLast || byPref
-	return output
+	names := strings.Split(nameToCheck, " ")
+	matchCount := len(names)
+	for _, name := range names {
+		loweredName := strings.ToLower(name)
+		byFirst := strings.HasPrefix(firstName, loweredName)
+		byLast := strings.HasPrefix(lastName, loweredName)
+		byPref := strings.HasPrefix(preferred, loweredName)
+		if byFirst || byLast || byPref {
+			matchCount -= 1
+		}
+	}
+	return matchCount == 0
 }
