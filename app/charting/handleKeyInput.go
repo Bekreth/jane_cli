@@ -161,7 +161,12 @@ func (state *chartingState) HandleKeyinput(
 		for i, chart := range state.builder.charts {
 			chartList = append(
 				chartList,
-				fmt.Sprintf("%v: %v", i+1, chart.EnteredOn.HumanDate()),
+				fmt.Sprintf(
+					"%v: %v - %v",
+					i+1,
+					chart.EnteredOn.HumanDate(),
+					chart.Title,
+				),
 			)
 		}
 		state.buffer.WriteStoreString(strings.Join(chartList, "\n"))

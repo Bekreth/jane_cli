@@ -1,6 +1,8 @@
 package charts
 
 import (
+	"fmt"
+
 	"github.com/Bekreth/jane_cli/domain/schedule"
 )
 
@@ -12,6 +14,7 @@ type Chart struct {
 
 type ChartEntry struct {
 	ID            int                  `json:"id"`
+	Title         string               `json:"title"`
 	SignedState   string               `json:"signed_state"`
 	PatientID     int                  `json:"patient_id"`
 	AuthorID      int                  `json:"author_id"`
@@ -24,12 +27,16 @@ type ChartEntry struct {
 	Snippet       string               `json:"snippet"`
 }
 
+func (entry ChartEntry) PrintSelector() string {
+	if entry.Title == "" {
+		return fmt.Sprintf("%v", entry.EnteredOn.HumanDate())
+	} else {
+		return fmt.Sprintf("%v - %v", entry.EnteredOn.HumanDate(), entry.Title)
+	}
+}
+
 var DefaultChartEntry = ChartEntry{}
 
-// Chart::Part::Upload
-// Chart::Part::ChiefComplaint
-// Chart::Part::CheckBoxes
-// Chart::Part::Note
 type ChartPart struct {
 	ID int `json:"id"`
 }
