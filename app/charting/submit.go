@@ -33,9 +33,6 @@ func (state *chartingState) Submit() {
 	}
 }
 
-const dateFormat = "01.02"
-const yearDateFormat = "06.01.02"
-
 func (state *chartingState) handleCreateNote(flags map[string]string) {
 	builder := chartingBuilder{
 		substate: unknown,
@@ -63,8 +60,8 @@ func (state *chartingState) handleCreateNote(flags map[string]string) {
 	date, exists := flags[dateFlag]
 	if exists {
 		parsedDate, err := util.ParseDate(
-			dateFormat,
-			yearDateFormat,
+			util.DateFormat,
+			util.YearDateFormat,
 			date,
 		)
 		if err != nil {

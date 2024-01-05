@@ -23,12 +23,6 @@ func (cache Cache) FindPatients(patientName string) ([]domain.Patient, error) {
 	}
 	cache.logger.Debugf("searching for patients again")
 	possibleMatches = cache.patientsFromCache(patientName)
-	for _, patient := range cache.patients {
-		if matchingPatient(patient, patientName) {
-			possibleMatches = append(possibleMatches, patient)
-		}
-	}
-
 	return possibleMatches, err
 }
 
