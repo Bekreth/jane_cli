@@ -21,6 +21,11 @@ func (state *bookingState) HandleKeyinput(
 		state.confirmAction(character)
 
 	case treatmentSelector:
+		if key == keyboard.KeyEsc {
+			state.builder = newBookingBuilder()
+			state.buffer.PrintHeader()
+			return state.nextState
+		}
 		possibleTreatment, err := util.ElementSelector(
 			character,
 			state.builder.treatments,
@@ -31,6 +36,11 @@ func (state *bookingState) HandleKeyinput(
 		}
 
 	case patientSelector:
+		if key == keyboard.KeyEsc {
+			state.builder = newBookingBuilder()
+			state.buffer.PrintHeader()
+			return state.nextState
+		}
 		possiblePatient, err := util.ElementSelector(
 			character,
 			state.builder.patients,
@@ -90,7 +100,7 @@ func (state *bookingState) HandleKeyinput(
 	case actionConfirmation:
 		state.buffer.WriteStoreString(state.builder.confirmationMessage())
 	case treatmentSelector:
-		treatmentList := []string{"Select intended treatment"}
+		treatmentList := []string{"Select intended treatment (or ESC to back out)"}
 		for i, treatment := range state.builder.treatments {
 			treatmentList = append(
 				treatmentList,
@@ -99,7 +109,7 @@ func (state *bookingState) HandleKeyinput(
 		}
 		state.buffer.WriteStoreString(strings.Join(treatmentList, "\n"))
 	case patientSelector:
-		patientList := []string{"Select intended patient"}
+		patientList := []string{"Select intended patient (or ESC to back out)"}
 		for i, patient := range state.builder.patients {
 			patientList = append(
 				patientList,
@@ -108,7 +118,7 @@ func (state *bookingState) HandleKeyinput(
 		}
 		state.buffer.WriteStoreString(strings.Join(patientList, "\n"))
 	case appointmentSelector:
-		appointmentList := []string{"Select intended appointment"}
+		appointmentList := []string{"Select intended appointment (or ESC to back out)"}
 		for i, appointment := range state.builder.appointments {
 			appointmentList = append(
 				appointmentList,
