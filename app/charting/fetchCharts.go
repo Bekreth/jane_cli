@@ -3,7 +3,9 @@ package charting
 import "fmt"
 
 func (state *chartingState) fetchCharts() {
-	chartEntries, err := state.fetcher.FetchPatientCharts(state.builder.targetPatient.ID)
+	chartEntries, err := state.fetcher.FetchPatientCharts(
+		state.builder.patientSelector.TargetSelection().GetID(),
+	)
 	if err != nil {
 		//TODO
 	}
@@ -11,7 +13,7 @@ func (state *chartingState) fetchCharts() {
 	if len(chartEntries) == 0 {
 		state.buffer.WriteStoreString(fmt.Sprintf(
 			"no charts found for patient %v",
-			state.builder.targetPatient.PrintName(),
+			state.builder.patientSelector.TargetSelection().PrintSelector(),
 		))
 	} else if len(chartEntries) == 1 {
 		state.builder.targetChart = chartEntries[0]

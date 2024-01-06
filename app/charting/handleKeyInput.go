@@ -4,63 +4,53 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/app/util"
-	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/domain/schedule"
 	"github.com/eiannone/keyboard"
 )
+
+func (state *chartingState) isInteractive() bool {
+	substate := state.builder.substate
+
+	return substate == actionConfirmation ||
+		substate == patientSelector ||
+		substate == chartSelector ||
+		substate == noteEditor
+}
 
 func (state *chartingState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
 ) terminal.State {
-	var selectorErr error
+	if key == keyboard.KeyEsc && state.isInteractive() {
+		state.builder = newChartingBuilder()
+		state.buffer.PrintHeader()
+		return state.nextState
+	}
+
 	switch state.builder.substate {
 	case actionConfirmation:
 		state.confirmAction(character)
 
 	case patientSelector:
-		if key == keyboard.KeyEsc {
-			state.builder = newChartingBuilder()
-			state.buffer.PrintHeader()
-			return state.nextState
-		}
-		possiblePatient, err := util.ElementSelector(
-			character,
-			state.builder.patients,
-		)
-		selectorErr = err
-		if err == nil {
-			state.builder.targetPatient = *possiblePatient
-		}
+		state.builder.patientSelector.SelectElement(character)
 
 	case chartSelector:
-		if key == keyboard.KeyEsc {
-			state.builder = newChartingBuilder()
-			state.buffer.PrintHeader()
-			return state.nextState
-		}
 		possibleChart, err := util.ElementSelector(
 			character,
 			state.builder.charts,
 		)
-		selectorErr = err
 		if err == nil {
 			state.builder.targetChart = *possibleChart
 		}
 
 	case appointmentSelector:
-		if key == keyboard.KeyEsc {
-			state.builder = newChartingBuilder()
-			state.buffer.PrintHeader()
-			return state.nextState
-		}
 		possibleAppointment, err := util.ElementSelector(
 			character,
 			state.builder.appointments,
 		)
-		selectorErr = err
 		if err == nil {
 			state.builder.targetAppointment = *possibleAppointment
 		}
@@ -94,16 +84,10 @@ func (state *chartingState) HandleKeyinput(
 		state.buffer.Write()
 	}
 
-	if selectorErr != nil {
-		state.buffer.WriteStoreString(selectorErr.Error())
-		state.builder = newChartingBuilder()
-		return state.nextState
-	}
-
 	if state.builder.substate != argument {
 		switch state.builder.flow {
 		case read:
-			if state.builder.targetPatient == domain.DefaultPatient {
+			if state.builder.patientSelector.HasSelection() {
 				state.builder.substate = patientSelector
 			} else if state.builder.targetChart.ID == 0 {
 				state.fetchCharts()
@@ -114,8 +98,9 @@ func (state *chartingState) HandleKeyinput(
 				state.builder.substate = unknown
 				state.builder.flow = undefined
 			}
+
 		case create:
-			if state.builder.targetPatient == domain.DefaultPatient {
+			if !state.builder.patientSelector.HasSelection() {
 				state.builder.substate = patientSelector
 			} else if state.builder.targetAppointment == schedule.DefaultAppointment {
 				//TODO: Handle Error
@@ -123,7 +108,7 @@ func (state *chartingState) HandleKeyinput(
 				state.builder.appointments, err = state.fetcher.FindAppointments(
 					state.builder.date,
 					state.builder.date.NextDay(),
-					state.builder.targetPatient.FirstName,
+					state.builder.patientSelector.TargetSelection().PrintSelector(),
 				)
 				if err != nil {
 					state.buffer.WriteStoreString(err.Error())
@@ -142,22 +127,15 @@ func (state *chartingState) HandleKeyinput(
 	switch state.builder.substate {
 	case actionConfirmation:
 		state.buffer.WriteStoreString(state.builder.confirmationMessage())
+
 	case patientSelector:
-		patientList := []string{"Select intended patient (or ESC to back out)"}
-		for i, patient := range state.builder.patients {
-			patientList = append(
-				patientList,
-				fmt.Sprintf("%v: %v %v", i+1, patient.FirstName, patient.LastName),
-			)
-		}
-		state.buffer.WriteStoreString(strings.Join(patientList, "\n"))
+		state.buffer.WriteStoreString(interactive.PrintSelector(state.builder.patientSelector))
 
 	case chartSelector:
 		chartList := []string{fmt.Sprintf(
 			"Select desired chart for %v (or ESC to back out)",
-			state.builder.targetPatient.PrintName(),
+			state.builder.patientSelector.TargetSelection().PrintSelector(),
 		)}
-		state.logger.Debugf("Total charts: %v", len(state.builder.charts))
 		for i, chart := range state.builder.charts {
 			chartList = append(
 				chartList,
@@ -186,12 +164,14 @@ func (state *chartingState) HandleKeyinput(
 			)
 		}
 		state.buffer.WriteStoreString(strings.Join(appointmentList, "\n"))
+
 	case noteEditor:
 		if state.builder.noteUnderEdit == "" {
-			state.buffer.WriteStoreString("Write chart notes: ")
+			state.buffer.WriteStoreString("Write chart notes (or ESC to back out): ")
 		} else {
 			state.buffer.WriteString(state.builder.noteUnderEdit)
 		}
+
 	default:
 	}
 

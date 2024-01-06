@@ -3,7 +3,7 @@ package charting
 import (
 	"fmt"
 
-	"github.com/Bekreth/jane_cli/domain"
+	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/domain/charts"
 	"github.com/Bekreth/jane_cli/domain/schedule"
 )
@@ -37,8 +37,7 @@ type chartingBuilder struct {
 	note string
 
 	noteUnderEdit     string
-	patients          []domain.Patient
-	targetPatient     domain.Patient
+	patientSelector   interactive.Interactive
 	charts            []charts.ChartEntry
 	targetChart       charts.ChartEntry
 	appointments      []schedule.Appointment
@@ -55,7 +54,7 @@ func newChartingBuilder() chartingBuilder {
 func (builder chartingBuilder) confirmationMessage() string {
 	return fmt.Sprintf(
 		"Would you like to sign the chart for %v for appointment on %v with contents:\n%v\n(Y/n/E)",
-		builder.targetPatient.PrintName(),
+		builder.patientSelector.TargetSelection().PrintSelector(),
 		builder.targetAppointment.StartAt.HumanDate(),
 		builder.note,
 	)

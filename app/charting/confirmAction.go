@@ -34,7 +34,7 @@ func (state *chartingState) confirmAction(character rune) {
 func (state *chartingState) confirmSign() {
 	state.buffer.WriteStoreString("submitting chart")
 	chart, err := state.fetcher.CreatePatientCharts(
-		state.builder.targetPatient.ID,
+		state.builder.patientSelector.TargetSelection().GetID(),
 		state.builder.targetAppointment.ID,
 	)
 
@@ -56,7 +56,7 @@ func (state *chartingState) confirmSign() {
 
 	err = state.fetcher.SignChart(
 		chart,
-		state.builder.targetPatient.ID,
+		state.builder.patientSelector.TargetSelection().GetID(),
 	)
 	if err != nil {
 		state.buffer.WriteStoreString(fmt.Sprintf("failed to sign chart: %v", err))
