@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/app/util"
 )
@@ -30,10 +31,11 @@ func (state *bookingState) handleBooking(flags map[string]string) {
 	}
 
 	var err error
-	builder.targetPatient, builder.patients, err = util.ParsePatientValue(
+	targetPatient, patients, err := util.ParsePatientValue(
 		state.fetcher,
 		flags[patientFlag],
 	)
+	builder.patientSelector = interactive.NewPatientSelector(targetPatient, patients)
 	if err != nil {
 		state.buffer.WriteStoreString(err.Error())
 		return

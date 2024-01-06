@@ -2,28 +2,6 @@ package booking
 
 import "fmt"
 
-func (state *bookingState) parsePatientValue(
-	patientName string,
-	builder bookingBuilder,
-) (bookingBuilder, error) {
-	if patientName == "" {
-		return builder, fmt.Errorf("no patient provided, use the %v flag", patientFlag)
-	}
-	patients, err := state.fetcher.FindPatients(patientName)
-	if err != nil {
-		return builder, fmt.Errorf("failed to lookup patient %v : %v", patientName, err)
-	}
-	builder.patients = patients
-	if len(patients) == 0 {
-		return builder, fmt.Errorf("no patients found for %v", patientName)
-	} else if len(patients) == 1 {
-		builder.targetPatient = patients[0]
-	} else if len(patients) > 8 {
-		return builder, fmt.Errorf("too many patients to render nicely for %v", patientName)
-	}
-	return builder, nil
-}
-
 func (state *bookingState) parseTreatmentValue(
 	treatmentName string,
 	builder bookingBuilder,

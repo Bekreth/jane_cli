@@ -33,7 +33,7 @@ func (state *bookingState) confirmAction(character rune) {
 func (state *bookingState) confirmBooking() {
 	state.buffer.WriteStoreString("submitting booking")
 	err := state.fetcher.BookPatient(
-		state.builder.targetPatient,
+		state.builder.patientSelector.TargetSelection().Deref(),
 		state.builder.targetTreatment,
 		state.builder.appointmentDate,
 	)

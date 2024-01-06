@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/Bekreth/jane_cli/domain"
@@ -11,21 +12,31 @@ import (
 	"github.com/eiannone/keyboard"
 )
 
+func (state *bookingState) isInteractive() bool {
+	substate := state.builder.substate
+
+	return substate == actionConfirmation ||
+		substate == patientSelector ||
+		substate == treatmentSelector ||
+		substate == appointmentSelector
+}
+
 func (state *bookingState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
 ) terminal.State {
+	if key == keyboard.KeyEsc && state.isInteractive() {
+		state.builder = newBookingBuilder()
+		state.buffer.PrintHeader()
+		return state.nextState
+	}
+
 	var selectorErr error
 	switch state.builder.substate {
 	case actionConfirmation:
 		state.confirmAction(character)
 
 	case treatmentSelector:
-		if key == keyboard.KeyEsc {
-			state.builder = newBookingBuilder()
-			state.buffer.PrintHeader()
-			return state.nextState
-		}
 		possibleTreatment, err := util.ElementSelector(
 			character,
 			state.builder.treatments,
@@ -36,19 +47,7 @@ func (state *bookingState) HandleKeyinput(
 		}
 
 	case patientSelector:
-		if key == keyboard.KeyEsc {
-			state.builder = newBookingBuilder()
-			state.buffer.PrintHeader()
-			return state.nextState
-		}
-		possiblePatient, err := util.ElementSelector(
-			character,
-			state.builder.patients,
-		)
-		selectorErr = err
-		if err == nil {
-			state.builder.targetPatient = *possiblePatient
-		}
+		state.builder.patientSelector.SelectElement(character)
 
 	case appointmentSelector:
 		possibleAppointment, err := util.ElementSelector(
@@ -80,7 +79,7 @@ func (state *bookingState) HandleKeyinput(
 	if state.builder.substate != argument {
 		switch state.builder.flow {
 		case booking:
-			if state.builder.targetPatient == domain.DefaultPatient {
+			if !state.builder.patientSelector.HasSelection() {
 				state.builder.substate = patientSelector
 			} else if state.builder.targetTreatment == domain.DefaultTreatment {
 				state.builder.substate = treatmentSelector
@@ -99,6 +98,7 @@ func (state *bookingState) HandleKeyinput(
 	switch state.builder.substate {
 	case actionConfirmation:
 		state.buffer.WriteStoreString(state.builder.confirmationMessage())
+
 	case treatmentSelector:
 		treatmentList := []string{"Select intended treatment (or ESC to back out)"}
 		for i, treatment := range state.builder.treatments {
@@ -108,15 +108,12 @@ func (state *bookingState) HandleKeyinput(
 			)
 		}
 		state.buffer.WriteStoreString(strings.Join(treatmentList, "\n"))
+
 	case patientSelector:
-		patientList := []string{"Select intended patient (or ESC to back out)"}
-		for i, patient := range state.builder.patients {
-			patientList = append(
-				patientList,
-				fmt.Sprintf("%v: %v %v", i+1, patient.FirstName, patient.LastName),
-			)
-		}
-		state.buffer.WriteStoreString(strings.Join(patientList, "\n"))
+		state.buffer.WriteStoreString(
+			interactive.PrintSelector(state.builder.patientSelector),
+		)
+
 	case appointmentSelector:
 		appointmentList := []string{"Select intended appointment (or ESC to back out)"}
 		for i, appointment := range state.builder.appointments {
@@ -132,6 +129,7 @@ func (state *bookingState) HandleKeyinput(
 			)
 		}
 		state.buffer.WriteStoreString(strings.Join(appointmentList, "\n"))
+
 	default:
 	}
 

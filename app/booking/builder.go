@@ -3,6 +3,7 @@ package booking
 import (
 	"fmt"
 
+	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/domain/schedule"
 )
@@ -32,8 +33,7 @@ type bookingBuilder struct {
 	substate substate
 	flow     processFlow
 
-	patients          []domain.Patient
-	targetPatient     domain.Patient
+	patientSelector   interactive.Interactive[domain.Patient]
 	treatments        []domain.Treatment
 	targetTreatment   domain.Treatment
 	appointments      []schedule.Appointment
@@ -54,9 +54,8 @@ func (builder bookingBuilder) confirmationMessage() string {
 	switch builder.flow {
 	case booking:
 		return fmt.Sprintf(
-			"Book %v %v for a %v at %v? (Y/n)",
-			builder.targetPatient.PreferredFirstName,
-			builder.targetPatient.LastName,
+			"Book %v for a %v at %v? (Y/n)",
+			builder.patientSelector.TargetSelection().PrintSelector(),
 			builder.targetTreatment.Name,
 			builder.appointmentDate.HumanDateTime(),
 		)
