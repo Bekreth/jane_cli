@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Bekreth/jane_cli/app/interactive"
-	"github.com/Bekreth/jane_cli/domain/charts"
 	"github.com/Bekreth/jane_cli/domain/schedule"
 )
 
@@ -38,8 +37,7 @@ type chartingBuilder struct {
 
 	noteUnderEdit     string
 	patientSelector   interactive.Interactive
-	charts            []charts.ChartEntry
-	targetChart       charts.ChartEntry
+	chartSelector     interactive.Interactive
 	appointments      []schedule.Appointment
 	targetAppointment schedule.Appointment
 }

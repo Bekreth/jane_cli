@@ -38,13 +38,7 @@ func (state *chartingState) HandleKeyinput(
 		state.builder.patientSelector.SelectElement(character)
 
 	case chartSelector:
-		possibleChart, err := util.ElementSelector(
-			character,
-			state.builder.charts,
-		)
-		if err == nil {
-			state.builder.targetChart = *possibleChart
-		}
+		state.builder.chartSelector.SelectElement(character)
 
 	case appointmentSelector:
 		possibleAppointment, err := util.ElementSelector(
@@ -87,13 +81,13 @@ func (state *chartingState) HandleKeyinput(
 	if state.builder.substate != argument {
 		switch state.builder.flow {
 		case read:
-			if state.builder.patientSelector.HasSelection() {
+			if !state.builder.patientSelector.HasSelection() {
 				state.builder.substate = patientSelector
-			} else if state.builder.targetChart.ID == 0 {
+			} else if !state.builder.chartSelector.HasSelection() {
 				state.fetchCharts()
 				state.builder.substate = chartSelector
 			} else {
-				state.buffer.WriteStoreString(state.builder.targetChart.Snippet)
+				// TODO: what?
 				state.buffer.PrintHeader()
 				state.builder.substate = unknown
 				state.builder.flow = undefined
@@ -129,25 +123,14 @@ func (state *chartingState) HandleKeyinput(
 		state.buffer.WriteStoreString(state.builder.confirmationMessage())
 
 	case patientSelector:
-		state.buffer.WriteStoreString(interactive.PrintSelector(state.builder.patientSelector))
+		state.buffer.WriteStoreString(
+			interactive.PrintSelector(state.builder.patientSelector),
+		)
 
 	case chartSelector:
-		chartList := []string{fmt.Sprintf(
-			"Select desired chart for %v (or ESC to back out)",
-			state.builder.patientSelector.TargetSelection().PrintSelector(),
-		)}
-		for i, chart := range state.builder.charts {
-			chartList = append(
-				chartList,
-				fmt.Sprintf(
-					"%v: %v - %v",
-					i+1,
-					chart.EnteredOn.HumanDate(),
-					chart.Title,
-				),
-			)
-		}
-		state.buffer.WriteStoreString(strings.Join(chartList, "\n"))
+		state.buffer.WriteStoreString(
+			interactive.PrintSelector(state.builder.chartSelector),
+		)
 
 	case appointmentSelector:
 		appointmentList := []string{"Select intended appointment (or ESC to back out)"}

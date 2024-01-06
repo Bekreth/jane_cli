@@ -1,13 +1,19 @@
 package charting
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/Bekreth/jane_cli/app/interactive"
+	"github.com/Bekreth/jane_cli/domain/charts"
+)
 
 func (state *chartingState) fetchCharts() {
 	chartEntries, err := state.fetcher.FetchPatientCharts(
 		state.builder.patientSelector.TargetSelection().GetID(),
 	)
 	if err != nil {
-		//TODO
+		state.buffer.WriteStoreString(err.Error())
+		return
 	}
 
 	if len(chartEntries) == 0 {
@@ -16,11 +22,14 @@ func (state *chartingState) fetchCharts() {
 			state.builder.patientSelector.TargetSelection().PrintSelector(),
 		))
 	} else if len(chartEntries) == 1 {
-		state.builder.targetChart = chartEntries[0]
-		state.builder.charts = chartEntries
-	} else if len(chartEntries) <= 9 {
-		state.builder.charts = chartEntries
-	} else if len(chartEntries) > 9 {
-		state.builder.charts = chartEntries[0:9]
+		state.builder.chartSelector = interactive.NewChartSelector(
+			chartEntries[0],
+			chartEntries,
+		)
+	} else {
+		state.builder.chartSelector = interactive.NewChartSelector(
+			charts.ChartEntry{},
+			chartEntries,
+		)
 	}
 }
