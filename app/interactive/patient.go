@@ -20,19 +20,23 @@ func (selection SelectedPatient) PrintSelector() string {
 	return selection.PrintName()
 }
 
+func (selection SelectedPatient) Deref() domain.Patient {
+	return selection.Patient
+}
+
 func NewPatientSelector(
 	selected domain.Patient,
 	possible []domain.Patient,
-) Interactive {
+) Interactive[domain.Patient] {
 	var selectedPatient SelectedPatient
 	if selected != domain.DefaultPatient {
 		selectedPatient = SelectedPatient{selected}
 	}
-	possiblePatients := make([]Selection, len(possible))
+	possiblePatients := make([]Selection[domain.Patient], len(possible))
 	for i, selection := range possible {
 		possiblePatients[i] = SelectedPatient{selection}
 	}
-	return &selector{
+	return &selector[domain.Patient]{
 		page:              0,
 		possibleSelection: possiblePatients,
 		selected:          selectedPatient,

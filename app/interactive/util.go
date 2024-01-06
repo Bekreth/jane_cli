@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/eiannone/keyboard"
 )
 
 const ESCAPE_STRING = "(or ESC to back out)"
 
-func PrintSelector(interactive Interactive) string {
+func PrintSelector[R interface{}](interactive Interactive[R]) string {
 	output := []string{}
 	for i, possible := range interactive.PossibleSelections() {
 		if i == 0 {
@@ -21,10 +19,10 @@ func PrintSelector(interactive Interactive) string {
 	return strings.Join(output, "\n")
 }
 
-func ElementSelector(
+func ElementSelector[R interface{}](
 	character rune,
-	input []Selection,
-) (Selection, error) {
+	input []Selection[R],
+) (Selection[R], error) {
 	if len(input) == 0 {
 		return nil, fmt.Errorf("Input has size 0")
 	}
@@ -44,13 +42,6 @@ func ElementSelector(
 		)
 	}
 	return input[index-1], nil
-}
-
-func HandleSelection(
-	character rune,
-	key keyboard.Key,
-) (Selection, error) {
-	return nil, nil
 }
 
 func mod(a, b int) int {

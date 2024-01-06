@@ -1,25 +1,26 @@
 package interactive
 
-type Selection interface {
+type Selection[R interface{}] interface {
 	GetID() int
 	PrintHeader() string
 	PrintSelector() string
+	Deref() R
 }
 
-type Interactive interface {
+type Interactive[R interface{}] interface {
 	SelectElement(character rune) error
-	PossibleSelections() []Selection
-	TargetSelection() Selection
+	PossibleSelections() []Selection[R]
+	TargetSelection() Selection[R]
 	HasSelection() bool
 }
 
-type selector struct {
+type selector[R interface{}] struct {
 	page              int
-	possibleSelection []Selection
-	selected          Selection
+	possibleSelection []Selection[R]
+	selected          Selection[R]
 }
 
-func (selection *selector) SelectElement(character rune) error {
+func (selection *selector[R]) SelectElement(character rune) error {
 	pages := len(selection.possibleSelection) / 9
 	var output error
 	switch string(character) {
@@ -32,7 +33,7 @@ func (selection *selector) SelectElement(character rune) error {
 	case "B":
 		selection.page = mod((selection.page - 1), pages)
 	default:
-		selection.selected, output = ElementSelector(
+		selection.selected, output = ElementSelector[R](
 			character,
 			selection.PossibleSelections(),
 		)
@@ -40,7 +41,7 @@ func (selection *selector) SelectElement(character rune) error {
 	return output
 }
 
-func (selection *selector) PossibleSelections() []Selection {
+func (selection *selector[R]) PossibleSelections() []Selection[R] {
 	pages := len(selection.possibleSelection) / 9
 	pageStart := selection.page * 9
 	if selection.page < pages {
@@ -52,10 +53,10 @@ func (selection *selector) PossibleSelections() []Selection {
 
 }
 
-func (selection *selector) TargetSelection() Selection {
+func (selection *selector[R]) TargetSelection() Selection[R] {
 	return selection.selected
 }
 
-func (selection *selector) HasSelection() bool {
+func (selection *selector[R]) HasSelection() bool {
 	return selection.selected != nil
 }

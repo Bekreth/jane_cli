@@ -26,19 +26,23 @@ func (selection SelectedAppointment) PrintSelector() string {
 	)
 }
 
+func (selection SelectedAppointment) Deref() schedule.Appointment {
+	return selection.Appointment
+}
+
 func NewAppointmentSelector(
 	selected schedule.Appointment,
 	possible []schedule.Appointment,
-) Interactive {
+) Interactive[schedule.Appointment] {
 	var selectedAppointment SelectedAppointment
 	if selected != schedule.DefaultAppointment {
 		selectedAppointment = SelectedAppointment{selected}
 	}
-	possiblePatients := make([]Selection, len(possible))
+	possiblePatients := make([]Selection[schedule.Appointment], len(possible))
 	for i, selection := range possible {
 		possiblePatients[i] = SelectedAppointment{selection}
 	}
-	return &selector{
+	return &selector[schedule.Appointment]{
 		page:              0,
 		possibleSelection: possiblePatients,
 		selected:          selectedAppointment,

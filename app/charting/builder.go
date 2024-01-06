@@ -4,6 +4,8 @@ import (
 	"fmt"
 
 	"github.com/Bekreth/jane_cli/app/interactive"
+	"github.com/Bekreth/jane_cli/domain"
+	"github.com/Bekreth/jane_cli/domain/charts"
 	"github.com/Bekreth/jane_cli/domain/schedule"
 )
 
@@ -36,9 +38,9 @@ type chartingBuilder struct {
 	note string
 
 	noteUnderEdit       string
-	patientSelector     interactive.Interactive
-	chartSelector       interactive.Interactive
-	appointmentSelector interactive.Interactive
+	patientSelector     interactive.Interactive[domain.Patient]
+	chartSelector       interactive.Interactive[charts.ChartEntry]
+	appointmentSelector interactive.Interactive[schedule.Appointment]
 }
 
 func newChartingBuilder() chartingBuilder {
