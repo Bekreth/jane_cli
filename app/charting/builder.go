@@ -35,11 +35,10 @@ type chartingBuilder struct {
 	date schedule.JaneTime
 	note string
 
-	noteUnderEdit     string
-	patientSelector   interactive.Interactive
-	chartSelector     interactive.Interactive
-	appointments      []schedule.Appointment
-	targetAppointment schedule.Appointment
+	noteUnderEdit       string
+	patientSelector     interactive.Interactive
+	chartSelector       interactive.Interactive
+	appointmentSelector interactive.Interactive
 }
 
 func newChartingBuilder() chartingBuilder {
@@ -51,9 +50,8 @@ func newChartingBuilder() chartingBuilder {
 
 func (builder chartingBuilder) confirmationMessage() string {
 	return fmt.Sprintf(
-		"Would you like to sign the chart for %v for appointment on %v with contents:\n%v\n(Y/n/E)",
-		builder.patientSelector.TargetSelection().PrintSelector(),
-		builder.targetAppointment.StartAt.HumanDate(),
+		"Would you like to sign the chart for appointment on %v with contents:\n%v\n(Y/n/E)",
+		builder.appointmentSelector.TargetSelection().PrintSelector(),
 		builder.note,
 	)
 }

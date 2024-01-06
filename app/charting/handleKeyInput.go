@@ -1,13 +1,8 @@
 package charting
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/app/terminal"
-	"github.com/Bekreth/jane_cli/app/util"
-	"github.com/Bekreth/jane_cli/domain/schedule"
 	"github.com/eiannone/keyboard"
 )
 
@@ -41,13 +36,7 @@ func (state *chartingState) HandleKeyinput(
 		state.builder.chartSelector.SelectElement(character)
 
 	case appointmentSelector:
-		possibleAppointment, err := util.ElementSelector(
-			character,
-			state.builder.appointments,
-		)
-		if err == nil {
-			state.builder.targetAppointment = *possibleAppointment
-		}
+		state.builder.appointmentSelector.SelectElement(character)
 
 	case noteEditor:
 		//TODO: Limit to standard keys
@@ -96,20 +85,9 @@ func (state *chartingState) HandleKeyinput(
 		case create:
 			if !state.builder.patientSelector.HasSelection() {
 				state.builder.substate = patientSelector
-			} else if state.builder.targetAppointment == schedule.DefaultAppointment {
-				//TODO: Handle Error
-				var err error
-				state.builder.appointments, err = state.fetcher.FindAppointments(
-					state.builder.date,
-					state.builder.date.NextDay(),
-					state.builder.patientSelector.TargetSelection().PrintSelector(),
-				)
-				if err != nil {
-					state.buffer.WriteStoreString(err.Error())
-					state.builder.substate = argument
-				} else {
-					state.builder.substate = appointmentSelector
-				}
+			} else if !state.builder.patientSelector.HasSelection() {
+				state.fetchAppointments()
+				state.builder.substate = appointmentSelector
 			} else if state.builder.note == "" {
 				state.builder.substate = noteEditor
 			} else {
@@ -133,20 +111,9 @@ func (state *chartingState) HandleKeyinput(
 		)
 
 	case appointmentSelector:
-		appointmentList := []string{"Select intended appointment (or ESC to back out)"}
-		for i, appointment := range state.builder.appointments {
-			appointmentList = append(
-				appointmentList,
-				fmt.Sprintf(
-					"%v: %v with %v %v",
-					i+1,
-					appointment.StartAt.HumanDateTime(),
-					appointment.Patient.PreferredFirstName,
-					appointment.Patient.LastName,
-				),
-			)
-		}
-		state.buffer.WriteStoreString(strings.Join(appointmentList, "\n"))
+		state.buffer.WriteStoreString(
+			interactive.PrintSelector(state.builder.appointmentSelector),
+		)
 
 	case noteEditor:
 		if state.builder.noteUnderEdit == "" {

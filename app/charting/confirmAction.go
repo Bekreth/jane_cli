@@ -35,7 +35,7 @@ func (state *chartingState) confirmSign() {
 	state.buffer.WriteStoreString("submitting chart")
 	chart, err := state.fetcher.CreatePatientCharts(
 		state.builder.patientSelector.TargetSelection().GetID(),
-		state.builder.targetAppointment.ID,
+		state.builder.appointmentSelector.TargetSelection().GetID(),
 	)
 
 	if err != nil {
