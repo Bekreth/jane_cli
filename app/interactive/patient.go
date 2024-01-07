@@ -24,14 +24,14 @@ func (selection SelectedPatient) Deref() domain.Patient {
 	return selection.Patient
 }
 
+func (selection SelectedPatient) hasSelection() bool {
+	return selection.Patient != domain.DefaultPatient
+}
+
 func NewPatientSelector(
 	selected domain.Patient,
 	possible []domain.Patient,
 ) Interactive[domain.Patient] {
-	var selectedPatient SelectedPatient
-	if selected != domain.DefaultPatient {
-		selectedPatient = SelectedPatient{selected}
-	}
 	possiblePatients := make([]Selection[domain.Patient], len(possible))
 	for i, selection := range possible {
 		possiblePatients[i] = SelectedPatient{selection}
@@ -39,6 +39,6 @@ func NewPatientSelector(
 	return &selector[domain.Patient]{
 		page:              0,
 		possibleSelection: possiblePatients,
-		selected:          selectedPatient,
+		selected:          SelectedPatient{selected},
 	}
 }

@@ -31,7 +31,7 @@ func (state *bookingState) handleBooking(flags map[string]string) {
 	}
 
 	var err error
-	targetPatient, patients, err := util.ParsePatientValue(
+	patient, patients, err := util.ParsePatientValue(
 		state.fetcher,
 		flags[patientFlag],
 	)
@@ -39,7 +39,7 @@ func (state *bookingState) handleBooking(flags map[string]string) {
 		state.buffer.WriteStoreString(err.Error())
 		return
 	}
-	builder.patientSelector = interactive.NewPatientSelector(targetPatient, patients)
+	builder.patientSelector = interactive.NewPatientSelector(patient, patients)
 
 	treatment, treatments, err := util.ParseTreatmentFlag(
 		state.fetcher,

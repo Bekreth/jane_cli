@@ -30,14 +30,14 @@ func (selection SelectedAppointment) Deref() schedule.Appointment {
 	return selection.Appointment
 }
 
+func (selection SelectedAppointment) hasSelection() bool {
+	return selection.Appointment != schedule.DefaultAppointment
+}
+
 func NewAppointmentSelector(
 	selected schedule.Appointment,
 	possible []schedule.Appointment,
 ) Interactive[schedule.Appointment] {
-	var selectedAppointment SelectedAppointment
-	if selected != schedule.DefaultAppointment {
-		selectedAppointment = SelectedAppointment{selected}
-	}
 	possiblePatients := make([]Selection[schedule.Appointment], len(possible))
 	for i, selection := range possible {
 		possiblePatients[i] = SelectedAppointment{selection}
@@ -45,6 +45,6 @@ func NewAppointmentSelector(
 	return &selector[schedule.Appointment]{
 		page:              0,
 		possibleSelection: possiblePatients,
-		selected:          selectedAppointment,
+		selected:          SelectedAppointment{selected},
 	}
 }

@@ -24,6 +24,10 @@ func (selection SelectedChart) Deref() charts.ChartEntry {
 	return selection.ChartEntry
 }
 
+func (selection SelectedChart) hasSelection() bool {
+	return selection.ID != 0
+}
+
 func NewChartSelector(
 	selected charts.ChartEntry,
 	possible []charts.ChartEntry,

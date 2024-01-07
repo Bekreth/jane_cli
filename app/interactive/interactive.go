@@ -1,6 +1,7 @@
 package interactive
 
 type Selection[R interface{}] interface {
+	hasSelection() bool
 	GetID() int
 	PrintHeader() string
 	PrintSelector() string
@@ -58,5 +59,5 @@ func (selection *selector[R]) TargetSelection() Selection[R] {
 }
 
 func (selection *selector[R]) HasSelection() bool {
-	return selection.selected != nil
+	return selection.selected.hasSelection()
 }
