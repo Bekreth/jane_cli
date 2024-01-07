@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"sort"
 	"strings"
 
 	"github.com/Bekreth/jane_cli/domain"
@@ -33,6 +34,9 @@ func (cache Cache) patientsFromCache(patientName string) []domain.Patient {
 			possibleMatches = append(possibleMatches, patient)
 		}
 	}
+	sort.Slice(possibleMatches, func(index1 int, index2 int) bool {
+		return possibleMatches[index1].PrintName() < possibleMatches[index2].PrintName()
+	})
 	return possibleMatches
 }
 
