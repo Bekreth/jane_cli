@@ -34,7 +34,7 @@ func (state *bookingState) confirmBooking() {
 	state.buffer.WriteStoreString("submitting booking")
 	err := state.fetcher.BookPatient(
 		state.builder.patientSelector.TargetSelection().Deref(),
-		state.builder.targetTreatment,
+		state.builder.treatmentSelector.TargetSelection().Deref(),
 		state.builder.appointmentDate,
 	)
 	if err != nil {

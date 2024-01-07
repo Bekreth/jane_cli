@@ -35,17 +35,21 @@ func (state *bookingState) handleBooking(flags map[string]string) {
 		state.fetcher,
 		flags[patientFlag],
 	)
+	if err != nil {
+		state.buffer.WriteStoreString(err.Error())
+		return
+	}
 	builder.patientSelector = interactive.NewPatientSelector(targetPatient, patients)
-	if err != nil {
-		state.buffer.WriteStoreString(err.Error())
-		return
-	}
 
-	builder, err = state.parseTreatmentValue(flags[treatmentFlag], builder)
+	treatment, treatments, err := util.ParseTreatmentFlag(
+		state.fetcher,
+		flags[treatmentFlag],
+	)
 	if err != nil {
 		state.buffer.WriteStoreString(err.Error())
 		return
 	}
+	builder.treatmentSelector = interactive.NewTreatmentSelector(treatment, treatments)
 
 	builder.appointmentDate, err = util.ParseDate(
 		util.DateTimeFormat,

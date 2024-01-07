@@ -34,8 +34,7 @@ type bookingBuilder struct {
 	flow     processFlow
 
 	patientSelector     interactive.Interactive[domain.Patient]
-	treatments          []domain.Treatment
-	targetTreatment     domain.Treatment
+	treatmentSelector   interactive.Interactive[domain.Treatment]
 	appointmentSelector interactive.Interactive[schedule.Appointment]
 
 	appointmentDate schedule.JaneTime
@@ -55,12 +54,12 @@ func (builder bookingBuilder) confirmationMessage() string {
 		return fmt.Sprintf(
 			"Book %v for a %v at %v? (Y/n)",
 			builder.patientSelector.TargetSelection().PrintSelector(),
-			builder.targetTreatment.Name,
+			builder.treatmentSelector.TargetSelection().PrintHeader(),
 			builder.appointmentDate.HumanDateTime(),
 		)
 	case canceling:
 		return fmt.Sprintf(
-			"Cancel appointment with %v %v at %v? (Y/n)",
+			"Cancel appointment with %v at %v? (Y/n)",
 			builder.appointmentSelector.TargetSelection().Deref().Patient.PrintName(),
 			builder.appointmentDate.HumanDateTime(),
 		)

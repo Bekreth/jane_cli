@@ -1,13 +1,8 @@
 package booking
 
 import (
-	"fmt"
-	"strings"
-
 	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/app/terminal"
-	"github.com/Bekreth/jane_cli/app/util"
-	"github.com/Bekreth/jane_cli/domain"
 	"github.com/eiannone/keyboard"
 )
 
@@ -36,14 +31,7 @@ func (state *bookingState) HandleKeyinput(
 		state.confirmAction(character)
 
 	case treatmentSelector:
-		possibleTreatment, err := util.ElementSelector(
-			character,
-			state.builder.treatments,
-		)
-		selectorErr = err
-		if err == nil {
-			state.builder.targetTreatment = *possibleTreatment
-		}
+		state.builder.treatmentSelector.SelectElement(character)
 
 	case patientSelector:
 		state.builder.patientSelector.SelectElement(character)
@@ -73,7 +61,7 @@ func (state *bookingState) HandleKeyinput(
 		case booking:
 			if !state.builder.patientSelector.HasSelection() {
 				state.builder.substate = patientSelector
-			} else if state.builder.targetTreatment == domain.DefaultTreatment {
+			} else if !state.builder.treatmentSelector.HasSelection() {
 				state.builder.substate = treatmentSelector
 			} else {
 				state.builder.substate = actionConfirmation
@@ -92,14 +80,9 @@ func (state *bookingState) HandleKeyinput(
 		state.buffer.WriteStoreString(state.builder.confirmationMessage())
 
 	case treatmentSelector:
-		treatmentList := []string{"Select intended treatment (or ESC to back out)"}
-		for i, treatment := range state.builder.treatments {
-			treatmentList = append(
-				treatmentList,
-				fmt.Sprintf("%v: %v", i+1, treatment.Name),
-			)
-		}
-		state.buffer.WriteStoreString(strings.Join(treatmentList, "\n"))
+		state.buffer.WriteStoreString(
+			interactive.PrintSelector(state.builder.treatmentSelector),
+		)
 
 	case patientSelector:
 		state.buffer.WriteStoreString(
