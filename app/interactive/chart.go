@@ -1,6 +1,8 @@
 package interactive
 
 import (
+	"fmt"
+
 	"github.com/Bekreth/jane_cli/domain/charts"
 )
 
@@ -17,7 +19,7 @@ func (SelectedChart) PrintHeader() string {
 }
 
 func (selection SelectedChart) PrintSelector() string {
-	return selection.EnteredOn.HumanDate() + selection.Title
+	return fmt.Sprintf("%v - %v", selection.EnteredOn.HumanDate(), selection.Title)
 }
 
 func (selection SelectedChart) Deref() charts.ChartEntry {
@@ -26,6 +28,11 @@ func (selection SelectedChart) Deref() charts.ChartEntry {
 
 func (selection SelectedChart) hasSelection() bool {
 	return selection.ID != 0
+}
+
+func EmptyChartSelector() Interactive[charts.ChartEntry] {
+	var output *selector[charts.ChartEntry]
+	return output
 }
 
 func NewChartSelector(

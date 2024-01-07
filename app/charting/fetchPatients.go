@@ -6,11 +6,6 @@ import (
 )
 
 func (state *chartingState) fetchPatients(flags map[string]string) {
-	builder := chartingBuilder{
-		substate: unknown,
-		flow:     read,
-	}
-
 	patientName, exists := flags[patientFlag]
 	if !exists {
 		state.buffer.WriteStoreString("missing argument -p")
@@ -26,7 +21,5 @@ func (state *chartingState) fetchPatients(flags map[string]string) {
 		state.buffer.WriteStoreString(err.Error())
 		return
 	}
-	builder.patientSelector = interactive.NewPatientSelector(targetPatient, patients)
-
-	state.builder = builder
+	state.builder.patientSelector = interactive.NewPatientSelector(targetPatient, patients)
 }

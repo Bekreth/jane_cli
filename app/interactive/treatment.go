@@ -28,6 +28,11 @@ func (selection SelectedTreatment) hasSelection() bool {
 	return selection.Treatment != domain.DefaultTreatment
 }
 
+func EmptyTreatmentSelector() Interactive[domain.Treatment] {
+	var output *selector[domain.Treatment]
+	return output
+}
+
 func NewTreatmentSelector(
 	selected domain.Treatment,
 	possible []domain.Treatment,

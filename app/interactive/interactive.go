@@ -60,6 +60,9 @@ func (selection *selector[R]) TargetSelection() Selection[R] {
 }
 
 func (selection *selector[R]) HasSelection() bool {
+	if selection == nil {
+		return false
+	}
 	return selection.selected.hasSelection()
 }
 

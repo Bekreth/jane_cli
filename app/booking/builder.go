@@ -45,6 +45,10 @@ func newBookingBuilder() bookingBuilder {
 	return bookingBuilder{
 		substate: argument,
 		flow:     undefined,
+
+		patientSelector:     interactive.EmptyPatientSelector(),
+		treatmentSelector:   interactive.EmptyTreatmentSelector(),
+		appointmentSelector: interactive.EmptyAppointmentSelector(),
 	}
 }
 

@@ -28,6 +28,11 @@ func (selection SelectedPatient) hasSelection() bool {
 	return selection.Patient != domain.DefaultPatient
 }
 
+func EmptyPatientSelector() Interactive[domain.Patient] {
+	var output *selector[domain.Patient]
+	return output
+}
+
 func NewPatientSelector(
 	selected domain.Patient,
 	possible []domain.Patient,

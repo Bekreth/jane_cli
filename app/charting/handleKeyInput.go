@@ -75,11 +75,6 @@ func (state *chartingState) HandleKeyinput(
 			} else if !state.builder.chartSelector.HasSelection() {
 				state.fetchCharts()
 				state.builder.substate = chartSelector
-			} else {
-				// TODO: what?
-				state.buffer.PrintHeader()
-				state.builder.substate = unknown
-				state.builder.flow = undefined
 			}
 
 		case create:

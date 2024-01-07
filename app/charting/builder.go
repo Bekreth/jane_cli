@@ -47,6 +47,10 @@ func newChartingBuilder() chartingBuilder {
 	return chartingBuilder{
 		substate: argument,
 		flow:     undefined,
+
+		patientSelector:     interactive.EmptyPatientSelector(),
+		chartSelector:       interactive.EmptyChartSelector(),
+		appointmentSelector: interactive.EmptyAppointmentSelector(),
 	}
 }
 

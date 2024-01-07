@@ -34,6 +34,11 @@ func (selection SelectedAppointment) hasSelection() bool {
 	return selection.Appointment != schedule.DefaultAppointment
 }
 
+func EmptyAppointmentSelector() Interactive[schedule.Appointment] {
+	var output *selector[schedule.Appointment]
+	return output
+}
+
 func NewAppointmentSelector(
 	selected schedule.Appointment,
 	possible []schedule.Appointment,

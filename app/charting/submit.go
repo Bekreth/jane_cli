@@ -16,30 +16,28 @@ const helpCommand = "help"
 const backCommand = ".."
 
 func (state *chartingState) Submit() {
+	//TODO: this is brittle
 	flags := terminal.ParseFlags(state.buffer.Read())
 	state.logger.Debugf("submitting query flags: %v", flags)
 	state.buffer.Clear()
 	if _, exists := flags[backCommand]; exists {
 		state.nextState = state.rootState
-		return
 	} else if _, exists := flags[helpCommand]; exists {
 		state.printHelp()
-		return
-	} else if _, exists := flags[readCommand]; exists {
-		state.fetchPatients(flags)
 	} else if _, exists := flags[createCommand]; exists {
+		state.builder.flow = create
+		state.builder.substate = unknown
 		state.handleCreateNote(flags)
+	} else if _, exists := flags[readCommand]; exists {
+		state.builder.flow = read
+		state.builder.substate = unknown
+		state.fetchPatients(flags)
 	} else {
 		state.buffer.WriteStoreString("No subcommand specified. Please specify 'read' or 'create'")
 	}
 }
 
 func (state *chartingState) handleCreateNote(flags map[string]string) {
-	builder := chartingBuilder{
-		substate: unknown,
-		flow:     create,
-	}
-
 	// Setup Patient
 	patientName, exists := flags[patientFlag]
 	if !exists {
@@ -69,11 +67,9 @@ func (state *chartingState) handleCreateNote(flags map[string]string) {
 		if err != nil {
 			state.buffer.WriteStoreString(err.Error())
 		}
-		builder.date = parsedDate
+		state.builder.date = parsedDate
 	}
 
 	// Setup Note
-	builder.note, exists = flags[noteFlag]
-
-	state.builder = builder
+	state.builder.note, exists = flags[noteFlag]
 }
