@@ -25,7 +25,6 @@ func (state *bookingState) HandleKeyinput(
 		return state.nextState
 	}
 
-	var selectorErr error
 	switch state.builder.substate {
 	case actionConfirmation:
 		state.confirmAction(character)
@@ -48,12 +47,6 @@ func (state *bookingState) HandleKeyinput(
 		)
 		state.buffer.AddCharacter(character)
 		state.buffer.Write()
-	}
-
-	if selectorErr != nil {
-		state.buffer.WriteStoreString(selectorErr.Error())
-		state.builder = newBookingBuilder()
-		return state.nextState
 	}
 
 	if state.builder.substate != argument {
@@ -81,12 +74,12 @@ func (state *bookingState) HandleKeyinput(
 
 	case treatmentSelector:
 		state.buffer.WriteStoreString(
-			interactive.PrintSelector(state.builder.treatmentSelector),
+			interactive.PrintSelectorList(state.builder.treatmentSelector),
 		)
 
 	case patientSelector:
 		state.buffer.WriteStoreString(
-			interactive.PrintSelector(state.builder.patientSelector),
+			interactive.PrintSelectorList(state.builder.patientSelector),
 		)
 
 	case appointmentSelector:

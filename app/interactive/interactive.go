@@ -13,6 +13,7 @@ type Interactive[R interface{}] interface {
 	PossibleSelections() []Selection[R]
 	TargetSelection() Selection[R]
 	HasSelection() bool
+	PagingInfo() (int, int, int)
 }
 
 type selector[R interface{}] struct {
@@ -34,7 +35,7 @@ func (selection *selector[R]) SelectElement(character rune) error {
 	case "B":
 		selection.page = mod((selection.page - 1), pages)
 	default:
-		selection.selected, output = ElementSelector[R](
+		selection.selected, output = ElementSelector(
 			character,
 			selection.PossibleSelections(),
 		)
@@ -60,4 +61,10 @@ func (selection *selector[R]) TargetSelection() Selection[R] {
 
 func (selection *selector[R]) HasSelection() bool {
 	return selection.selected.hasSelection()
+}
+
+func (selection *selector[R]) PagingInfo() (int, int, int) {
+	return selection.page,
+		len(selection.possibleSelection) / 9,
+		len(selection.possibleSelection)
 }

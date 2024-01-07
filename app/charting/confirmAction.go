@@ -15,6 +15,7 @@ func (state *chartingState) confirmAction(character rune) {
 		fallthrough
 	case "N":
 		state.buffer.WriteStoreString("aborting")
+		state.builder = newChartingBuilder()
 		state.nextState = state.rootState
 
 	case "e":

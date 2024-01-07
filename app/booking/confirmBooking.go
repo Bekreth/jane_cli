@@ -20,6 +20,7 @@ func (state *bookingState) confirmAction(character rune) {
 		fallthrough
 	case "N":
 		state.buffer.WriteStoreString("aborting")
+		state.builder = newBookingBuilder()
 		state.nextState = state.rootState
 
 	default:

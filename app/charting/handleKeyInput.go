@@ -102,17 +102,17 @@ func (state *chartingState) HandleKeyinput(
 
 	case patientSelector:
 		state.buffer.WriteStoreString(
-			interactive.PrintSelector(state.builder.patientSelector),
+			interactive.PrintSelectorList(state.builder.patientSelector),
 		)
 
 	case chartSelector:
 		state.buffer.WriteStoreString(
-			interactive.PrintSelector(state.builder.chartSelector),
+			interactive.PrintSelectorList(state.builder.chartSelector),
 		)
 
 	case appointmentSelector:
 		state.buffer.WriteStoreString(
-			interactive.PrintSelector(state.builder.appointmentSelector),
+			interactive.PrintSelectorList(state.builder.appointmentSelector),
 		)
 
 	case noteEditor:

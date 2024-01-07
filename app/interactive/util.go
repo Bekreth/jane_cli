@@ -8,11 +8,27 @@ import (
 
 const ESCAPE_STRING = "(or ESC to back out)"
 
-func PrintSelector[R interface{}](interactive Interactive[R]) string {
+func PrintSelectorList[R interface{}](interactive Interactive[R]) string {
 	output := []string{}
+	pageNumber, totalPages, _ := interactive.PagingInfo()
+	pageInfo := ""
+	if totalPages > 1 {
+		pageInfo = fmt.Sprintf(
+			"Showing page %v of %v, 'f' to page forwards, 'b' to page backwards ",
+			pageNumber+1,
+			totalPages,
+		)
+	}
+
+	header := fmt.Sprintf(
+		"%v. %v%v",
+		interactive.PossibleSelections()[0].PrintHeader(),
+		pageInfo,
+		ESCAPE_STRING,
+	)
 	for i, possible := range interactive.PossibleSelections() {
 		if i == 0 {
-			output = append(output, fmt.Sprintf("%v %v", possible.PrintHeader(), ESCAPE_STRING))
+			output = append(output, header)
 		}
 		output = append(output, fmt.Sprintf("%v: %v", i+1, possible.PrintSelector()))
 	}
