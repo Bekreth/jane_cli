@@ -24,6 +24,7 @@ func ParsePatientValue(
 	if err != nil {
 		return patient, patients, fmt.Errorf("failed to lookup patient %v : %v", patientName, err)
 	}
+
 	if len(patients) == 0 {
 		return patient, patients, fmt.Errorf("no patients found for %v", patientName)
 	} else if len(patients) == 1 {

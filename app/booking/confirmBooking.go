@@ -48,7 +48,7 @@ func (state *bookingState) confirmBooking() {
 func (state *bookingState) confirmCancelation() {
 	state.buffer.WriteStoreString("canceling appointment")
 	err := state.fetcher.CancelAppointment(
-		state.builder.targetAppointment.ID,
+		state.builder.appointmentSelector.TargetSelection().GetID(),
 		state.builder.cancelMessage,
 	)
 	if err != nil {

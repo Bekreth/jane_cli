@@ -33,11 +33,10 @@ type bookingBuilder struct {
 	substate substate
 	flow     processFlow
 
-	patientSelector   interactive.Interactive[domain.Patient]
-	treatments        []domain.Treatment
-	targetTreatment   domain.Treatment
-	appointments      []schedule.Appointment
-	targetAppointment schedule.Appointment
+	patientSelector     interactive.Interactive[domain.Patient]
+	treatments          []domain.Treatment
+	targetTreatment     domain.Treatment
+	appointmentSelector interactive.Interactive[schedule.Appointment]
 
 	appointmentDate schedule.JaneTime
 	cancelMessage   string
@@ -62,8 +61,7 @@ func (builder bookingBuilder) confirmationMessage() string {
 	case canceling:
 		return fmt.Sprintf(
 			"Cancel appointment with %v %v at %v? (Y/n)",
-			builder.targetAppointment.Patient.PreferredFirstName,
-			builder.targetAppointment.Patient.LastName,
+			builder.appointmentSelector.TargetSelection().Deref().Patient.PrintName(),
 			builder.appointmentDate.HumanDateTime(),
 		)
 	}

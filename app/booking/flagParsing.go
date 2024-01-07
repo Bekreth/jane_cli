@@ -26,33 +26,3 @@ func (state *bookingState) parseTreatmentValue(
 	}
 	return builder, nil
 }
-
-func (state *bookingState) parseAppointmentValue(
-	patientName string,
-	builder bookingBuilder,
-) (bookingBuilder, error) {
-	appointments, err := state.fetcher.FindAppointments(
-		builder.appointmentDate.ThisDay(),
-		builder.appointmentDate.NextDay(),
-		patientName,
-	)
-	if err != nil {
-		return builder, fmt.Errorf("failed to lookup appointments : %v", err)
-	}
-	builder.appointments = appointments
-	if len(builder.appointments) == 0 {
-		outputMessage := "no appointments found on %v"
-		if patientName != "" {
-			outputMessage += " for " + patientName
-		}
-		return builder, fmt.Errorf(outputMessage, builder.appointmentDate.HumanDate())
-	} else if len(builder.appointments) == 1 {
-		builder.targetAppointment = builder.appointments[0]
-	} else if len(builder.appointments) > 8 {
-		return builder, fmt.Errorf(
-			"too many appointments to render nicely on %v",
-			builder.appointmentDate.HumanDate(),
-		)
-	}
-	return builder, nil
-}

@@ -22,11 +22,11 @@ func (state *chartingState) fetchPatients(flags map[string]string) {
 		state.fetcher,
 		patientName,
 	)
-	builder.patientSelector = interactive.NewPatientSelector(targetPatient, patients)
 	if err != nil {
 		state.buffer.WriteStoreString(err.Error())
 		return
 	}
+	builder.patientSelector = interactive.NewPatientSelector(targetPatient, patients)
 
 	state.builder = builder
 }
