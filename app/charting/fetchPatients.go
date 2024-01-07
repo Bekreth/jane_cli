@@ -1,13 +1,11 @@
 package charting
 
-import "github.com/Bekreth/jane_cli/app/util"
+import (
+	"github.com/Bekreth/jane_cli/app/interactive"
+	"github.com/Bekreth/jane_cli/app/util"
+)
 
 func (state *chartingState) fetchPatients(flags map[string]string) {
-	builder := chartingBuilder{
-		substate: unknown,
-		flow:     read,
-	}
-
 	patientName, exists := flags[patientFlag]
 	if !exists {
 		state.buffer.WriteStoreString("missing argument -p")
@@ -15,7 +13,7 @@ func (state *chartingState) fetchPatients(flags map[string]string) {
 	}
 
 	var err error
-	builder.targetPatient, builder.patients, err = util.ParsePatientValue(
+	targetPatient, patients, err := util.ParsePatientValue(
 		state.fetcher,
 		patientName,
 	)
@@ -23,6 +21,5 @@ func (state *chartingState) fetchPatients(flags map[string]string) {
 		state.buffer.WriteStoreString(err.Error())
 		return
 	}
-
-	state.builder = builder
+	state.builder.patientSelector = interactive.NewPatientSelector(targetPatient, patients)
 }

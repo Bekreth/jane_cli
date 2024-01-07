@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/app/util"
 )
@@ -38,11 +39,19 @@ func (state *bookingState) handleCancel(flags map[string]string) {
 	}
 	builder.appointmentDate = dateValue
 
-	builder, err = state.parseAppointmentValue(flags[patientFlag], builder)
+	appointment, appointments, err := util.ParseAppointmentFlag(
+		state.fetcher,
+		dateValue,
+		flags[patientFlag],
+	)
 	if err != nil {
 		state.buffer.WriteStoreString(err.Error())
 		return
 	}
+	builder.appointmentSelector = interactive.NewAppointmentSelector(
+		appointment,
+		appointments,
+	)
 
 	state.builder = builder
 }

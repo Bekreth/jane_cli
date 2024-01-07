@@ -15,6 +15,7 @@ func (state *chartingState) confirmAction(character rune) {
 		fallthrough
 	case "N":
 		state.buffer.WriteStoreString("aborting")
+		state.builder = newChartingBuilder()
 		state.nextState = state.rootState
 
 	case "e":
@@ -34,8 +35,8 @@ func (state *chartingState) confirmAction(character rune) {
 func (state *chartingState) confirmSign() {
 	state.buffer.WriteStoreString("submitting chart")
 	chart, err := state.fetcher.CreatePatientCharts(
-		state.builder.targetPatient.ID,
-		state.builder.targetAppointment.ID,
+		state.builder.patientSelector.TargetSelection().GetID(),
+		state.builder.appointmentSelector.TargetSelection().GetID(),
 	)
 
 	if err != nil {
@@ -56,7 +57,7 @@ func (state *chartingState) confirmSign() {
 
 	err = state.fetcher.SignChart(
 		chart,
-		state.builder.targetPatient.ID,
+		state.builder.patientSelector.TargetSelection().GetID(),
 	)
 	if err != nil {
 		state.buffer.WriteStoreString(fmt.Sprintf("failed to sign chart: %v", err))

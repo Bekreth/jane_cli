@@ -20,6 +20,7 @@ func (state *bookingState) confirmAction(character rune) {
 		fallthrough
 	case "N":
 		state.buffer.WriteStoreString("aborting")
+		state.builder = newBookingBuilder()
 		state.nextState = state.rootState
 
 	default:
@@ -32,9 +33,10 @@ func (state *bookingState) confirmAction(character rune) {
 
 func (state *bookingState) confirmBooking() {
 	state.buffer.WriteStoreString("submitting booking")
+	state.logger.Debugf("BUILDER 4: %v", state.builder)
 	err := state.fetcher.BookPatient(
-		state.builder.targetPatient,
-		state.builder.targetTreatment,
+		state.builder.patientSelector.TargetSelection().Deref(),
+		state.builder.treatmentSelector.TargetSelection().Deref(),
 		state.builder.appointmentDate,
 	)
 	if err != nil {
@@ -48,7 +50,7 @@ func (state *bookingState) confirmBooking() {
 func (state *bookingState) confirmCancelation() {
 	state.buffer.WriteStoreString("canceling appointment")
 	err := state.fetcher.CancelAppointment(
-		state.builder.targetAppointment.ID,
+		state.builder.appointmentSelector.TargetSelection().GetID(),
 		state.builder.cancelMessage,
 	)
 	if err != nil {

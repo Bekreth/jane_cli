@@ -3,6 +3,7 @@ package booking
 import (
 	"fmt"
 
+	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/domain/schedule"
 )
@@ -32,12 +33,9 @@ type bookingBuilder struct {
 	substate substate
 	flow     processFlow
 
-	patients          []domain.Patient
-	targetPatient     domain.Patient
-	treatments        []domain.Treatment
-	targetTreatment   domain.Treatment
-	appointments      []schedule.Appointment
-	targetAppointment schedule.Appointment
+	patientSelector     interactive.Interactive[domain.Patient]
+	treatmentSelector   interactive.Interactive[domain.Treatment]
+	appointmentSelector interactive.Interactive[schedule.Appointment]
 
 	appointmentDate schedule.JaneTime
 	cancelMessage   string
@@ -47,6 +45,10 @@ func newBookingBuilder() bookingBuilder {
 	return bookingBuilder{
 		substate: argument,
 		flow:     undefined,
+
+		patientSelector:     interactive.EmptyPatientSelector(),
+		treatmentSelector:   interactive.EmptyTreatmentSelector(),
+		appointmentSelector: interactive.EmptyAppointmentSelector(),
 	}
 }
 
@@ -54,17 +56,15 @@ func (builder bookingBuilder) confirmationMessage() string {
 	switch builder.flow {
 	case booking:
 		return fmt.Sprintf(
-			"Book %v %v for a %v at %v? (Y/n)",
-			builder.targetPatient.PreferredFirstName,
-			builder.targetPatient.LastName,
-			builder.targetTreatment.Name,
+			"Book %v for a %v at %v? (Y/n)",
+			builder.patientSelector.TargetSelection().PrintSelector(),
+			builder.treatmentSelector.TargetSelection().PrintHeader(),
 			builder.appointmentDate.HumanDateTime(),
 		)
 	case canceling:
 		return fmt.Sprintf(
-			"Cancel appointment with %v %v at %v? (Y/n)",
-			builder.targetAppointment.Patient.PreferredFirstName,
-			builder.targetAppointment.Patient.LastName,
+			"Cancel appointment with %v at %v? (Y/n)",
+			builder.appointmentSelector.TargetSelection().Deref().Patient.PrintName(),
 			builder.appointmentDate.HumanDateTime(),
 		)
 	}
