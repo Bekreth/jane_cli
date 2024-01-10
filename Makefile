@@ -4,6 +4,8 @@ MSI_PACKAGER=windows_msi.xml
 
 # Run commands
 
+msi: ${WINDOWS_OUTPUT}/jane_cli.msi
+
 clean:
 	rm -rf output
 
@@ -27,7 +29,7 @@ ${WINDOWS_OUTPUT}/var/: | ${WINDOWS_OUTPUT}/
 ${WINDOWS_OUTPUT}/jane_cli.exe: ${GO_FILES}| ${WINDOWS_OUTPUT}/
 	@GOOS=windows GOARCH=amd64 go build  -o $@ .
 
-${WINDOWS_OUTPUT}/${MSI_PACKAGER}: packaging/${MSI_PACKAGER} | ${WINDOWS_OUTPUT}/
+${WINDOWS_OUTPUT}/jane_cli.wxs: packaging/windows_msi.xml | ${WINDOWS_OUTPUT}/
 	@cp $< $@
 
 ${WINDOWS_OUTPUT}/etc/config.yaml: etc/config.yaml | ${WINDOWS_OUTPUT}/etc/
@@ -39,12 +41,15 @@ ${WINDOWS_OUTPUT}/var/user.yaml: etc/user.template.yaml | ${WINDOWS_OUTPUT}/var/
 ${WINDOWS_OUTPUT}/var/log: | ${WINDOWS_OUTPUT}/var/
 	@touch $@
 
-${WINDOWS_OUTPUT}/jane_cli.msi: ${WINDOWS_OUTPUT}/${MSI_PACKAGER} \
+${WINDOWS_OUTPUT}/jane_cli.wixobj: ${WINDOWS_OUTPUT}/jane_cli.wxs \
 	${WINDOWS_OUTPUT}/jane_cli.exe \
 	${WINDOWS_OUTPUT}/etc/config.yaml \
 	${WINDOWS_OUTPUT}/var/user.yaml \
 	${WINDOWS_OUTPUT}/var/log
-	wixl -v $< -o $@
+	docker run --rm -v $(shell pwd)/output/windows:/wix dactiv/wix candle jane_cli.wxs
+
+${WINDOWS_OUTPUT}/jane_cli.msi: ${WINDOWS_OUTPUT}/jane_cli.wixobj
+	docker run --rm -v $(shell pwd)/output/windows:/wix dactiv/wix light ${<F} -sval
 
 # Linux
 output/jane_cli: ${GO_FILES} | output/

@@ -39,7 +39,7 @@
 
             <Component Id='MainExecutable' Guid='fc996916-8096-497c-89d6-d1d3799c95e6'>
 							<File 
-								Id='Jane CLI' 
+								Id='Jane_CLI' 
 								Name='jane_cli.exe'
 								DiskId='1'
 								Source='jane_cli.exe'
@@ -50,7 +50,6 @@
 									Directory="ProgramMenuDir"
 									Name="Jane CLI"
 									WorkingDirectory='INSTALLDIR'
-									Icon="jane_cli.exe"
 									IconIndex="0"
 									Advertise="yes"
 								/>
@@ -59,7 +58,6 @@
 									Directory="DesktopFolder"
 									Name="Jane CLI"
 									WorkingDirectory='INSTALLDIR'
-									Icon="jane_cli.exe"
 									IconIndex="0"
 									Advertise="yes"
 								/>
@@ -69,7 +67,6 @@
 						<Directory Id='ConfigDir' Name='etc'>
 							<Component Id='Config' Guid='41d7229a-07b0-4540-bddc-f9554913f4f8'>
 								<CreateFolder>
-									<!--<Permission User="Everyone" GenericAll="yes"/>-->
 								</CreateFolder>
 								<File 
 									Id='JaneConfig' 
@@ -77,34 +74,34 @@
 									DiskId='1'
 									Source='etc/config.yaml'
 									KeyPath='yes'
-								/>
+									>
+										<Permission User="Everyone" GenericAll="yes"/>
+									</File>
 							</Component>
 						</Directory>
 
 						<Directory Id='VarDir' Name='var'>
 							<Component Id='Var' Guid='5014b5f8-3d8a-4268-9d37-6d48df569c10'>
-								<CreateFolder>
-									<!--<Permission User="Everyone" GenericAll="yes"/>-->
-								</CreateFolder>
 								<File 
 									Id='JaneVar' 
 									Name='user.yaml'
 									DiskId='1'
 									Source='var/user.yaml'
 									KeyPath='yes'
-								/>
+								>
+									<Permission User="Everyone" GenericAll="yes"/>
+								</File>
 							</Component>
 							<Component Id='Log' Guid='b80d0611-1762-428f-8bb7-023540194713'>
-								<CreateFolder>
-									<!--<Permission User="Everyone" GenericAll="yes"/>-->
-								</CreateFolder>
 								<File 
 									Id='JaneLog' 
 									Name='log'
 									DiskId='1'
 									Source='var/log'
 									KeyPath='yes'
-								/>
+								>
+									<Permission User="Everyone" GenericAll="yes"/>
+								</File>
 							</Component>
 						</Directory>
 
@@ -114,7 +111,7 @@
 
 			<Directory Id="ProgramMenuFolder" Name="Programs">
 				<Directory Id="ProgramMenuDir" Name="Jane CLI 1.3.0">
-					<Component Id="ProgramMenuDir" Guid='fc996916-8096-497c-89d6-d1d3799c95e6'>
+					<Component Id="ProgramMenuDir" Guid='e7c9fcb0-3417-42dd-acad-9fc0289751f3'>
 						<RemoveFolder Id='ProgramMenuDir' On='uninstall'/>
 						<RegistryValue 
 							Root='HKCU' 

@@ -32,8 +32,6 @@ func main() {
 	}
 	time.Local = loc
 
-	fmt.Printf("Loaded config %v\n", config)
-
 	logger, err := logger.NewLogrusLogger(config.Logger)
 	if err != nil {
 		fmt.Printf("failed to setup logger: %v\n", err)
