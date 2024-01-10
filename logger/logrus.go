@@ -2,6 +2,7 @@ package logger
 
 import (
 	"os"
+	"path/filepath"
 
 	"github.com/sirupsen/logrus"
 )
@@ -18,7 +19,8 @@ func NewLogrusLogger(config Config) (Logger, error) {
 	output := LogrusLogger{
 		logrus.New(),
 	}
-	file, err := os.OpenFile(config.Output, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+	path := filepath.FromSlash(config.Output)
+	file, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 	if err != nil {
 		return output, err
 	}
