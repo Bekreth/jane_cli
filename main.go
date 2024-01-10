@@ -19,15 +19,18 @@ import (
 func main() {
 	fmt.Println("Starting Jane CLI")
 	config, err := parseConfig()
-
-	// TODO: this needs to be configurable v.v.v.v.v.v.v
-	loc, err := time.LoadLocation("America/Vancouver")
-	time.Local = loc
-
 	if err != nil {
 		fmt.Printf("failed to load config: %v\n", err)
 		os.Exit(1)
 	}
+
+	// TODO: this needs to be configurable v.v.v.v.v.v.v
+	loc, err := time.LoadLocation("America/Vancouver")
+	if err != nil {
+		fmt.Printf("failed to set timezone: %v\n", err)
+		os.Exit(1)
+	}
+	time.Local = loc
 
 	logger, err := logger.NewLogrusLogger(config.Logger)
 	if err != nil {

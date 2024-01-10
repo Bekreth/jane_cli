@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/Bekreth/jane_cli/logger"
@@ -24,7 +25,8 @@ func NewUser(logger logger.Logger, filePath string) (User, error) {
 		logger:   logger,
 	}
 
-	userFile, err := os.Open(filePath)
+	path := filepath.FromSlash(filePath)
+	userFile, err := os.Open(path)
 	if err != nil {
 		fmt.Printf("The provided user file at %v is missing.  Creating one now\n", filePath)
 		err = output.SaveUserFile()
@@ -79,7 +81,7 @@ func (user User) PostCheck() {
 
 	if user.Auth.Domain == "" {
 		missingData = append(missingData, "clinic domain")
-		commands = append(commands, " * init -d ${clinicDomain}")
+		commands = append(commands, " * init -c ${clinicDomain}")
 		shouldPrint = true
 	}
 	if user.Auth.Username == "" {

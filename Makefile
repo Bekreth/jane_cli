@@ -1,4 +1,12 @@
-GO_FILES=$(shell find . -type f -name "*.go")
+include makefiles/common.mk
+include makefiles/windows.mk
+
+
+# Run commands
+msi: ${WINDOWS_OUTPUT}/${NAME}.msi
+
+clean:
+	rm -rf output
 
 test:
 	go test ./...
@@ -6,13 +14,6 @@ test:
 output/:
 	@mkdir $@
 
-output/jane_cli.exe: ${GO_FILES}| output/
-	@GOOS=windows GOARCH=amd64 go build  -o $@ .
-
-output/jane_cli: ${GO_FILES} | output/
+# Linux
+output/${NAME}: ${GO_FILES} | output/
 	@GOOS=linux GOARCH=amd64 go build -o $@ . 
-
-clean:
-	rm -rf output
-
-build: output/jane_cli output/jane_cli.exe
