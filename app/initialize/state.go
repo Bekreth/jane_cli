@@ -73,7 +73,7 @@ func (state *initState) printHelp() {
 	// TODO: automate this list of elements
 	state.buffer.WriteStoreString(fmt.Sprintf(
 		"init should only need to be run the first time your setup your client:\n%v\n%v",
-		"\t-u\tusername used to log in to Jane",
 		"\t-c\tthe name of the clinic",
+		"\t-u\tusername used to log in to Jane",
 	))
 }

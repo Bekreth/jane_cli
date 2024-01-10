@@ -81,7 +81,7 @@ func (user User) PostCheck() {
 
 	if user.Auth.Domain == "" {
 		missingData = append(missingData, "clinic domain")
-		commands = append(commands, " * init -d ${clinicDomain}")
+		commands = append(commands, " * init -c ${clinicDomain}")
 		shouldPrint = true
 	}
 	if user.Auth.Username == "" {

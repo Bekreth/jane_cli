@@ -20,6 +20,7 @@
 			Compressed='yes'
 			SummaryCodepage='1252'
 		/>
+		<Icon Id="jane_cli.ico" SourceFile="jane_cli.ico"/>
 
 		<Media 
 			Id='1' 
@@ -47,36 +48,46 @@
 							>
 								<Shortcut
 									Id="startmenuJaneCLI130"
-									Directory="ProgramMenuDir"
 									Name="Jane CLI"
+									Directory="ProgramMenuDir"
 									WorkingDirectory='INSTALLDIR'
-									IconIndex="0"
 									Advertise="yes"
+									Icon="jane_cli.ico"
+									IconIndex="0"
 								/>
 								<Shortcut
 									Id="desktopJaneCLI130"
 									Directory="DesktopFolder"
 									Name="Jane CLI"
 									WorkingDirectory='INSTALLDIR'
-									IconIndex="0"
 									Advertise="yes"
+									Icon="jane_cli.ico"
+									IconIndex="0"
 								/>
 							</File>
             </Component>
 
+            <Component Id='Icon' Guid='800ef1fc-f755-42f7-9c22-fef3e97d7972'>
+							<File 
+								Id='JaneIcon' 
+								Name='jane_cli.ico'
+								DiskId='1'
+								Source='jane_cli.ico'
+								KeyPath='yes'
+							/>
+            </Component>
+
 						<Directory Id='ConfigDir' Name='etc'>
 							<Component Id='Config' Guid='41d7229a-07b0-4540-bddc-f9554913f4f8'>
-								<CreateFolder>
-								</CreateFolder>
 								<File 
 									Id='JaneConfig' 
 									Name='config.yaml'
 									DiskId='1'
 									Source='etc/config.yaml'
 									KeyPath='yes'
-									>
-										<Permission User="Everyone" GenericAll="yes"/>
-									</File>
+								>
+									<Permission User="Everyone" GenericAll="yes"/>
+								</File>
 							</Component>
 						</Directory>
 
@@ -129,6 +140,7 @@
     <Feature Id='Complete' Level='1'>
       <ComponentRef Id='MainExecutable' />
       <ComponentRef Id='ProgramMenuDir' />
+      <ComponentRef Id='Icon' />
       <ComponentRef Id='Config' />
       <ComponentRef Id='Var' />
       <ComponentRef Id='Log' />
