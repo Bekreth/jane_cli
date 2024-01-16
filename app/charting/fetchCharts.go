@@ -7,29 +7,31 @@ import (
 	"github.com/Bekreth/jane_cli/domain/charts"
 )
 
-func (state *chartingState) fetchCharts() {
+func (state *chartingState) fetchCharts() (
+	interactive.Interactive[charts.ChartEntry],
+	error,
+) {
 	chartEntries, err := state.fetcher.FetchPatientCharts(
 		state.builder.patientSelector.TargetSelection().GetID(),
 	)
 	if err != nil {
-		state.buffer.WriteStoreString(err.Error())
-		return
+		return nil, err
 	}
 
 	if len(chartEntries) == 0 {
-		state.buffer.WriteStoreString(fmt.Sprintf(
+		return nil, fmt.Errorf(
 			"no charts found for patient %v",
 			state.builder.patientSelector.TargetSelection().PrintSelector(),
-		))
+		)
 	} else if len(chartEntries) == 1 {
-		state.builder.chartSelector = interactive.NewChartSelector(
+		return interactive.NewChartSelector(
 			chartEntries[0],
 			chartEntries,
-		)
+		), nil
 	} else {
-		state.builder.chartSelector = interactive.NewChartSelector(
+		return interactive.NewChartSelector(
 			charts.ChartEntry{},
 			chartEntries,
-		)
+		), nil
 	}
 }

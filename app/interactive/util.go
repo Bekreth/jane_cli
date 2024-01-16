@@ -10,18 +10,21 @@ const ESCAPE_STRING = "(or ESC to back out)"
 
 func PrintSelectorList[R interface{}](interactive Interactive[R]) string {
 	output := []string{}
-	pageNumber, totalPages, _ := interactive.PagingInfo()
+	pageNumber, totalPages, elementCount := interactive.PagingInfo()
+	if elementCount == 0 {
+		return ""
+	}
 	pageInfo := ""
-	if totalPages > 1 {
+	if totalPages > 0 {
 		pageInfo = fmt.Sprintf(
 			"Showing page %v of %v, 'f' to page forwards, 'b' to page backwards ",
 			pageNumber+1,
-			totalPages,
+			totalPages+1,
 		)
 	}
 
 	header := fmt.Sprintf(
-		"%v. %v%v",
+		"%v. %v %v",
 		interactive.PossibleSelections()[0].PrintHeader(),
 		pageInfo,
 		ESCAPE_STRING,
@@ -43,7 +46,7 @@ func ElementSelector[R interface{}](
 		return nil, fmt.Errorf("Input has size 0")
 	}
 	index, err := strconv.Atoi(string(character))
-	if err != nil || index == 0 {
+	if err != nil {
 		return nil, fmt.Errorf(
 			"selector value of '%v' unacceptable. select a value between 1 and %v",
 			string(character),

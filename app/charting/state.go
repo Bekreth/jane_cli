@@ -84,6 +84,9 @@ func (state *chartingState) triggerAutocomplete() {
 func (state *chartingState) ClearBuffer() {
 	state.buffer.Clear()
 	state.buffer.PrintHeader()
+	if state.builder.flow == create && state.builder.substate == noteEditor {
+		state.builder.noteUnderEdit = ""
+	}
 }
 
 func (state *chartingState) RepeatLastOutput() {

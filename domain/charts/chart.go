@@ -35,10 +35,21 @@ func (entry ChartEntry) PrintSelector() string {
 	}
 }
 
+func (entry ChartEntry) PrintText() string {
+	output := ""
+	for _, part := range entry.ChartParts {
+		output += part.Text
+	}
+	return output
+}
+
 var DefaultChartEntry = ChartEntry{}
 
+// Chart::Part::Note
 type ChartPart struct {
-	ID int `json:"id"`
+	ID   int    `json:"id"`
+	Type string `json:"type"`
+	Text string `json:"text"`
 }
 
 type ChartPartUpdate struct {

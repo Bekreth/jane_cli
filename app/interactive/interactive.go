@@ -13,6 +13,9 @@ type Interactive[R interface{}] interface {
 	PossibleSelections() []Selection[R]
 	TargetSelection() Selection[R]
 	HasSelection() bool
+
+	// PagingInfo specifies what the current page is, how many pages there are, and
+	// how many total elements there are
 	PagingInfo() (int, int, int)
 }
 
@@ -23,16 +26,16 @@ type selector[R interface{}] struct {
 }
 
 func (selection *selector[R]) SelectElement(character rune) error {
-	pages := len(selection.possibleSelection) / 9
+	pages := (len(selection.possibleSelection) / 9) + 1
 	var output error
-	switch string(character) {
-	case "f":
+	switch character {
+	case 'f':
 		fallthrough
-	case "F":
+	case 'F':
 		selection.page = (selection.page + 1) % pages
-	case "b":
+	case 'b':
 		fallthrough
-	case "B":
+	case 'B':
 		selection.page = mod((selection.page - 1), pages)
 	default:
 		selection.selected, output = ElementSelector(
@@ -44,6 +47,9 @@ func (selection *selector[R]) SelectElement(character rune) error {
 }
 
 func (selection *selector[R]) PossibleSelections() []Selection[R] {
+	if selection == nil {
+		return []Selection[R]{}
+	}
 	pages := len(selection.possibleSelection) / 9
 	pageStart := selection.page * 9
 	if selection.page < pages {
@@ -67,6 +73,9 @@ func (selection *selector[R]) HasSelection() bool {
 }
 
 func (selection *selector[R]) PagingInfo() (int, int, int) {
+	if selection == nil {
+		return 0, 0, 0
+	}
 	return selection.page,
 		len(selection.possibleSelection) / 9,
 		len(selection.possibleSelection)

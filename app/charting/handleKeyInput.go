@@ -1,6 +1,8 @@
 package charting
 
 import (
+	"fmt"
+
 	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/eiannone/keyboard"
@@ -68,25 +70,48 @@ func (state *chartingState) HandleKeyinput(
 	}
 
 	if state.builder.substate != argument {
+		var err error
 		switch state.builder.flow {
 		case read:
 			if !state.builder.patientSelector.HasSelection() {
 				state.builder.substate = patientSelector
 			} else if !state.builder.chartSelector.HasSelection() {
-				state.fetchCharts()
-				state.builder.substate = chartSelector
+				if len(state.builder.chartSelector.PossibleSelections()) == 0 {
+					state.builder.chartSelector, err = state.fetchCharts()
+				}
+				if err != nil {
+					state.buffer.WriteStoreString(err.Error())
+					state.builder = newChartingBuilder()
+					state.buffer.PrintHeader()
+				} else {
+					if state.builder.chartSelector.HasSelection() {
+						state.builder.substate = complete
+					} else {
+						state.builder.substate = chartSelector
+					}
+				}
 			} else {
-				state.buffer.WriteStoreString(state.builder.chartSelector.TargetSelection().Deref().Snippet)
-				state.buffer.PrintHeader()
-				state.builder = newChartingBuilder()
+				state.builder.substate = complete
 			}
 
 		case create:
 			if !state.builder.patientSelector.HasSelection() {
 				state.builder.substate = patientSelector
 			} else if !state.builder.appointmentSelector.HasSelection() {
-				state.fetchAppointments()
-				state.builder.substate = appointmentSelector
+				if len(state.builder.appointmentSelector.PossibleSelections()) == 0 {
+					state.builder.appointmentSelector, err = state.fetchAppointments()
+				}
+				if err != nil {
+					state.buffer.WriteStoreString(err.Error())
+					state.builder = newChartingBuilder()
+					state.buffer.PrintHeader()
+				} else {
+					if state.builder.appointmentSelector.HasSelection() {
+						state.builder.substate = noteEditor
+					} else {
+						state.builder.substate = appointmentSelector
+					}
+				}
 			} else if state.builder.note == "" {
 				state.builder.substate = noteEditor
 			} else {
@@ -116,10 +141,20 @@ func (state *chartingState) HandleKeyinput(
 
 	case noteEditor:
 		if state.builder.noteUnderEdit == "" {
-			state.buffer.WriteStoreString("Write chart notes (or ESC to back out): ")
+			output := fmt.Sprintf(
+				"Write chart notes for %v(or ESC to back out): ",
+				state.builder.appointmentSelector.TargetSelection().PrintSelector(),
+			)
+			state.buffer.WriteStoreString(output)
 		} else {
 			state.buffer.WriteString(state.builder.noteUnderEdit)
 		}
+
+	case complete:
+		//TODO: Fix this nonsense
+		state.buffer.WriteStoreString(state.builder.chartSelector.TargetSelection().Deref().PrintText())
+		state.buffer.PrintHeader()
+		state.builder = newChartingBuilder()
 
 	default:
 	}

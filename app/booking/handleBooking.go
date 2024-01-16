@@ -30,6 +30,7 @@ func (state *bookingState) handleBooking(flags map[string]string) {
 		flow:     booking,
 	}
 
+	// Setup Patient
 	var err error
 	patient, patients, err := util.ParsePatientValue(
 		state.fetcher,
@@ -41,6 +42,7 @@ func (state *bookingState) handleBooking(flags map[string]string) {
 	}
 	builder.patientSelector = interactive.NewPatientSelector(patient, patients)
 
+	// Setup Treatment
 	treatment, treatments, err := util.ParseTreatmentFlag(
 		state.fetcher,
 		flags[treatmentFlag],
@@ -51,6 +53,7 @@ func (state *bookingState) handleBooking(flags map[string]string) {
 	}
 	builder.treatmentSelector = interactive.NewTreatmentSelector(treatment, treatments)
 
+	// Setup Date
 	builder.appointmentDate, err = util.ParseDate(
 		util.DateTimeFormat,
 		util.YearDateTimeFormat,
