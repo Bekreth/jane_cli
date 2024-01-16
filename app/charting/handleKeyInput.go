@@ -1,6 +1,8 @@
 package charting
 
 import (
+	"fmt"
+
 	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/eiannone/keyboard"
@@ -82,13 +84,14 @@ func (state *chartingState) HandleKeyinput(
 					state.builder = newChartingBuilder()
 					state.buffer.PrintHeader()
 				} else {
-					state.builder.substate = chartSelector
+					if state.builder.chartSelector.HasSelection() {
+						state.builder.substate = complete
+					} else {
+						state.builder.substate = chartSelector
+					}
 				}
 			} else {
-				//TODO: Fix this nonsense
-				state.buffer.WriteStoreString(state.builder.chartSelector.TargetSelection().Deref().Snippet)
-				state.buffer.PrintHeader()
-				state.builder = newChartingBuilder()
+				state.builder.substate = complete
 			}
 
 		case create:
@@ -103,7 +106,11 @@ func (state *chartingState) HandleKeyinput(
 					state.builder = newChartingBuilder()
 					state.buffer.PrintHeader()
 				} else {
-					state.builder.substate = appointmentSelector
+					if state.builder.appointmentSelector.HasSelection() {
+						state.builder.substate = noteEditor
+					} else {
+						state.builder.substate = appointmentSelector
+					}
 				}
 			} else if state.builder.note == "" {
 				state.builder.substate = noteEditor
@@ -134,10 +141,20 @@ func (state *chartingState) HandleKeyinput(
 
 	case noteEditor:
 		if state.builder.noteUnderEdit == "" {
-			state.buffer.WriteStoreString("Write chart notes (or ESC to back out): ")
+			output := fmt.Sprintf(
+				"Write chart notes for %v(or ESC to back out): ",
+				state.builder.appointmentSelector.TargetSelection().PrintSelector(),
+			)
+			state.buffer.WriteStoreString(output)
 		} else {
 			state.buffer.WriteString(state.builder.noteUnderEdit)
 		}
+
+	case complete:
+		//TODO: Fix this nonsense
+		state.buffer.WriteStoreString(state.builder.chartSelector.TargetSelection().Deref().PrintText())
+		state.buffer.PrintHeader()
+		state.builder = newChartingBuilder()
 
 	default:
 	}

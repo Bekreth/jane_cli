@@ -40,9 +40,9 @@ func (state chartingState) handleCreate(
 			date,
 		)
 		if err != nil {
-			state.buffer.WriteStoreString(err.Error())
+			return output, err
 		}
-		state.builder.date = parsedDate
+		output.date = parsedDate
 	} else {
 		return output, fmt.Errorf("missing argument -d")
 	}

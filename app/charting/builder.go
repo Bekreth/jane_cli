@@ -15,19 +15,20 @@ type processFlow = string
 const (
 	unknown substate = "unknown"
 
-	argument            = "arguemnt"
-	actionConfirmation  = "actionConfirmation"
-	patientSelector     = "patientSelector "
-	chartSelector       = "chartSelector"
-	appointmentSelector = "appointmentSelector"
-	noteEditor          = "noteEditor"
+	argument            substate = "arguemnt"
+	actionConfirmation  substate = "actionConfirmation"
+	patientSelector     substate = "patientSelector "
+	chartSelector       substate = "chartSelector"
+	appointmentSelector substate = "appointmentSelector"
+	noteEditor          substate = "noteEditor"
+	complete            substate = "complete"
 )
 
 const (
 	undefined processFlow = "undefined"
 
-	read   = "read"
-	create = "create"
+	read   processFlow = "read"
+	create processFlow = "create"
 )
 
 type chartingBuilder struct {

@@ -62,6 +62,9 @@ func (state *chartingState) Initialize() {
 	state.builder = newChartingBuilder()
 	state.nextState = state
 	state.buffer.Clear()
+	if state.builder.flow == create && state.builder.substate == noteEditor {
+		state.builder.noteUnderEdit = ""
+	}
 	state.buffer.PrintHeader()
 }
 
