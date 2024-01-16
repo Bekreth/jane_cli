@@ -34,7 +34,7 @@ func (client Client) FetchPatients(patientName string) ([]domain.Patient, error)
 
 	requestBody := PatientRequest{
 		Autocomplete: true,
-		Limit:        9,
+		Limit:        50,
 		Name:         patientName,
 	}
 

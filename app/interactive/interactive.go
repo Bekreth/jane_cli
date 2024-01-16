@@ -13,6 +13,9 @@ type Interactive[R interface{}] interface {
 	PossibleSelections() []Selection[R]
 	TargetSelection() Selection[R]
 	HasSelection() bool
+
+	// PagingInfo specifies what the current page is, how many pages there are, and
+	// how many total elements there are
 	PagingInfo() (int, int, int)
 }
 
@@ -67,6 +70,9 @@ func (selection *selector[R]) HasSelection() bool {
 }
 
 func (selection *selector[R]) PagingInfo() (int, int, int) {
+	if selection == nil {
+		return 0, 0, 0
+	}
 	return selection.page,
 		len(selection.possibleSelection) / 9,
 		len(selection.possibleSelection)

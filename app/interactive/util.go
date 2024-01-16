@@ -10,7 +10,10 @@ const ESCAPE_STRING = "(or ESC to back out)"
 
 func PrintSelectorList[R interface{}](interactive Interactive[R]) string {
 	output := []string{}
-	pageNumber, totalPages, _ := interactive.PagingInfo()
+	pageNumber, totalPages, elementCount := interactive.PagingInfo()
+	if elementCount == 0 {
+		return ""
+	}
 	pageInfo := ""
 	if totalPages > 1 {
 		pageInfo = fmt.Sprintf(

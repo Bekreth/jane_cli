@@ -7,31 +7,33 @@ import (
 	"github.com/Bekreth/jane_cli/domain/schedule"
 )
 
-func (state *chartingState) fetchAppointments() {
+func (state chartingState) fetchAppointments() (
+	interactive.Interactive[schedule.Appointment],
+	error,
+) {
 	appointments, err := state.fetcher.FindAppointments(
 		state.builder.date,
 		state.builder.date.NextDay(),
 		state.builder.patientSelector.TargetSelection().PrintSelector(),
 	)
 	if err != nil {
-		state.buffer.WriteStoreString(err.Error())
-		return
+		return nil, err
 	}
 
 	if len(appointments) == 0 {
-		state.buffer.WriteStoreString(fmt.Sprintf(
+		return nil, fmt.Errorf(
 			"no appointments found for patient %v",
 			state.builder.patientSelector.TargetSelection().PrintSelector(),
-		))
+		)
 	} else if len(appointments) == 1 {
-		state.builder.appointmentSelector = interactive.NewAppointmentSelector(
+		return interactive.NewAppointmentSelector(
 			appointments[0],
 			appointments,
-		)
+		), nil
 	} else {
-		state.builder.appointmentSelector = interactive.NewAppointmentSelector(
+		return interactive.NewAppointmentSelector(
 			schedule.Appointment{},
 			appointments,
-		)
+		), nil
 	}
 }

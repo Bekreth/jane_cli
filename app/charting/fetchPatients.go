@@ -1,15 +1,19 @@
 package charting
 
 import (
+	"fmt"
+
 	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/app/util"
+	"github.com/Bekreth/jane_cli/domain"
 )
 
-func (state *chartingState) fetchPatients(flags map[string]string) {
+func (state chartingState) fetchPatients(
+	flags map[string]string,
+) (interactive.Interactive[domain.Patient], error) {
 	patientName, exists := flags[patientFlag]
 	if !exists {
-		state.buffer.WriteStoreString("missing argument -p")
-		return
+		return nil, fmt.Errorf("missing argument -p")
 	}
 
 	var err error
@@ -18,8 +22,7 @@ func (state *chartingState) fetchPatients(flags map[string]string) {
 		patientName,
 	)
 	if err != nil {
-		state.buffer.WriteStoreString(err.Error())
-		return
+		return nil, err
 	}
-	state.builder.patientSelector = interactive.NewPatientSelector(targetPatient, patients)
+	return interactive.NewPatientSelector(targetPatient, patients), nil
 }

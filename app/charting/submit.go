@@ -20,6 +20,7 @@ func (state *chartingState) Submit() {
 	flags := terminal.ParseFlags(state.buffer.Read())
 	state.logger.Debugf("submitting query flags: %v", flags)
 	state.buffer.Clear()
+	var err error
 	if _, exists := flags[backCommand]; exists {
 		state.nextState = state.rootState
 	} else if _, exists := flags[helpCommand]; exists {
@@ -29,9 +30,13 @@ func (state *chartingState) Submit() {
 		state.builder.substate = unknown
 		state.handleCreateNote(flags)
 	} else if _, exists := flags[readCommand]; exists {
-		state.builder.flow = read
-		state.builder.substate = unknown
-		state.fetchPatients(flags)
+		state.builder.patientSelector, err = state.fetchPatients(flags)
+		if err != nil {
+			state.buffer.WriteStoreString(err.Error())
+		} else {
+			state.builder.flow = read
+			state.builder.substate = unknown
+		}
 	} else {
 		state.buffer.WriteStoreString("No subcommand specified. Please specify 'read' or 'create'")
 	}

@@ -68,14 +68,22 @@ func (state *chartingState) HandleKeyinput(
 	}
 
 	if state.builder.substate != argument {
+		var err error
 		switch state.builder.flow {
 		case read:
 			if !state.builder.patientSelector.HasSelection() {
 				state.builder.substate = patientSelector
 			} else if !state.builder.chartSelector.HasSelection() {
-				state.fetchCharts()
-				state.builder.substate = chartSelector
+				state.builder.chartSelector, err = state.fetchCharts()
+				if err != nil {
+					state.buffer.WriteStoreString(err.Error())
+					state.builder = newChartingBuilder()
+					state.buffer.PrintHeader()
+				} else {
+					state.builder.substate = chartSelector
+				}
 			} else {
+				//TODO: Fix this nonsense
 				state.buffer.WriteStoreString(state.builder.chartSelector.TargetSelection().Deref().Snippet)
 				state.buffer.PrintHeader()
 				state.builder = newChartingBuilder()
@@ -85,8 +93,14 @@ func (state *chartingState) HandleKeyinput(
 			if !state.builder.patientSelector.HasSelection() {
 				state.builder.substate = patientSelector
 			} else if !state.builder.appointmentSelector.HasSelection() {
-				state.fetchAppointments()
-				state.builder.substate = appointmentSelector
+				state.builder.appointmentSelector, err = state.fetchAppointments()
+				if err != nil {
+					state.buffer.WriteStoreString(err.Error())
+					state.builder = newChartingBuilder()
+					state.buffer.PrintHeader()
+				} else {
+					state.builder.substate = appointmentSelector
+				}
 			} else if state.builder.note == "" {
 				state.builder.substate = noteEditor
 			} else {

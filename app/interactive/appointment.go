@@ -43,13 +43,13 @@ func NewAppointmentSelector(
 	selected schedule.Appointment,
 	possible []schedule.Appointment,
 ) Interactive[schedule.Appointment] {
-	possiblePatients := make([]Selection[schedule.Appointment], len(possible))
+	possibleAppointments := make([]Selection[schedule.Appointment], len(possible))
 	for i, selection := range possible {
-		possiblePatients[i] = SelectedAppointment{selection}
+		possibleAppointments[i] = SelectedAppointment{selection}
 	}
 	return &selector[schedule.Appointment]{
 		page:              0,
-		possibleSelection: possiblePatients,
+		possibleSelection: possibleAppointments,
 		selected:          SelectedAppointment{selected},
 	}
 }

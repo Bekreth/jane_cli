@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runtime/debug"
+	"strings"
 	"time"
 	_ "time/tzdata"
 
@@ -85,7 +86,9 @@ func main() {
 		if r := recover(); r != nil {
 			fmt.Println("Jane CLI has crashed ungracefully.  Notify author of this issue")
 			logger.Infof("Crash: %v", r)
-			logger.Infof("Trace: %v", string(debug.Stack()))
+			for i, s := range strings.Split(string(debug.Stack()), "\n") {
+				logger.Infof("%v: %v", i, s)
+			}
 		}
 	}()
 	for {
