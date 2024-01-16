@@ -20,6 +20,7 @@ type User struct {
 }
 
 func NewUser(logger logger.Logger, filePath string) (User, error) {
+	logger.Infof("Loading user profile from %v", filePath)
 	output := User{
 		filePath: filePath,
 		logger:   logger,

@@ -75,12 +75,16 @@ func (state *chartingState) HandleKeyinput(
 			} else if !state.builder.chartSelector.HasSelection() {
 				state.fetchCharts()
 				state.builder.substate = chartSelector
+			} else {
+				state.buffer.WriteStoreString(state.builder.chartSelector.TargetSelection().Deref().Snippet)
+				state.buffer.PrintHeader()
+				state.builder = newChartingBuilder()
 			}
 
 		case create:
 			if !state.builder.patientSelector.HasSelection() {
 				state.builder.substate = patientSelector
-			} else if !state.builder.patientSelector.HasSelection() {
+			} else if !state.builder.appointmentSelector.HasSelection() {
 				state.fetchAppointments()
 				state.builder.substate = appointmentSelector
 			} else if state.builder.note == "" {
