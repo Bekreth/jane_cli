@@ -31,11 +31,11 @@ func (selector testSelector) Deref() testSelector {
 	return selector
 }
 
-func newTestInteractive(
+func newSelector(
 	page int,
 	elementCount int,
 	selectedID int,
-) Interactive[testSelector] {
+) *selector[testSelector] {
 	possibleSelection := make([]Selection[testSelector], elementCount)
 	for i := 0; i < elementCount; i++ {
 		possibleSelection[i] = testSelector{ID: i + 1}
@@ -45,6 +45,14 @@ func newTestInteractive(
 		possibleSelection: possibleSelection,
 		selected:          nil,
 	}
+}
+
+func newTestInteractive(
+	page int,
+	elementCount int,
+	selectedID int,
+) Interactive[testSelector] {
+	return newSelector(page, elementCount, selectedID)
 }
 
 func TestPrintSelectorList(t *testing.T) {

@@ -26,16 +26,16 @@ type selector[R interface{}] struct {
 }
 
 func (selection *selector[R]) SelectElement(character rune) error {
-	pages := len(selection.possibleSelection) / 9
+	pages := (len(selection.possibleSelection) / 9) + 1
 	var output error
-	switch string(character) {
-	case "f":
+	switch character {
+	case 'f':
 		fallthrough
-	case "F":
+	case 'F':
 		selection.page = (selection.page + 1) % pages
-	case "b":
+	case 'b':
 		fallthrough
-	case "B":
+	case 'B':
 		selection.page = mod((selection.page - 1), pages)
 	default:
 		selection.selected, output = ElementSelector(
