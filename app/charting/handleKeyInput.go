@@ -74,7 +74,9 @@ func (state *chartingState) HandleKeyinput(
 			if !state.builder.patientSelector.HasSelection() {
 				state.builder.substate = patientSelector
 			} else if !state.builder.chartSelector.HasSelection() {
-				state.builder.chartSelector, err = state.fetchCharts()
+				if len(state.builder.chartSelector.PossibleSelections()) == 0 {
+					state.builder.chartSelector, err = state.fetchCharts()
+				}
 				if err != nil {
 					state.buffer.WriteStoreString(err.Error())
 					state.builder = newChartingBuilder()
@@ -93,7 +95,9 @@ func (state *chartingState) HandleKeyinput(
 			if !state.builder.patientSelector.HasSelection() {
 				state.builder.substate = patientSelector
 			} else if !state.builder.appointmentSelector.HasSelection() {
-				state.builder.appointmentSelector, err = state.fetchAppointments()
+				if len(state.builder.appointmentSelector.PossibleSelections()) == 0 {
+					state.builder.appointmentSelector, err = state.fetchAppointments()
+				}
 				if err != nil {
 					state.buffer.WriteStoreString(err.Error())
 					state.builder = newChartingBuilder()

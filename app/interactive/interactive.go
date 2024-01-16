@@ -47,6 +47,9 @@ func (selection *selector[R]) SelectElement(character rune) error {
 }
 
 func (selection *selector[R]) PossibleSelections() []Selection[R] {
+	if selection == nil {
+		return []Selection[R]{}
+	}
 	pages := len(selection.possibleSelection) / 9
 	pageStart := selection.page * 9
 	if selection.page < pages {
