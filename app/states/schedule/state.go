@@ -65,7 +65,7 @@ func (state *scheduleState) Initialize() {
 	)
 	state.nextState = state
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 func (state *scheduleState) HandleKeyinput(
@@ -91,7 +91,7 @@ func (state *scheduleState) triggerAutocomplete() {
 
 func (state *scheduleState) ClearBuffer() {
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 func (state *scheduleState) RepeatLastOutput() {

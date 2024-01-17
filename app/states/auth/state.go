@@ -50,7 +50,7 @@ func (state *authState) Initialize() {
 	)
 	state.nextState = state
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 func (state *authState) HandleKeyinput(character rune, key keyboard.Key) states.State {
@@ -92,7 +92,7 @@ func (state *authState) submit() {
 
 func (state *authState) ClearBuffer() {
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 func (state *authState) RepeatLastOutput() {

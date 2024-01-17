@@ -43,7 +43,7 @@ func (state *rootState) Initialize() {
 	)
 	state.nextState = state
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 func (state *rootState) HandleKeyinput(character rune, key keyboard.Key) states.State {
@@ -66,6 +66,7 @@ func (state *rootState) submit() {
 	state.buffer.Clear()
 
 	if _, exists := flags["help"]; exists {
+		state.buffer.WriteNewLine()
 		state.printHelp()
 		return
 	}
@@ -85,10 +86,11 @@ func (state *rootState) RegisterStates(states map[string]states.State) {
 
 func (state *rootState) ClearBuffer() {
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 func (state *rootState) RepeatLastOutput() {
+	state.buffer.WriteNewLine()
 	state.buffer.WritePrevious()
 }
 

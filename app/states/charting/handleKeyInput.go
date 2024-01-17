@@ -24,7 +24,7 @@ func (state *chartingState) HandleKeyinput(
 ) states.State {
 	if key == keyboard.KeyEsc && state.isInteractive() {
 		state.builder = newChartingBuilder()
-		state.buffer.PrintHeader()
+		state.buffer.WriteNewLine()
 		return state.nextState
 	}
 
@@ -83,7 +83,7 @@ func (state *chartingState) HandleKeyinput(
 				if err != nil {
 					state.buffer.WriteStoreString(err.Error())
 					state.builder = newChartingBuilder()
-					state.buffer.PrintHeader()
+					state.buffer.WriteNewLine()
 				} else {
 					if state.builder.chartSelector.HasSelection() {
 						state.builder.substate = complete
@@ -105,7 +105,7 @@ func (state *chartingState) HandleKeyinput(
 				if err != nil {
 					state.buffer.WriteStoreString(err.Error())
 					state.builder = newChartingBuilder()
-					state.buffer.PrintHeader()
+					state.buffer.WriteNewLine()
 				} else {
 					if state.builder.appointmentSelector.HasSelection() {
 						state.builder.substate = noteEditor
@@ -154,7 +154,7 @@ func (state *chartingState) HandleKeyinput(
 	case complete:
 		//TODO: Fix this nonsense
 		state.buffer.WriteStoreString(state.builder.chartSelector.TargetSelection().Deref().PrintText())
-		state.buffer.PrintHeader()
+		state.buffer.WriteNewLine()
 		state.builder = newChartingBuilder()
 
 	default:

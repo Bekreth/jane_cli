@@ -63,7 +63,7 @@ func (state *chartingState) Initialize() {
 	state.builder = newChartingBuilder()
 	state.nextState = state
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 var autocompletes = map[string]string{
@@ -84,7 +84,7 @@ func (state *chartingState) triggerAutocomplete() {
 
 func (state *chartingState) ClearBuffer() {
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 	if state.builder.flow == create && state.builder.substate == noteEditor {
 		state.builder.noteUnderEdit = ""
 	}

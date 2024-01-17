@@ -40,17 +40,17 @@ func (buffer *Buffer) Read() string {
 	return buffer.currentValue
 }
 
-func (buffer *Buffer) PrintHeader() {
-	buffer.writer.NewLine()
-	buffer.writer.WriteString(buffer.contextString())
-}
-
 func (buffer *Buffer) Clear() {
 	buffer.currentValue = ""
 }
 
 func (buffer *Buffer) Write() {
 	buffer.writer.WriteString(buffer.contextString())
+}
+
+func (buffer *Buffer) WriteNewLine() {
+	buffer.writer.NewLine()
+	buffer.Write()
 }
 
 func (buffer *Buffer) WriteString(input string) {
@@ -64,11 +64,14 @@ func (buffer *Buffer) WriteStore() {
 }
 
 func (buffer *Buffer) WriteStoreString(input string) {
+	buffer.writer.NewLine()
 	buffer.previousOutput = input
 	buffer.writer.WriteString(input)
 	buffer.writer.NewLine()
 }
 
 func (buffer *Buffer) WritePrevious() {
-	buffer.WriteStoreString(buffer.previousOutput)
+	buffer.writer.WriteString(buffer.previousOutput)
+	buffer.Clear()
+	buffer.WriteNewLine()
 }

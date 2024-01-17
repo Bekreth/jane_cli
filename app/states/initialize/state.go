@@ -48,7 +48,7 @@ func (state *initState) Initialize() {
 	)
 	state.nextState = state
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 func (state *initState) HandleKeyinput(character rune, key keyboard.Key) states.State {
@@ -63,7 +63,7 @@ func (state *initState) triggerAutocomplete() {
 
 func (state *initState) ClearBuffer() {
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 func (state *initState) RepeatLastOutput() {

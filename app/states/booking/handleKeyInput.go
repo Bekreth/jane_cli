@@ -22,7 +22,7 @@ func (state *bookingState) HandleKeyinput(
 ) states.State {
 	if key == keyboard.KeyEsc && state.isInteractive() {
 		state.builder = newBookingBuilder()
-		state.buffer.PrintHeader()
+		state.buffer.WriteNewLine()
 		return state.nextState
 	}
 

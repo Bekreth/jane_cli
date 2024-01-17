@@ -63,7 +63,7 @@ func (state *bookingState) Initialize() {
 	state.builder = newBookingBuilder()
 	state.nextState = state
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 var autocompletes = map[string]string{
@@ -84,7 +84,7 @@ func (state *bookingState) triggerAutocomplete() {
 
 func (state *bookingState) ClearBuffer() {
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 func (state *bookingState) RepeatLastOutput() {
