@@ -3,7 +3,8 @@ include makefiles/windows.mk
 
 
 # Run commands
-msi: ${WINDOWS_OUTPUT}/${NAME}_${TAG}.msi
+msi: ${MSI_OUTPUT}/${NAME}_${TAG}.msi
+msp: ${MSI_OUTPUT}/${NAME}_${TAG}.msp
 
 clean:
 	rm -rf output

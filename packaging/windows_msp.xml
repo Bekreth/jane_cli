@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='windows-1252'?>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+	<Patch 
+		AllowRemoval='yes' 
+		Manufacturer='Bekreth'
+		MoreInfoURL='https://github.com/bekreth/jane_cli/releases/tag/$VERSION'
+		DisplayName='Jane CLI $VERSION Upgrade' 
+		Description='An upgrade to the next version of Jane CLI' 
+		Classification='Update'
+	>
+ 
+    <Media Id='5000' Cabinet='Sample.cab'>
+      <PatchBaseline Id='Sample' />
+    </Media>
+ 
+		<PatchFamily 
+			Id='Version1XPatch' 
+			Version='1.0.0.0' 
+			Supersede='yes'
+			ProductCode='b5ce38bd-5ca2-4b38-a0d4-7cff3054d095' 
+		/>
+      <ComponentRef Id='MainExecutable' />
+    </PatchFamily>
+
+  </Patch>
+</Wix>
+
