@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Bekreth/jane_cli/app/states"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain/schedule"
 	"github.com/Bekreth/jane_cli/logger"
@@ -32,19 +33,19 @@ var autocompletes = map[string]func() (schedule.JaneTime, schedule.JaneTime){
 type scheduleState struct {
 	logger    logger.Logger
 	fetcher   scheduleFetcher
-	rootState terminal.State
+	rootState states.State
 
 	buffer    *terminal.Buffer
-	nextState terminal.State
+	nextState states.State
 }
 
 func NewState(
 	logger logger.Logger,
 	writer terminal.ScreenWriter,
 	fetcher scheduleFetcher,
-	rootState terminal.State,
-) terminal.State {
-	buffer := terminal.NewBuffer(writer)
+	rootState states.State,
+) states.State {
+	buffer := terminal.NewBuffer(writer, "schedule")
 	return &scheduleState{
 		logger:    logger,
 		fetcher:   fetcher,
@@ -64,13 +65,13 @@ func (state *scheduleState) Initialize() {
 	)
 	state.nextState = state
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 func (state *scheduleState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
-) terminal.State {
+) states.State {
 	terminal.KeyHandler(key, state.buffer, state.triggerAutocomplete, state.submit)
 	state.buffer.AddCharacter(character)
 	state.buffer.Write()
@@ -90,7 +91,7 @@ func (state *scheduleState) triggerAutocomplete() {
 
 func (state *scheduleState) ClearBuffer() {
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 func (state *scheduleState) RepeatLastOutput() {

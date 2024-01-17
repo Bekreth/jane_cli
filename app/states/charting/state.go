@@ -3,6 +3,7 @@ package charting
 import (
 	"strings"
 
+	"github.com/Bekreth/jane_cli/app/states"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/domain/charts"
@@ -28,10 +29,10 @@ type chartingDataFetcher interface {
 type chartingState struct {
 	logger    logger.Logger
 	fetcher   chartingDataFetcher
-	rootState terminal.State
+	rootState states.State
 
 	builder   chartingBuilder
-	nextState terminal.State
+	nextState states.State
 	buffer    *terminal.Buffer
 }
 
@@ -39,9 +40,9 @@ func NewState(
 	logger logger.Logger,
 	fetcher chartingDataFetcher,
 	writer terminal.ScreenWriter,
-	rootState terminal.State,
-) terminal.State {
-	buffer := terminal.NewBuffer(writer)
+	rootState states.State,
+) states.State {
+	buffer := terminal.NewBuffer(writer, "charting")
 	return &chartingState{
 		logger:    logger,
 		fetcher:   fetcher,
@@ -62,7 +63,7 @@ func (state *chartingState) Initialize() {
 	state.builder = newChartingBuilder()
 	state.nextState = state
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 var autocompletes = map[string]string{
@@ -83,7 +84,7 @@ func (state *chartingState) triggerAutocomplete() {
 
 func (state *chartingState) ClearBuffer() {
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 	if state.builder.flow == create && state.builder.substate == noteEditor {
 		state.builder.noteUnderEdit = ""
 	}

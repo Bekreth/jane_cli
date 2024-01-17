@@ -3,6 +3,7 @@ package booking
 import (
 	"strings"
 
+	"github.com/Bekreth/jane_cli/app/states"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/domain/schedule"
@@ -29,9 +30,9 @@ type bookingState struct {
 	logger    logger.Logger
 	fetcher   bookingDataFetcher
 	builder   bookingBuilder
-	rootState terminal.State
+	rootState states.State
 
-	nextState terminal.State
+	nextState states.State
 	buffer    *terminal.Buffer
 }
 
@@ -39,9 +40,9 @@ func NewState(
 	logger logger.Logger,
 	writer terminal.ScreenWriter,
 	fetcher bookingDataFetcher,
-	rootState terminal.State,
-) terminal.State {
-	buffer := terminal.NewBuffer(writer)
+	rootState states.State,
+) states.State {
+	buffer := terminal.NewBuffer(writer, "booking")
 	return &bookingState{
 		logger:    logger,
 		fetcher:   fetcher,
@@ -62,7 +63,7 @@ func (state *bookingState) Initialize() {
 	state.builder = newBookingBuilder()
 	state.nextState = state
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 var autocompletes = map[string]string{
@@ -83,7 +84,7 @@ func (state *bookingState) triggerAutocomplete() {
 
 func (state *bookingState) ClearBuffer() {
 	state.buffer.Clear()
-	state.buffer.PrintHeader()
+	state.buffer.WriteNewLine()
 }
 
 func (state *bookingState) RepeatLastOutput() {

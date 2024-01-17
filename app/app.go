@@ -1,12 +1,13 @@
 package app
 
 import (
-	"github.com/Bekreth/jane_cli/app/auth"
-	"github.com/Bekreth/jane_cli/app/booking"
-	"github.com/Bekreth/jane_cli/app/charting"
-	"github.com/Bekreth/jane_cli/app/initialize"
-	"github.com/Bekreth/jane_cli/app/root"
-	"github.com/Bekreth/jane_cli/app/schedule"
+	"github.com/Bekreth/jane_cli/app/states"
+	"github.com/Bekreth/jane_cli/app/states/auth"
+	"github.com/Bekreth/jane_cli/app/states/booking"
+	"github.com/Bekreth/jane_cli/app/states/charting"
+	"github.com/Bekreth/jane_cli/app/states/initialize"
+	"github.com/Bekreth/jane_cli/app/states/root"
+	"github.com/Bekreth/jane_cli/app/states/schedule"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	Cache "github.com/Bekreth/jane_cli/cache"
 	Client "github.com/Bekreth/jane_cli/client"
@@ -18,37 +19,37 @@ import (
 type Application struct {
 	logger    logger.Logger
 	writer    terminal.ScreenWriter
-	state     terminal.State
-	allStates []terminal.State
+	state     states.State
+	allStates []states.State
 }
 
 func NewApplication(
 	logger logger.Logger,
+	screenWriter terminal.ScreenWriter,
 	user *domain.User,
 	client Client.Client,
 	cache Cache.Cache,
 ) Application {
-
 	rootState := root.NewState(
 		logger.AddContext("state", "root"),
-		terminal.NewScreenWriter("jane:"),
+		screenWriter,
 	)
 	initState := initialize.NewState(
 		logger.AddContext("state", "init"),
-		terminal.NewScreenWriter("init:"),
+		screenWriter,
 		user,
 		rootState,
 	)
 	authState := auth.NewState(
 		logger.AddContext("state", "auth"),
-		terminal.NewScreenWriter("auth:"),
+		screenWriter,
 		client,
 		rootState,
 	)
 
 	scheduleState := schedule.NewState(
 		logger.AddContext("state", "schedule"),
-		terminal.NewScreenWriter("schedule:"),
+		screenWriter,
 		client,
 		rootState,
 	)
@@ -62,7 +63,7 @@ func NewApplication(
 	}
 	bookingState := booking.NewState(
 		logger.AddContext("state", "booking"),
-		terminal.NewScreenWriter("booking:"),
+		screenWriter,
 		fetcher,
 		rootState,
 	)
@@ -70,11 +71,11 @@ func NewApplication(
 	chartingState := charting.NewState(
 		logger.AddContext("state", "charting"),
 		fetcher,
-		terminal.NewScreenWriter("charting:"),
+		screenWriter,
 		rootState,
 	)
 
-	rootState.RegisterStates(map[string]terminal.State{
+	rootState.RegisterStates(map[string]states.State{
 		initState.Name():     initState,
 		authState.Name():     authState,
 		scheduleState.Name(): scheduleState,
@@ -85,9 +86,9 @@ func NewApplication(
 
 	return Application{
 		logger: logger,
-		writer: terminal.NewScreenWriter(""),
+		writer: screenWriter,
 		state:  rootState,
-		allStates: []terminal.State{
+		allStates: []states.State{
 			rootState,
 			initState,
 			authState,

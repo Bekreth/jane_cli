@@ -1,6 +1,7 @@
 package terminal
 
 import (
+	"github.com/Bekreth/jane_cli/app/states"
 	"github.com/eiannone/keyboard"
 )
 
@@ -12,7 +13,7 @@ func MapKeysString(input map[string]string) []string {
 	return output
 }
 
-func MapKeys(input map[string]State) []string {
+func MapKeys(input map[string]states.State) []string {
 	output := []string{}
 	for key := range input {
 		output = append(output, key)

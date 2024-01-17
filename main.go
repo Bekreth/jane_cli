@@ -9,10 +9,12 @@ import (
 	_ "time/tzdata"
 
 	"github.com/Bekreth/jane_cli/app"
+	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/cache"
 	"github.com/Bekreth/jane_cli/client"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
+	tsize "github.com/kopoli/go-terminal-size"
 
 	"github.com/eiannone/keyboard"
 )
@@ -41,6 +43,15 @@ func main() {
 		os.Exit(1)
 	}
 
+	terminalSize, err := tsize.GetSize()
+	if err != nil {
+		logger.Infof("failed to get terminal size: %v", err)
+		fmt.Printf("failed to get terminal size: %v", err)
+		os.Exit(1)
+	}
+	terminal := terminal.NewTerminal(terminalSize, terminal.NewWindow())
+	logger.Debugf("Terminal dimensions %v", terminalSize)
+
 	if config.Client.UserFilePath == "" {
 		fmt.Println("no path is provided for user file path")
 		os.Exit(1)
@@ -63,7 +74,6 @@ func main() {
 		thisUser,
 		thisUser.SaveUserFile,
 	)
-
 	if err != nil {
 		logger.Infof("failed to build Jane client: %v", err)
 		fmt.Printf("failed to build Jane client: %v", err)
@@ -74,14 +84,13 @@ func main() {
 		logger.AddContext("service", "cache"),
 		client,
 	)
-
 	if err != nil {
 		logger.Infof("failed to build patient cache: %v", err)
 		fmt.Printf("failed to build patient cache: %v", err)
 		os.Exit(1)
 	}
 
-	application := app.NewApplication(logger, thisUser, client, cache)
+	application := app.NewApplication(logger, terminal, thisUser, client, cache)
 
 	logger.Infoln("Application initialized, starting run loop")
 	defer func() {
