@@ -2,6 +2,7 @@ package booking
 
 import (
 	"github.com/Bekreth/jane_cli/app/interactive"
+	"github.com/Bekreth/jane_cli/app/states"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/eiannone/keyboard"
 )
@@ -18,7 +19,7 @@ func (state *bookingState) isInteractive() bool {
 func (state *bookingState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
-) terminal.State {
+) states.State {
 	if key == keyboard.KeyEsc && state.isInteractive() {
 		state.builder = newBookingBuilder()
 		state.buffer.PrintHeader()

@@ -3,6 +3,7 @@ package auth
 import (
 	"fmt"
 
+	"github.com/Bekreth/jane_cli/app/states"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/logger"
 	"github.com/eiannone/keyboard"
@@ -17,9 +18,9 @@ const passwordFlag = "-p"
 type authState struct {
 	logger        logger.Logger
 	authenticator authenticator
-	rootState     terminal.State
+	rootState     states.State
 
-	nextState terminal.State
+	nextState states.State
 	buffer    *terminal.Buffer
 }
 
@@ -27,9 +28,9 @@ func NewState(
 	logger logger.Logger,
 	writer terminal.ScreenWriter,
 	authenticator authenticator,
-	rootState terminal.State,
-) terminal.State {
-	buffer := terminal.NewBuffer(writer)
+	rootState states.State,
+) states.State {
+	buffer := terminal.NewBuffer(writer, "auth")
 	return &authState{
 		logger:        logger,
 		authenticator: authenticator,
@@ -52,7 +53,7 @@ func (state *authState) Initialize() {
 	state.buffer.PrintHeader()
 }
 
-func (state *authState) HandleKeyinput(character rune, key keyboard.Key) terminal.State {
+func (state *authState) HandleKeyinput(character rune, key keyboard.Key) states.State {
 	terminal.KeyHandler(key, state.buffer, state.triggerAutocomplete, state.submit)
 	state.buffer.AddCharacter(character)
 	state.buffer.Write()

@@ -1,4 +1,4 @@
-package terminal
+package states
 
 import "github.com/eiannone/keyboard"
 

@@ -3,6 +3,7 @@ package root
 import (
 	"strings"
 
+	"github.com/Bekreth/jane_cli/app/states"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/logger"
 	"github.com/eiannone/keyboard"
@@ -11,16 +12,16 @@ import (
 type rootState struct {
 	logger logger.Logger
 
-	states    map[string]terminal.State
+	states    map[string]states.State
 	buffer    *terminal.Buffer
-	nextState terminal.State
+	nextState states.State
 }
 
 func NewState(
 	logger logger.Logger,
 	writer terminal.ScreenWriter,
 ) *rootState {
-	buffer := terminal.NewBuffer(writer)
+	buffer := terminal.NewBuffer(writer, "jane")
 	return &rootState{
 		logger: logger,
 		buffer: &buffer,
@@ -45,7 +46,7 @@ func (state *rootState) Initialize() {
 	state.buffer.PrintHeader()
 }
 
-func (state *rootState) HandleKeyinput(character rune, key keyboard.Key) terminal.State {
+func (state *rootState) HandleKeyinput(character rune, key keyboard.Key) states.State {
 	terminal.KeyHandler(key, state.buffer, state.triggerAutocomplete, state.submit)
 	state.buffer.AddCharacter(character)
 	state.buffer.Write()
@@ -78,7 +79,7 @@ func (state *rootState) submit() {
 	state.buffer.WriteStoreString("invalid command")
 }
 
-func (state *rootState) RegisterStates(states map[string]terminal.State) {
+func (state *rootState) RegisterStates(states map[string]states.State) {
 	state.states = states
 }
 

@@ -7,8 +7,25 @@ import (
 	"os"
 )
 
-type ScreenWriter struct {
-	contextName string
+const ESC = "\u001B"
+
+type WindowsWindow struct {
+}
+
+func NewWindow() Window {
+	return WindowsWindow{}
+}
+
+func (WindowsWindow) ClearLine() {
+	os.Stdout.Write([]byte(fmt.Sprintf("%v%v", ESC, "[2M")))
+}
+
+func (WindowsWindow) MoveToLineStart() {
+	os.Stdout.Write([]byte("\u000D"))
+}
+
+func (WindowsWindow) MoveToPreviousLine() {
+	os.Stdout.Write([]byte(fmt.Sprintf("%v%v", ESC, "[A")))
 }
 
 /*
@@ -47,6 +64,11 @@ const ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x4
 	}
 */
 //TODO: https://learn.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences
+/*
+type ScreenWriter struct {
+	contextName string
+}
+
 func NewScreenWriter(contextName string) ScreenWriter {
 	return ScreenWriter{
 		contextName: contextName,
@@ -65,3 +87,4 @@ func (writer ScreenWriter) WriteString(input string) {
 func (writer ScreenWriter) NewLine() {
 	fmt.Println()
 }
+*/

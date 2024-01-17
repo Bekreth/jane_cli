@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Bekreth/jane_cli/app/interactive"
+	"github.com/Bekreth/jane_cli/app/states"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/eiannone/keyboard"
 )
@@ -20,7 +21,7 @@ func (state *chartingState) isInteractive() bool {
 func (state *chartingState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
-) terminal.State {
+) states.State {
 	if key == keyboard.KeyEsc && state.isInteractive() {
 		state.builder = newChartingBuilder()
 		state.buffer.PrintHeader()

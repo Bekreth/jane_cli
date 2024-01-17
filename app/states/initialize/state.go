@@ -3,6 +3,7 @@ package initialize
 import (
 	"fmt"
 
+	"github.com/Bekreth/jane_cli/app/states"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
@@ -15,9 +16,9 @@ const clinicDomain = "-c"
 type initState struct {
 	logger    logger.Logger
 	user      *domain.User
-	rootState terminal.State
+	rootState states.State
 
-	nextState terminal.State
+	nextState states.State
 	buffer    *terminal.Buffer
 }
 
@@ -25,9 +26,9 @@ func NewState(
 	logger logger.Logger,
 	writer terminal.ScreenWriter,
 	user *domain.User,
-	rootState terminal.State,
-) terminal.State {
-	buffer := terminal.NewBuffer(writer)
+	rootState states.State,
+) states.State {
+	buffer := terminal.NewBuffer(writer, "init")
 	return &initState{
 		logger:    logger,
 		user:      user,
@@ -50,7 +51,7 @@ func (state *initState) Initialize() {
 	state.buffer.PrintHeader()
 }
 
-func (state *initState) HandleKeyinput(character rune, key keyboard.Key) terminal.State {
+func (state *initState) HandleKeyinput(character rune, key keyboard.Key) states.State {
 	terminal.KeyHandler(key, state.buffer, state.triggerAutocomplete, state.submit)
 	state.buffer.AddCharacter(character)
 	state.buffer.Write()
