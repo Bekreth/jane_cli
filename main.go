@@ -17,8 +17,10 @@ import (
 	"github.com/eiannone/keyboard"
 )
 
+var version string
+
 func main() {
-	fmt.Println("Starting Jane CLI")
+	fmt.Printf("Starting Jane CLI version %v\n", version)
 	config, err := parseConfig()
 	if err != nil {
 		fmt.Printf("failed to load config: %v\n", err)

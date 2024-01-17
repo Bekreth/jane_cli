@@ -7,7 +7,7 @@
 		UpgradeCode='9bbc40a8-7e4f-429a-9c16-96baef83eec7'
 		Language='4105' 
 		Codepage='1252' 
-		Version='1.3.0' 
+		Version='$VERSION'
 	>
 		<Package 
 			Id='*' 
