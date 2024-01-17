@@ -46,6 +46,7 @@ const ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x4
 		}
 	}
 */
+//TODO: https://learn.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences
 func NewScreenWriter(contextName string) ScreenWriter {
 	return ScreenWriter{
 		contextName: contextName,

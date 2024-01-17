@@ -1,12 +1,12 @@
 package app
 
 import (
-	"github.com/Bekreth/jane_cli/app/auth"
-	"github.com/Bekreth/jane_cli/app/booking"
-	"github.com/Bekreth/jane_cli/app/charting"
-	"github.com/Bekreth/jane_cli/app/initialize"
-	"github.com/Bekreth/jane_cli/app/root"
-	"github.com/Bekreth/jane_cli/app/schedule"
+	"github.com/Bekreth/jane_cli/app/states/auth"
+	"github.com/Bekreth/jane_cli/app/states/booking"
+	"github.com/Bekreth/jane_cli/app/states/charting"
+	"github.com/Bekreth/jane_cli/app/states/initialize"
+	"github.com/Bekreth/jane_cli/app/states/root"
+	"github.com/Bekreth/jane_cli/app/states/schedule"
 	"github.com/Bekreth/jane_cli/app/terminal"
 	Cache "github.com/Bekreth/jane_cli/cache"
 	Client "github.com/Bekreth/jane_cli/client"
