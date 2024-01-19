@@ -5,6 +5,16 @@ import (
 	"github.com/eiannone/keyboard"
 )
 
+func indiciesOfChar(input string, char rune) []int {
+	output := make([]int, 0)
+	for i, c := range input {
+		if c == char {
+			output = append(output, i)
+		}
+	}
+	return output
+}
+
 func MapKeysString(input map[string]string) []string {
 	output := []string{}
 	for key := range input {
@@ -43,6 +53,13 @@ func KeyHandler(
 
 	case keyboard.KeyEnter:
 		submit()
+
+	case keyboard.KeyArrowUp:
+	case keyboard.KeyArrowDown:
+	case keyboard.KeyArrowLeft:
+		buffer.MoveLeft()
+	case keyboard.KeyArrowRight:
+		buffer.MoveRight()
 
 	default:
 		//TODO: Do I need generalized catch here?
