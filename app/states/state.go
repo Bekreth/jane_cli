@@ -1,11 +1,14 @@
 package states
 
-import "github.com/eiannone/keyboard"
+import (
+	terminal "github.com/bekreth/screen_reader_terminal"
+	"github.com/eiannone/keyboard"
+)
 
 type State interface {
 	Name() string
-	Initialize()
+	Initialize() *terminal.Buffer
 	HandleKeyinput(character rune, key keyboard.Key) State
-	ClearBuffer()
-	RepeatLastOutput()
+	Submit(map[string]string) bool
+	HelpString() string
 }

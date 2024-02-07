@@ -9,12 +9,11 @@ import (
 	_ "time/tzdata"
 
 	"github.com/Bekreth/jane_cli/app"
-	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/cache"
 	"github.com/Bekreth/jane_cli/client"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
-	tsize "github.com/kopoli/go-terminal-size"
+	terminal "github.com/bekreth/screen_reader_terminal"
 
 	"github.com/eiannone/keyboard"
 )
@@ -43,14 +42,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	terminalSize, err := tsize.GetSize()
-	if err != nil {
-		logger.Infof("failed to get terminal size: %v", err)
-		fmt.Printf("failed to get terminal size: %v", err)
-		os.Exit(1)
-	}
-	terminal := terminal.NewTerminal(terminalSize, terminal.NewWindow())
-	logger.Debugf("Terminal dimensions %v", terminalSize)
+	terminalLogger := logger.AddContext("package", "terminal")
+	buffer := terminal.NewBuffer()
+	terminal := terminal.NewTerminal(
+		terminal.NewWindow(),
+		&buffer,
+		terminalLogger,
+	)
 
 	if config.Client.UserFilePath == "" {
 		fmt.Println("no path is provided for user file path")

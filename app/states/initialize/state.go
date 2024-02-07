@@ -4,9 +4,10 @@ import (
 	"fmt"
 
 	"github.com/Bekreth/jane_cli/app/states"
-	"github.com/Bekreth/jane_cli/app/terminal"
+	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
+	terminal "github.com/bekreth/screen_reader_terminal"
 	"github.com/eiannone/keyboard"
 )
 
@@ -24,16 +25,15 @@ type initState struct {
 
 func NewState(
 	logger logger.Logger,
-	writer terminal.ScreenWriter,
 	user *domain.User,
 	rootState states.State,
 ) states.State {
-	buffer := terminal.NewBuffer(writer, "init")
+	buffer := terminal.NewBuffer()
 	return &initState{
 		logger:    logger,
 		user:      user,
 		rootState: rootState,
-		buffer:    &buffer,
+		buffer:    buffer.SetPrefix("init: "),
 	}
 }
 
@@ -41,40 +41,31 @@ func (initState) Name() string {
 	return "init"
 }
 
-func (state *initState) Initialize() {
+func (state *initState) Initialize() *terminal.Buffer {
 	state.logger.Debugf(
 		"entering init. available states %v",
 		state.rootState.Name(),
 	)
 	state.nextState = state
 	state.buffer.Clear()
-	state.buffer.WriteNewLine()
+	return state.buffer
 }
 
 func (state *initState) HandleKeyinput(character rune, key keyboard.Key) states.State {
-	terminal.KeyHandler(key, state.buffer, state.triggerAutocomplete, state.submit)
-	state.buffer.AddCharacter(character)
-	state.buffer.Write()
+	util.KeyHandler(key, state.buffer, state.triggerAutocomplete)
+	if character != 0 {
+		state.buffer.AddCharacter(character)
+	}
 	return state.nextState
 }
 
 func (state *initState) triggerAutocomplete() {
 }
 
-func (state *initState) ClearBuffer() {
-	state.buffer.Clear()
-	state.buffer.WriteNewLine()
-}
-
-func (state *initState) RepeatLastOutput() {
-	state.buffer.WritePrevious()
-}
-
-func (state *initState) printHelp() {
-	// TODO: automate this list of elements
-	state.buffer.WriteStoreString(fmt.Sprintf(
+func (state *initState) HelpString() string {
+	return fmt.Sprintf(
 		"init should only need to be run the first time your setup your client:\n%v\n%v",
 		"\t-c\tthe name of the clinic",
 		"\t-u\tusername used to log in to Jane",
-	))
+	)
 }

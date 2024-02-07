@@ -1,7 +1,5 @@
 package booking
 
-import "fmt"
-
 func (state *bookingState) confirmAction(character rune) {
 	switch string(character) {
 	case "y":

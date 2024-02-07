@@ -4,10 +4,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Bekreth/jane_cli/app/flag"
 	"github.com/Bekreth/jane_cli/app/states"
-	"github.com/Bekreth/jane_cli/app/terminal"
+	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/Bekreth/jane_cli/domain/schedule"
 	"github.com/Bekreth/jane_cli/logger"
+	terminal "github.com/bekreth/screen_reader_terminal"
 	"github.com/eiannone/keyboard"
 )
 
@@ -41,16 +43,15 @@ type scheduleState struct {
 
 func NewState(
 	logger logger.Logger,
-	writer terminal.ScreenWriter,
 	fetcher scheduleFetcher,
 	rootState states.State,
 ) states.State {
-	buffer := terminal.NewBuffer(writer, "schedule")
+	buffer := terminal.NewBuffer()
 	return &scheduleState{
 		logger:    logger,
 		fetcher:   fetcher,
 		rootState: rootState,
-		buffer:    &buffer,
+		buffer:    buffer.SetPrefix("schedule: "),
 	}
 }
 
@@ -58,42 +59,36 @@ func (scheduleState) Name() string {
 	return "schedule"
 }
 
-func (state *scheduleState) Initialize() {
+func (state *scheduleState) Initialize() *terminal.Buffer {
 	state.logger.Debugf(
 		"entering schedule. available states %v",
 		state.rootState.Name(),
 	)
 	state.nextState = state
 	state.buffer.Clear()
-	state.buffer.WriteNewLine()
+	return state.buffer
 }
 
 func (state *scheduleState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
 ) states.State {
-	terminal.KeyHandler(key, state.buffer, state.triggerAutocomplete, state.submit)
-	state.buffer.AddCharacter(character)
-	state.buffer.Write()
+	util.KeyHandler(key, state.buffer, state.triggerAutocomplete)
+	if character != 0 {
+		state.buffer.AddCharacter(character)
+	}
 	return state.nextState
 }
 
 func (state *scheduleState) triggerAutocomplete() {
-	words := strings.Split(state.buffer.Read(), " ")
+	data, _ := state.buffer.Output()
+	flags := flag.Parse(data)
 
 	for key := range autocompletes {
-		if strings.HasPrefix(key, words[len(words)-1]) {
-			arguments := append(words[0:len(words)-1], key)
-			state.buffer.WriteString(strings.Join(arguments, " "))
+		for flagKey := range flags {
+			if strings.HasPrefix(key, flagKey) {
+				state.buffer.AddString(strings.Replace(key, flagKey, "", 1))
+			}
 		}
 	}
-}
-
-func (state *scheduleState) ClearBuffer() {
-	state.buffer.Clear()
-	state.buffer.WriteNewLine()
-}
-
-func (state *scheduleState) RepeatLastOutput() {
-	state.buffer.WritePrevious()
 }

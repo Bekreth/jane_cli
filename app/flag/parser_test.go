@@ -1,4 +1,4 @@
-package terminal
+package flag
 
 import (
 	"testing"
@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestParseFlags(t *testing.T) {
+func TestParse(t *testing.T) {
 	trials := []struct {
 		description    string
 		input          string
@@ -75,7 +75,7 @@ func TestParseFlags(t *testing.T) {
 
 	for _, trial := range trials {
 		t.Run(trial.description, func(tt *testing.T) {
-			actualOutput := ParseFlags(trial.input)
+			actualOutput := Parse(trial.input)
 			assert.Equal(tt, trial.expectedOutput, actualOutput)
 		})
 	}

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/Bekreth/jane_cli/app/flag"
 	"github.com/Bekreth/jane_cli/app/states"
 	"github.com/Bekreth/jane_cli/app/states/auth"
 	"github.com/Bekreth/jane_cli/app/states/booking"
@@ -8,48 +9,44 @@ import (
 	"github.com/Bekreth/jane_cli/app/states/initialize"
 	"github.com/Bekreth/jane_cli/app/states/root"
 	"github.com/Bekreth/jane_cli/app/states/schedule"
-	"github.com/Bekreth/jane_cli/app/terminal"
 	Cache "github.com/Bekreth/jane_cli/cache"
 	Client "github.com/Bekreth/jane_cli/client"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
+	terminal "github.com/bekreth/screen_reader_terminal"
 	"github.com/eiannone/keyboard"
 )
 
 type Application struct {
 	logger    logger.Logger
-	writer    terminal.ScreenWriter
+	writer    terminal.Terminal
 	state     states.State
 	allStates []states.State
 }
 
 func NewApplication(
 	logger logger.Logger,
-	screenWriter terminal.ScreenWriter,
+	screenWriter terminal.Terminal,
 	user *domain.User,
 	client Client.Client,
 	cache Cache.Cache,
 ) Application {
 	rootState := root.NewState(
 		logger.AddContext("state", "root"),
-		screenWriter,
 	)
 	initState := initialize.NewState(
 		logger.AddContext("state", "init"),
-		screenWriter,
 		user,
 		rootState,
 	)
 	authState := auth.NewState(
 		logger.AddContext("state", "auth"),
-		screenWriter,
 		client,
 		rootState,
 	)
 
 	scheduleState := schedule.NewState(
 		logger.AddContext("state", "schedule"),
-		screenWriter,
 		client,
 		rootState,
 	)
@@ -63,7 +60,6 @@ func NewApplication(
 	}
 	bookingState := booking.NewState(
 		logger.AddContext("state", "booking"),
-		screenWriter,
 		fetcher,
 		rootState,
 	)
@@ -71,7 +67,6 @@ func NewApplication(
 	chartingState := charting.NewState(
 		logger.AddContext("state", "charting"),
 		fetcher,
-		screenWriter,
 		rootState,
 	)
 
@@ -82,7 +77,8 @@ func NewApplication(
 		bookingState.Name():  bookingState,
 		chartingState.Name(): chartingState,
 	})
-	rootState.Initialize()
+	screenWriter.AddBuffer(rootState.Initialize())
+	screenWriter.Draw()
 
 	return Application{
 		logger: logger,
@@ -105,15 +101,33 @@ func (app *Application) HandleKeyinput(character rune, key keyboard.Key) bool {
 	case keyboard.KeyCtrlC:
 		app.logger.Infoln("exiting the application")
 		app.writer.NewLine()
-		app.writer.WriteString("Shutting down Jane CLI")
+		app.writer.CurrentBuffer().AddString("Shutting down Jane CLI")
+		app.writer.Draw()
 		app.writer.NewLine()
 		return false
 	case keyboard.KeyCtrlU:
-		app.state.ClearBuffer()
+		app.writer.CurrentBuffer().SetString("")
+		app.writer.Draw()
 		return true
 	case keyboard.KeyCtrlR:
-		app.state.RepeatLastOutput()
+		//TODO
+		//app.state.RepeatLastOutput()
 		return true
+
+	case keyboard.KeyEnter:
+		data, _ := app.writer.CurrentBuffer().Output()
+		flags := flag.Parse(data)
+		app.writer.NewLine()
+		if _, exists := flags["help"]; exists {
+			app.writer.CurrentBuffer().AddString(app.state.HelpString())
+			app.writer.Draw()
+			app.writer.NewLine()
+		} else {
+			if app.state.Submit(flags) {
+				app.writer.Draw()
+				app.writer.NewLine()
+			}
+		}
 	}
 
 	nextState := app.state.HandleKeyinput(character, key)
@@ -123,9 +137,10 @@ func (app *Application) HandleKeyinput(character rune, key keyboard.Key) bool {
 			app.state.Name(),
 			nextState.Name(),
 		)
-		nextState.Initialize()
+		app.writer.AddBuffer(nextState.Initialize())
 		app.state = nextState
 	}
+	app.writer.Draw()
 	return true
 }
 

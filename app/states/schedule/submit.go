@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/Bekreth/jane_cli/domain/schedule"
 )
@@ -15,16 +14,10 @@ const breakFlag = "-b"
 const openFlag = "-o"
 const showAllFlag = "-s"
 
-func (state *scheduleState) submit() {
-	flags := terminal.ParseFlags(state.buffer.Read())
-	state.buffer.Clear()
-
+func (state *scheduleState) Submit(flags map[string]string) bool {
 	if _, exists := flags[".."]; exists {
 		state.nextState = state.rootState
-		return
-	} else if _, exists := flags["help"]; exists {
-		state.printHelp()
-		return
+		return true
 	}
 
 	setIncludeFlags(flags)
@@ -47,8 +40,9 @@ func (state *scheduleState) submit() {
 			flags[dateFlag],
 		)
 		if err != nil {
-			state.buffer.WriteStoreString(err.Error())
-			return
+			//TODO: Test
+			state.buffer.AddString(err.Error())
+			return true
 		}
 		startAt = parsedTime
 		endAt = parsedTime
@@ -58,10 +52,12 @@ func (state *scheduleState) submit() {
 	if timeIsSet {
 		fetchedSchedule, err := state.fetcher.FetchSchedule(startAt, endAt)
 		if err != nil {
-			state.buffer.WriteStoreString(fmt.Sprintf("failed to get schedule: %v", err))
+			//TODO: Test
+			state.buffer.AddString(fmt.Sprintf("failed to get schedule: %v", err))
 		}
 		if len(fetchedSchedule.Appointments) == 0 {
-			state.buffer.WriteStoreString(fmt.Sprintf(
+			//TODO: Test
+			state.buffer.AddString(fmt.Sprintf(
 				"no shift between %v and %v",
 				startAt.Format(util.DateFormat),
 				endAt.Format(util.DateFormat),
@@ -71,11 +67,13 @@ func (state *scheduleState) submit() {
 				state.logger.Debugf("show all appointments")
 				fetchedSchedule = fetchedSchedule.ShowAll()
 			}
+			//TODO: Test
 			output := fetchedSchedule.OnlyInclude(flagsToAppointmentFilters(flags)).ToString()
-			state.buffer.WriteStoreString("\n" + output)
+			state.buffer.AddString(output)
 		}
-		return
+		return true
 	}
+	return true
 }
 
 func setIncludeFlags(input map[string]string) {
@@ -112,9 +110,8 @@ func flagsToAppointmentFilters(flags map[string]string) []schedule.AppointmentTy
 	return output
 }
 
-func (state *scheduleState) printHelp() {
-	// TODO: automate this list of elements
-	helpString := strings.Join([]string{
+func (state *scheduleState) HelpString() string {
+	return strings.Join([]string{
 		"",
 		"available commands for schedule:",
 		"\ttoday\t\tthe schedule for today which excluding appointments that have happened",
@@ -126,5 +123,4 @@ func (state *scheduleState) printHelp() {
 		"\t-a\tflag to include only the appointments in the schedule",
 		"\t-s\tshow all appointments, not just those that are upcomming",
 	}, "\n")
-	state.buffer.WriteStoreString(helpString)
 }
