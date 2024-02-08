@@ -72,12 +72,12 @@ func (state *scheduleState) Initialize() *terminal.Buffer {
 func (state *scheduleState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
-) states.State {
+) (states.State, bool) {
 	util.KeyHandler(key, state.buffer, state.triggerAutocomplete)
 	if character != 0 {
 		state.buffer.AddCharacter(character)
 	}
-	return state.nextState
+	return state.nextState, false
 }
 
 func (state *scheduleState) triggerAutocomplete() {

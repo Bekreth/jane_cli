@@ -18,7 +18,7 @@ func ParseTreatmentFlag(
 	treatments := []domain.Treatment{}
 
 	if treatmentName == "" {
-		return treatment, treatments, fmt.Errorf("no treatment provided, use the %v flag", treatmentName)
+		return treatment, treatments, fmt.Errorf("no treatment provided, use the '-t'flag")
 	}
 	treatments, err := fetcher.FindTreatment(treatmentName)
 	if err != nil {

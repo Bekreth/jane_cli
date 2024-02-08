@@ -53,12 +53,12 @@ func (state *authState) Initialize() *terminal.Buffer {
 	return state.buffer
 }
 
-func (state *authState) HandleKeyinput(character rune, key keyboard.Key) states.State {
+func (state *authState) HandleKeyinput(character rune, key keyboard.Key) (states.State, bool) {
 	util.KeyHandler(key, state.buffer, state.triggerAutocomplete)
 	if character != 0 {
 		state.buffer.AddCharacter(character)
 	}
-	return state.nextState
+	return state.nextState, false
 }
 
 func (state *authState) triggerAutocomplete() {

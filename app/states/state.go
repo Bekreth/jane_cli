@@ -8,7 +8,7 @@ import (
 type State interface {
 	Name() string
 	Initialize() *terminal.Buffer
-	HandleKeyinput(character rune, key keyboard.Key) State
+	HandleKeyinput(character rune, key keyboard.Key) (State, bool)
 	Submit(map[string]string) bool
 	HelpString() string
 }

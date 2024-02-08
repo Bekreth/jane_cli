@@ -3,7 +3,7 @@ package booking
 import (
 	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/app/states"
-	"github.com/Bekreth/jane_cli/app/terminal"
+	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/eiannone/keyboard"
 )
 
@@ -19,11 +19,11 @@ func (state *bookingState) isInteractive() bool {
 func (state *bookingState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
-) states.State {
+) (states.State, bool) {
+	addNewLine := false
 	if key == keyboard.KeyEsc && state.isInteractive() {
 		state.builder = newBookingBuilder()
-		state.buffer.WriteNewLine()
-		return state.nextState
+		return state.nextState, addNewLine
 	}
 
 	switch state.builder.substate {
@@ -40,14 +40,10 @@ func (state *bookingState) HandleKeyinput(
 		state.builder.appointmentSelector.SelectElement(character)
 
 	default:
-		terminal.KeyHandler(
-			key,
-			state.buffer,
-			state.triggerAutocomplete,
-			state.Submit,
-		)
-		state.buffer.AddCharacter(character)
-		state.buffer.Write()
+		util.KeyHandler(key, state.buffer, state.triggerAutocomplete)
+		if character != 0 {
+			state.buffer.AddCharacter(character)
+		}
 	}
 
 	if state.builder.substate != argument {
@@ -71,23 +67,27 @@ func (state *bookingState) HandleKeyinput(
 
 	switch state.builder.substate {
 	case actionConfirmation:
-		state.buffer.WriteStoreString(state.builder.confirmationMessage())
+		state.buffer.AddString(state.builder.confirmationMessage())
+		addNewLine = true
 
 	case treatmentSelector:
-		state.buffer.WriteStoreString(
+		state.buffer.AddString(
 			interactive.PrintSelectorList(state.builder.treatmentSelector),
 		)
+		addNewLine = true
 
 	case patientSelector:
-		state.buffer.WriteStoreString(
+		state.buffer.AddString(
 			interactive.PrintSelectorList(state.builder.patientSelector),
 		)
+		addNewLine = true
 
 	case appointmentSelector:
 		state.builder.appointmentSelector.SelectElement(character)
+		addNewLine = true
 
 	default:
 	}
 
-	return state.nextState
+	return state.nextState, addNewLine
 }

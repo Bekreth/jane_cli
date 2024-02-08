@@ -3,11 +3,12 @@ package booking
 import (
 	"strings"
 
+	"github.com/Bekreth/jane_cli/app/flag"
 	"github.com/Bekreth/jane_cli/app/states"
-	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/domain/schedule"
 	"github.com/Bekreth/jane_cli/logger"
+	terminal "github.com/bekreth/screen_reader_terminal"
 )
 
 type bookingDataFetcher interface {
@@ -38,16 +39,15 @@ type bookingState struct {
 
 func NewState(
 	logger logger.Logger,
-	writer terminal.ScreenWriter,
 	fetcher bookingDataFetcher,
 	rootState states.State,
 ) states.State {
-	buffer := terminal.NewBuffer(writer, "booking")
+	buffer := terminal.NewBuffer()
 	return &bookingState{
 		logger:    logger,
 		fetcher:   fetcher,
 		rootState: rootState,
-		buffer:    &buffer,
+		buffer:    buffer.SetPrefix("booking: "),
 	}
 }
 
@@ -55,7 +55,7 @@ func (bookingState) Name() string {
 	return "booking"
 }
 
-func (state *bookingState) Initialize() {
+func (state *bookingState) Initialize() *terminal.Buffer {
 	state.logger.Debugf(
 		"entering booking. available states %v",
 		state.rootState.Name(),
@@ -63,30 +63,23 @@ func (state *bookingState) Initialize() {
 	state.builder = newBookingBuilder()
 	state.nextState = state
 	state.buffer.Clear()
-	state.buffer.WriteNewLine()
+	return state.buffer
 }
 
 var autocompletes = map[string]string{
-	helpCommand:   "",
 	cancelCommand: "",
 	bookCommand:   "",
 }
 
 func (state *bookingState) triggerAutocomplete() {
-	words := strings.Split(state.buffer.Read(), " ")
+	data, _ := state.buffer.Output()
+	flags := flag.Parse(data)
+
 	for key := range autocompletes {
-		if strings.HasPrefix(key, words[len(words)-1]) {
-			arguments := append(words[0:len(words)-1], key)
-			state.buffer.WriteString(strings.Join(arguments, " ") + " ")
+		for flagKey := range flags {
+			if strings.HasPrefix(key, flagKey) {
+				state.buffer.AddString(strings.Replace(key, flagKey, "", 1))
+			}
 		}
 	}
-}
-
-func (state *bookingState) ClearBuffer() {
-	state.buffer.Clear()
-	state.buffer.WriteNewLine()
-}
-
-func (state *bookingState) RepeatLastOutput() {
-	state.buffer.WritePrevious()
 }

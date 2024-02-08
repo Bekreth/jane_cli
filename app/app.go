@@ -130,7 +130,11 @@ func (app *Application) HandleKeyinput(character rune, key keyboard.Key) bool {
 		}
 	}
 
-	nextState := app.state.HandleKeyinput(character, key)
+	nextState, addNewLine := app.state.HandleKeyinput(character, key)
+	if addNewLine {
+		app.writer.Draw()
+		app.writer.NewLine()
+	}
 	if nextState.Name() != app.state.Name() {
 		app.logger.Debugf(
 			"transitioning from %v state to %v state",
