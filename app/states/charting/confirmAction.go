@@ -14,7 +14,7 @@ func (state *chartingState) confirmAction(character rune) {
 	case "n":
 		fallthrough
 	case "N":
-		state.buffer.WriteStoreString("aborting")
+		state.buffer.AddString("aborting")
 		state.builder = newChartingBuilder()
 		state.nextState = state.rootState
 
@@ -25,7 +25,7 @@ func (state *chartingState) confirmAction(character rune) {
 		state.builder.substate = noteEditor
 
 	default:
-		state.buffer.WriteStoreString(fmt.Sprintf(
+		state.buffer.AddString(fmt.Sprintf(
 			"input of %v not support. Confirm, deny, or edit (Y/n/E)?",
 			string(character),
 		))
@@ -33,14 +33,14 @@ func (state *chartingState) confirmAction(character rune) {
 }
 
 func (state *chartingState) confirmSign() {
-	state.buffer.WriteStoreString("submitting chart")
+	state.buffer.AddString("submitting chart")
 	chart, err := state.fetcher.CreatePatientCharts(
 		state.builder.patientSelector.TargetSelection().GetID(),
 		state.builder.appointmentSelector.TargetSelection().GetID(),
 	)
 
 	if err != nil {
-		state.buffer.WriteStoreString(fmt.Sprintf("failed to create chart: %v", err))
+		state.buffer.AddString(fmt.Sprintf("failed to create chart: %v", err))
 		return
 	}
 	state.logger.Debugf("created chart: %v", chart)
@@ -51,7 +51,7 @@ func (state *chartingState) confirmSign() {
 	)
 
 	if err != nil {
-		state.buffer.WriteStoreString(fmt.Sprintf("failed to update chart: %v", err))
+		state.buffer.AddString(fmt.Sprintf("failed to update chart: %v", err))
 		return
 	}
 
@@ -60,10 +60,10 @@ func (state *chartingState) confirmSign() {
 		state.builder.patientSelector.TargetSelection().GetID(),
 	)
 	if err != nil {
-		state.buffer.WriteStoreString(fmt.Sprintf("failed to sign chart: %v", err))
+		state.buffer.AddString(fmt.Sprintf("failed to sign chart: %v", err))
 		return
 	}
 
-	state.buffer.WriteStoreString("Successfully created chart!")
-	state.ClearBuffer()
+	state.buffer.AddString("Successfully created chart!")
+	state.buffer.Clear()
 }

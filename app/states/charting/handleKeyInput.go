@@ -5,7 +5,7 @@ import (
 
 	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/app/states"
-	"github.com/Bekreth/jane_cli/app/terminal"
+	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/eiannone/keyboard"
 )
 
@@ -21,11 +21,11 @@ func (state *chartingState) isInteractive() bool {
 func (state *chartingState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
-) states.State {
+) (states.State, bool) {
+	addNewLine := false
 	if key == keyboard.KeyEsc && state.isInteractive() {
 		state.builder = newChartingBuilder()
-		state.buffer.WriteNewLine()
-		return state.nextState
+		return state.nextState, addNewLine
 	}
 
 	switch state.builder.substate {
@@ -60,14 +60,14 @@ func (state *chartingState) HandleKeyinput(
 		}
 
 	default:
-		terminal.KeyHandler(
+		util.KeyHandler(
 			key,
 			state.buffer,
 			state.triggerAutocomplete,
-			state.Submit,
 		)
-		state.buffer.AddCharacter(character)
-		state.buffer.Write()
+		if character != 0 {
+			state.buffer.AddCharacter(character)
+		}
 	}
 
 	if state.builder.substate != argument {
@@ -81,9 +81,9 @@ func (state *chartingState) HandleKeyinput(
 					state.builder.chartSelector, err = state.fetchCharts()
 				}
 				if err != nil {
-					state.buffer.WriteStoreString(err.Error())
+					//state.buffer.WriteStoreString(err.Error())
 					state.builder = newChartingBuilder()
-					state.buffer.WriteNewLine()
+					//state.buffer.WriteNewLine()
 				} else {
 					if state.builder.chartSelector.HasSelection() {
 						state.builder.substate = complete
@@ -103,9 +103,8 @@ func (state *chartingState) HandleKeyinput(
 					state.builder.appointmentSelector, err = state.fetchAppointments()
 				}
 				if err != nil {
-					state.buffer.WriteStoreString(err.Error())
+					state.buffer.AddString(err.Error())
 					state.builder = newChartingBuilder()
-					state.buffer.WriteNewLine()
 				} else {
 					if state.builder.appointmentSelector.HasSelection() {
 						state.builder.substate = noteEditor
@@ -123,22 +122,26 @@ func (state *chartingState) HandleKeyinput(
 
 	switch state.builder.substate {
 	case actionConfirmation:
-		state.buffer.WriteStoreString(state.builder.confirmationMessage())
+		state.buffer.AddString(state.builder.confirmationMessage())
+		addNewLine = true
 
 	case patientSelector:
-		state.buffer.WriteStoreString(
+		state.buffer.AddString(
 			interactive.PrintSelectorList(state.builder.patientSelector),
 		)
+		addNewLine = true
 
 	case chartSelector:
-		state.buffer.WriteStoreString(
+		state.buffer.AddString(
 			interactive.PrintSelectorList(state.builder.chartSelector),
 		)
+		addNewLine = true
 
 	case appointmentSelector:
-		state.buffer.WriteStoreString(
+		state.buffer.AddString(
 			interactive.PrintSelectorList(state.builder.appointmentSelector),
 		)
+		addNewLine = true
 
 	case noteEditor:
 		if state.builder.noteUnderEdit == "" {
@@ -146,19 +149,20 @@ func (state *chartingState) HandleKeyinput(
 				"Write chart notes for %v(or ESC to back out): ",
 				state.builder.appointmentSelector.TargetSelection().PrintSelector(),
 			)
-			state.buffer.WriteStoreString(output)
+			state.buffer.AddString(output)
 		} else {
-			state.buffer.WriteString(state.builder.noteUnderEdit)
+			state.buffer.AddString(state.builder.noteUnderEdit)
+			addNewLine = true
 		}
 
 	case complete:
-		//TODO: Fix this nonsense
-		state.buffer.WriteStoreString(state.builder.chartSelector.TargetSelection().Deref().PrintText())
-		state.buffer.WriteNewLine()
+		state.buffer.AddString(
+			state.builder.chartSelector.TargetSelection().Deref().PrintText(),
+		)
 		state.builder = newChartingBuilder()
 
 	default:
 	}
 
-	return state.nextState
+	return state.nextState, addNewLine
 }

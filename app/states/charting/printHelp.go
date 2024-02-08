@@ -1,11 +1,9 @@
 package charting
 
-import (
-	"strings"
-)
+import "strings"
 
-func (state *chartingState) printHelp() {
-	helpString := []string{
+func (state *chartingState) HelpString() string {
+	return strings.Join([]string{
 		"Charting command is to view, create, and edit charts",
 		"Available subcommands",
 		"\tread\tRead the chart for a given patient.  Requires patient name.  If no date is provided, a list of prior dates will be presented",
@@ -14,6 +12,5 @@ func (state *chartingState) printHelp() {
 		"\t-d\tDate.  Format is MM.DDTHH.MM",
 		"\t-p\tThe name of the patient (First, last, or preffered)",
 		"\t-n\tThe note for the chart. If not provided, an editor will be presented to fill this in",
-	}
-	state.buffer.WriteStoreString(strings.Join(helpString, "\n"))
+	}, "\n")
 }
