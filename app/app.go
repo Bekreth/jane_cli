@@ -105,13 +105,25 @@ func (app *Application) HandleKeyinput(character rune, key keyboard.Key) bool {
 		app.writer.Draw()
 		app.writer.NewLine()
 		return false
+
 	case keyboard.KeyCtrlU:
 		app.writer.CurrentBuffer().SetString("")
 		app.writer.Draw()
 		return true
+
 	case keyboard.KeyCtrlR:
 		//TODO
 		//app.state.RepeatLastOutput()
+		return true
+
+	case keyboard.KeyArrowRight:
+		app.writer.CurrentBuffer().AdvanceCursor(1)
+		app.writer.Draw()
+		return true
+
+	case keyboard.KeyArrowLeft:
+		app.writer.CurrentBuffer().RetreatCursor(1)
+		app.writer.Draw()
 		return true
 
 	case keyboard.KeyEnter:

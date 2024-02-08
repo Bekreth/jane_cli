@@ -43,7 +43,7 @@ func (state *chartingState) confirmSign() {
 		state.buffer.AddString(fmt.Sprintf("failed to create chart: %v", err))
 		return
 	}
-	state.logger.Debugf("created chart: %v", chart)
+	state.logger.Debugf("created chart", chart)
 
 	err = state.fetcher.UpdatePatientChart(
 		chart.ChartParts[0].ID,

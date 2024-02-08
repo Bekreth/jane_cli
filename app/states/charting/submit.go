@@ -9,6 +9,9 @@ const createCommand = "create"
 const backCommand = ".."
 
 func (state *chartingState) Submit(flags map[string]string) bool {
+	if state.builder.substate == noteEditor {
+		return false
+	}
 	state.logger.Debugf("submitting query flags: %v", flags)
 	state.buffer.Clear()
 	var err error

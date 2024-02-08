@@ -134,7 +134,6 @@ func (client Client) CreatePatientCharts(
 		client.logger.Infof("got a bad new chart response: %v", err)
 		return charts.ChartEntry{}, err
 	}
-	client.logger.Debugf("RAW: %v", response)
 
 	if err = checkStatusCode(response); err != nil {
 		client.logger.Infof("Bad response from Jane: %v", err)

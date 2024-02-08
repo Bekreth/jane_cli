@@ -18,6 +18,14 @@ func (state *chartingState) isInteractive() bool {
 		substate == noteEditor
 }
 
+func (state *chartingState) setNoteEditor() {
+	if state.builder.note == "" {
+		state.builder.substate = noteEditor
+	} else {
+		state.builder.substate = actionConfirmation
+	}
+}
+
 func (state *chartingState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
@@ -49,14 +57,13 @@ func (state *chartingState) HandleKeyinput(
 		case keyboard.KeyBackspace2:
 			fallthrough
 		case keyboard.KeyBackspace:
-			currentNote := state.builder.noteUnderEdit
-			state.builder.noteUnderEdit = currentNote[:len(currentNote)-1]
+			state.buffer.RemoveCharacter()
 		case keyboard.KeyEnter:
-			state.builder.note = state.builder.noteUnderEdit
+			state.builder.note, _ = state.buffer.Output()
 		case keyboard.KeySpace:
-			state.builder.noteUnderEdit = state.builder.noteUnderEdit + " "
+			state.buffer.AddCharacter(' ')
 		default:
-			state.builder.noteUnderEdit = state.builder.noteUnderEdit + string(character)
+			state.buffer.AddCharacter(character)
 		}
 
 	default:
@@ -81,9 +88,8 @@ func (state *chartingState) HandleKeyinput(
 					state.builder.chartSelector, err = state.fetchCharts()
 				}
 				if err != nil {
-					//state.buffer.WriteStoreString(err.Error())
+					state.buffer.AddString(err.Error())
 					state.builder = newChartingBuilder()
-					//state.buffer.WriteNewLine()
 				} else {
 					if state.builder.chartSelector.HasSelection() {
 						state.builder.substate = complete
@@ -93,6 +99,7 @@ func (state *chartingState) HandleKeyinput(
 				}
 			} else {
 				state.builder.substate = complete
+				addNewLine = true
 			}
 
 		case create:
@@ -107,15 +114,13 @@ func (state *chartingState) HandleKeyinput(
 					state.builder = newChartingBuilder()
 				} else {
 					if state.builder.appointmentSelector.HasSelection() {
-						state.builder.substate = noteEditor
+						state.setNoteEditor()
 					} else {
 						state.builder.substate = appointmentSelector
 					}
 				}
-			} else if state.builder.note == "" {
-				state.builder.substate = noteEditor
 			} else {
-				state.builder.substate = actionConfirmation
+				state.setNoteEditor()
 			}
 		}
 	}
@@ -149,10 +154,9 @@ func (state *chartingState) HandleKeyinput(
 				"Write chart notes for %v(or ESC to back out): ",
 				state.builder.appointmentSelector.TargetSelection().PrintSelector(),
 			)
-			state.buffer.AddString(output)
+			state.buffer.SetPrefix(output)
 		} else {
 			state.buffer.AddString(state.builder.noteUnderEdit)
-			addNewLine = true
 		}
 
 	case complete:

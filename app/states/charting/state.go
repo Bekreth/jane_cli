@@ -63,6 +63,7 @@ func (state *chartingState) Initialize() *terminal.Buffer {
 	state.builder = newChartingBuilder()
 	state.nextState = state
 	state.buffer.Clear()
+	state.buffer.SetPrefix("charting: ")
 	return state.buffer
 }
 
