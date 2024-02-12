@@ -1,13 +1,13 @@
 package util
 
 import (
-	terminal "github.com/bekreth/screen_reader_terminal"
+	"github.com/bekreth/screen_reader_terminal/buffer"
 	"github.com/eiannone/keyboard"
 )
 
 func KeyHandler(
 	key keyboard.Key,
-	buffer *terminal.Buffer,
+	buffer *buffer.Buffer,
 	triggerAutocomplete func(),
 ) {
 	switch key {

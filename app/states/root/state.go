@@ -7,7 +7,7 @@ import (
 	"github.com/Bekreth/jane_cli/app/states"
 	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/Bekreth/jane_cli/logger"
-	terminal "github.com/bekreth/screen_reader_terminal"
+	"github.com/bekreth/screen_reader_terminal/buffer"
 	"github.com/eiannone/keyboard"
 )
 
@@ -15,14 +15,14 @@ type rootState struct {
 	logger logger.Logger
 
 	states    map[string]states.State
-	buffer    *terminal.Buffer
+	buffer    *buffer.Buffer
 	nextState states.State
 }
 
 func NewState(
 	logger logger.Logger,
 ) *rootState {
-	buffer := terminal.NewBuffer()
+	buffer := buffer.NewBuffer()
 	return &rootState{
 		logger: logger,
 		buffer: buffer.SetPrefix("root: "),
@@ -33,7 +33,7 @@ func (rootState) Name() string {
 	return "root"
 }
 
-func (state *rootState) Initialize() *terminal.Buffer {
+func (state *rootState) Initialize() *buffer.Buffer {
 	stateNames := []string{}
 	for key := range state.states {
 		stateNames = append(stateNames, key)

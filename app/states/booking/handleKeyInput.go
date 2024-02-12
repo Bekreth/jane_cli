@@ -68,7 +68,6 @@ func (state *bookingState) HandleKeyinput(
 	switch state.builder.substate {
 	case actionConfirmation:
 		state.buffer.AddString(state.builder.confirmationMessage())
-		addNewLine = true
 
 	case treatmentSelector:
 		state.buffer.AddString(

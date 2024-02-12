@@ -42,7 +42,6 @@ func (state *bookingState) confirmBooking() {
 		state.buffer.AddString(fmt.Sprintf("failed to make appointment: %v", err))
 	} else {
 		state.buffer.AddString("Successfully created booking")
-		state.buffer.Clear()
 	}
 }
 
@@ -56,6 +55,5 @@ func (state *bookingState) confirmCancelation() {
 		state.buffer.AddString(fmt.Sprintf("failed to cancel appointment: %v", err))
 	} else {
 		state.buffer.AddString("Successfully cancelled appointment")
-		state.buffer.Clear()
 	}
 }

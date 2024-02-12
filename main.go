@@ -13,7 +13,9 @@ import (
 	"github.com/Bekreth/jane_cli/client"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
-	terminal "github.com/bekreth/screen_reader_terminal"
+	"github.com/bekreth/screen_reader_terminal/buffer"
+	"github.com/bekreth/screen_reader_terminal/terminal"
+	"github.com/bekreth/screen_reader_terminal/window"
 
 	"github.com/eiannone/keyboard"
 )
@@ -43,9 +45,9 @@ func main() {
 	}
 
 	terminalLogger := logger.AddContext("package", "terminal")
-	buffer := terminal.NewBuffer()
+	buffer := buffer.NewBuffer()
 	terminal := terminal.NewTerminal(
-		terminal.NewWindow(),
+		window.NewWindow(),
 		&buffer,
 		terminalLogger,
 	)

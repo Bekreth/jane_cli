@@ -13,7 +13,7 @@ import (
 	Client "github.com/Bekreth/jane_cli/client"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
-	terminal "github.com/bekreth/screen_reader_terminal"
+	"github.com/bekreth/screen_reader_terminal/terminal"
 	"github.com/eiannone/keyboard"
 )
 
@@ -133,13 +133,12 @@ func (app *Application) HandleKeyinput(character rune, key keyboard.Key) bool {
 		if _, exists := flags["help"]; exists {
 			app.writer.CurrentBuffer().AddString(app.state.HelpString())
 			app.writer.Draw()
-			app.writer.NewLine()
 		} else {
 			if app.state.Submit(flags) {
 				app.writer.Draw()
-				app.writer.NewLine()
 			}
 		}
+		app.writer.NewLine()
 	}
 
 	nextState, addNewLine := app.state.HandleKeyinput(character, key)

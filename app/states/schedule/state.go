@@ -9,7 +9,7 @@ import (
 	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/Bekreth/jane_cli/domain/schedule"
 	"github.com/Bekreth/jane_cli/logger"
-	terminal "github.com/bekreth/screen_reader_terminal"
+	"github.com/bekreth/screen_reader_terminal/buffer"
 	"github.com/eiannone/keyboard"
 )
 
@@ -37,7 +37,7 @@ type scheduleState struct {
 	fetcher   scheduleFetcher
 	rootState states.State
 
-	buffer    *terminal.Buffer
+	buffer    *buffer.Buffer
 	nextState states.State
 }
 
@@ -46,7 +46,7 @@ func NewState(
 	fetcher scheduleFetcher,
 	rootState states.State,
 ) states.State {
-	buffer := terminal.NewBuffer()
+	buffer := buffer.NewBuffer()
 	return &scheduleState{
 		logger:    logger,
 		fetcher:   fetcher,
@@ -59,7 +59,7 @@ func (scheduleState) Name() string {
 	return "schedule"
 }
 
-func (state *scheduleState) Initialize() *terminal.Buffer {
+func (state *scheduleState) Initialize() *buffer.Buffer {
 	state.logger.Debugf(
 		"entering schedule. available states %v",
 		state.rootState.Name(),

@@ -58,7 +58,7 @@ func (builder bookingBuilder) confirmationMessage() string {
 		return fmt.Sprintf(
 			"Book %v for a %v at %v? (Y/n)",
 			builder.patientSelector.TargetSelection().PrintSelector(),
-			builder.treatmentSelector.TargetSelection().PrintHeader(),
+			builder.treatmentSelector.TargetSelection().PrintSelector(),
 			builder.appointmentDate.HumanDateTime(),
 		)
 	case canceling:

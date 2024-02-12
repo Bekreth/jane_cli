@@ -6,7 +6,7 @@ import (
 	"github.com/Bekreth/jane_cli/app/states"
 	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/Bekreth/jane_cli/logger"
-	terminal "github.com/bekreth/screen_reader_terminal"
+	"github.com/bekreth/screen_reader_terminal/buffer"
 	"github.com/eiannone/keyboard"
 )
 
@@ -22,7 +22,7 @@ type authState struct {
 	rootState     states.State
 
 	nextState states.State
-	buffer    *terminal.Buffer
+	buffer    *buffer.Buffer
 }
 
 func NewState(
@@ -30,7 +30,7 @@ func NewState(
 	authenticator authenticator,
 	rootState states.State,
 ) states.State {
-	buffer := terminal.NewBuffer()
+	buffer := buffer.NewBuffer()
 	return &authState{
 		logger:        logger,
 		authenticator: authenticator,
@@ -43,7 +43,7 @@ func (authState) Name() string {
 	return "auth"
 }
 
-func (state *authState) Initialize() *terminal.Buffer {
+func (state *authState) Initialize() *buffer.Buffer {
 	state.logger.Debugf(
 		"entering authenticator. available states %v",
 		state.rootState.Name(),

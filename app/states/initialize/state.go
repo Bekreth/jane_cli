@@ -7,7 +7,7 @@ import (
 	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/Bekreth/jane_cli/domain"
 	"github.com/Bekreth/jane_cli/logger"
-	terminal "github.com/bekreth/screen_reader_terminal"
+	"github.com/bekreth/screen_reader_terminal/buffer"
 	"github.com/eiannone/keyboard"
 )
 
@@ -20,7 +20,7 @@ type initState struct {
 	rootState states.State
 
 	nextState states.State
-	buffer    *terminal.Buffer
+	buffer    *buffer.Buffer
 }
 
 func NewState(
@@ -28,7 +28,7 @@ func NewState(
 	user *domain.User,
 	rootState states.State,
 ) states.State {
-	buffer := terminal.NewBuffer()
+	buffer := buffer.NewBuffer()
 	return &initState{
 		logger:    logger,
 		user:      user,
@@ -41,7 +41,7 @@ func (initState) Name() string {
 	return "init"
 }
 
-func (state *initState) Initialize() *terminal.Buffer {
+func (state *initState) Initialize() *buffer.Buffer {
 	state.logger.Debugf(
 		"entering init. available states %v",
 		state.rootState.Name(),
