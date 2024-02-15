@@ -6,7 +6,6 @@ const noteFlag = "-n"
 
 const readCommand = "read"
 const createCommand = "create"
-const backCommand = ".."
 
 func (state *chartingState) Submit(flags map[string]string) bool {
 	if state.builder.substate == noteEditor {
@@ -15,9 +14,7 @@ func (state *chartingState) Submit(flags map[string]string) bool {
 	state.logger.Debugf("submitting query flags: %v", flags)
 	state.buffer.Clear()
 	var err error
-	if _, exists := flags[backCommand]; exists {
-		state.nextState = state.rootState
-	} else if _, exists := flags[createCommand]; exists {
+	if _, exists := flags[createCommand]; exists {
 		state.builder, err = state.handleCreate(flags)
 	} else if _, exists := flags[readCommand]; exists {
 		state.builder, err = state.handleRead(flags)

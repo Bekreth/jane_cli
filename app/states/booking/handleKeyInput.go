@@ -26,6 +26,7 @@ func (state *bookingState) HandleKeyinput(
 		return state.nextState, addNewLine
 	}
 
+	// Hand key push
 	switch state.builder.substate {
 	case actionConfirmation:
 		state.confirmAction(character)
@@ -46,6 +47,7 @@ func (state *bookingState) HandleKeyinput(
 		}
 	}
 
+	// Determine and switch to next state
 	if state.builder.substate != argument {
 		switch state.builder.flow {
 		case booking:
@@ -65,9 +67,11 @@ func (state *bookingState) HandleKeyinput(
 		}
 	}
 
+	// Print state of flow
 	switch state.builder.substate {
 	case actionConfirmation:
 		state.buffer.AddString(state.builder.confirmationMessage())
+		addNewLine = true
 
 	case treatmentSelector:
 		state.buffer.AddString(
@@ -82,7 +86,9 @@ func (state *bookingState) HandleKeyinput(
 		addNewLine = true
 
 	case appointmentSelector:
-		state.builder.appointmentSelector.SelectElement(character)
+		state.buffer.AddString(
+			interactive.PrintSelectorList(state.builder.appointmentSelector),
+		)
 		addNewLine = true
 
 	default:
