@@ -59,13 +59,13 @@ func (state *chartingState) HandleKeyinput(
 		case keyboard.KeyBackspace:
 			state.buffer.RemoveCharacter()
 		case keyboard.KeyEnter:
-			state.builder.note = state.noteUnderEdit
+			state.builder.note = state.builder.noteUnderEdit
 		case keyboard.KeySpace:
 			state.buffer.AddCharacter(' ')
-			state.noteUnderEdit, _ = state.buffer.Output()
+			state.builder.noteUnderEdit, _ = state.buffer.Output()
 		default:
 			state.buffer.AddCharacter(character)
-			state.noteUnderEdit, _ = state.buffer.Output()
+			state.builder.noteUnderEdit, _ = state.buffer.Output()
 		}
 
 	default:
