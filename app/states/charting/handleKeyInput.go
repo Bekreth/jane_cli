@@ -11,6 +11,7 @@ import (
 
 func (state *chartingState) isInteractive() bool {
 	substate := state.builder.substate
+	state.buffer.AddString("Backing out of interactive action")
 
 	return substate == actionConfirmation ||
 		substate == patientSelector ||
@@ -33,7 +34,7 @@ func (state *chartingState) HandleKeyinput(
 	addNewLine := false
 	if key == keyboard.KeyEsc && state.isInteractive() {
 		state.builder = newChartingBuilder()
-		return state.nextState, addNewLine
+		return state.nextState, true
 	}
 
 	switch state.builder.substate {
@@ -128,27 +129,20 @@ func (state *chartingState) HandleKeyinput(
 	}
 
 	switch state.builder.substate {
-	case actionConfirmation:
-		state.buffer.AddString(state.builder.confirmationMessage())
-		addNewLine = true
-
 	case patientSelector:
 		state.buffer.AddString(
-			interactive.PrintSelectorList(state.builder.patientSelector),
+			interactive.PrintSelectorList(state.builder.patientSelector) + "\n",
 		)
-		addNewLine = true
 
 	case chartSelector:
 		state.buffer.AddString(
-			interactive.PrintSelectorList(state.builder.chartSelector),
+			interactive.PrintSelectorList(state.builder.chartSelector) + "\n",
 		)
-		addNewLine = true
 
 	case appointmentSelector:
 		state.buffer.AddString(
-			interactive.PrintSelectorList(state.builder.appointmentSelector),
+			interactive.PrintSelectorList(state.builder.appointmentSelector) + "\n",
 		)
-		addNewLine = true
 
 	case noteEditor:
 		if state.builder.noteUnderEdit == "" {
@@ -166,6 +160,11 @@ func (state *chartingState) HandleKeyinput(
 			state.builder.chartSelector.TargetSelection().Deref().PrintText(),
 		)
 		state.builder = newChartingBuilder()
+
+	case actionConfirmation:
+		state.buffer.AddString(
+			state.builder.confirmationMessage() + "\n",
+		)
 
 	default:
 	}
