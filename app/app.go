@@ -95,8 +95,9 @@ func NewApplication(
 	}
 }
 
+// HandleKeyInput processes the key/rune typed on a keyboard.  Returns whether the
+// application should continue to run. e.g. ifs ctrl+C, returns false
 func (app *Application) HandleKeyinput(character rune, key keyboard.Key) bool {
-
 	switch key {
 	case keyboard.KeyCtrlC:
 		app.logger.Infoln("exiting the application")
@@ -112,8 +113,18 @@ func (app *Application) HandleKeyinput(character rune, key keyboard.Key) bool {
 		return true
 
 	case keyboard.KeyCtrlR:
-		//TODO
-		//app.state.RepeatLastOutput()
+		app.writer.RedrawBuffer()
+		app.writer.Draw()
+		return true
+
+	case keyboard.KeyArrowDown:
+		app.writer.CurrentBuffer().AdvanceCursorByWord(1)
+		app.writer.Draw()
+		return true
+
+	case keyboard.KeyArrowUp:
+		app.writer.CurrentBuffer().RetreatCursorByWord(1)
+		app.writer.Draw()
 		return true
 
 	case keyboard.KeyArrowRight:

@@ -1,3 +1,5 @@
+github.com/bekreth/screen_reader_terminal v1.0.0 h1:ImjNSQ1E6YKM5AIqsVLKmZBDqTG8EalLgGjXW1hwuVI=
+github.com/bekreth/screen_reader_terminal v1.0.0/go.mod h1:gnh9/MgWBtoS1ZRsmiy1Ab114xEy1Z+Hr9On7oKbB4g=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/eiannone/keyboard v0.0.0-20220611211555-0d226195f203 h1:XBBHcIb256gUJtLmY22n99HaZTz+r2Z51xUPi01m3wg=

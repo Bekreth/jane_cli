@@ -9,8 +9,6 @@ import (
 
 func (state *bookingState) isInteractive() bool {
 	substate := state.builder.substate
-	state.buffer.AddString("Backing out of interactive action")
-
 	return substate == actionConfirmation ||
 		substate == patientSelector ||
 		substate == treatmentSelector ||
@@ -24,6 +22,7 @@ func (state *bookingState) HandleKeyinput(
 	addNewLine := false
 	if key == keyboard.KeyEsc && state.isInteractive() {
 		state.builder = newBookingBuilder()
+		state.buffer.AddString("Backing out of interactive action")
 		return state.nextState, true
 	}
 

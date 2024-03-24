@@ -30,7 +30,7 @@
 		/>
 		<Property
 			Id='DiskPrompt'
-			Value="Bekreth's Jane CLI 1.3.0 Installation [1]"
+			Value="Bekreth's Jane CLI $VERSION Installation [1]"
 		/>
 
     <Directory Id='TARGETDIR' Name='SourceDir'>
