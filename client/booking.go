@@ -78,7 +78,6 @@ func (client Client) BookAppointment(
 	}
 	request.Header = http.Header(commonHeaders)
 
-	client.logger.Infof("Request: %v", string(jsonBody))
 	response, err := client.janeClient.Do(request)
 	if err != nil {
 		client.logger.Infof("failed to get patient info from Jane")
@@ -86,7 +85,6 @@ func (client Client) BookAppointment(
 	}
 
 	if err = checkStatusCode(response); err != nil {
-		client.logger.Infof("Response: %v", response)
 		client.logger.Infof("Bad response from Jane: %v", err)
 		return err
 	}
