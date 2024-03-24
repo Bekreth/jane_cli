@@ -3,13 +3,12 @@ package booking
 import (
 	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/app/states"
-	"github.com/Bekreth/jane_cli/app/terminal"
+	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/eiannone/keyboard"
 )
 
 func (state *bookingState) isInteractive() bool {
 	substate := state.builder.substate
-
 	return substate == actionConfirmation ||
 		substate == patientSelector ||
 		substate == treatmentSelector ||
@@ -19,13 +18,15 @@ func (state *bookingState) isInteractive() bool {
 func (state *bookingState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
-) states.State {
+) (states.State, bool) {
+	addNewLine := false
 	if key == keyboard.KeyEsc && state.isInteractive() {
 		state.builder = newBookingBuilder()
-		state.buffer.WriteNewLine()
-		return state.nextState
+		state.buffer.AddString("Backing out of interactive action")
+		return state.nextState, true
 	}
 
+	// Hand key push
 	switch state.builder.substate {
 	case actionConfirmation:
 		state.confirmAction(character)
@@ -40,16 +41,13 @@ func (state *bookingState) HandleKeyinput(
 		state.builder.appointmentSelector.SelectElement(character)
 
 	default:
-		terminal.KeyHandler(
-			key,
-			state.buffer,
-			state.triggerAutocomplete,
-			state.Submit,
-		)
-		state.buffer.AddCharacter(character)
-		state.buffer.Write()
+		util.KeyHandler(key, state.buffer, state.triggerAutocomplete)
+		if character != 0 {
+			state.buffer.AddCharacter(character)
+		}
 	}
 
+	// Determine and switch to next state
 	if state.builder.substate != argument {
 		switch state.builder.flow {
 		case booking:
@@ -69,25 +67,30 @@ func (state *bookingState) HandleKeyinput(
 		}
 	}
 
+	// Print state of flow
 	switch state.builder.substate {
-	case actionConfirmation:
-		state.buffer.WriteStoreString(state.builder.confirmationMessage())
-
 	case treatmentSelector:
-		state.buffer.WriteStoreString(
-			interactive.PrintSelectorList(state.builder.treatmentSelector),
+		state.buffer.AddString(
+			interactive.PrintSelectorList(state.builder.treatmentSelector) + "\n",
 		)
 
 	case patientSelector:
-		state.buffer.WriteStoreString(
-			interactive.PrintSelectorList(state.builder.patientSelector),
+		state.buffer.AddString(
+			interactive.PrintSelectorList(state.builder.patientSelector) + "\n",
 		)
 
 	case appointmentSelector:
-		state.builder.appointmentSelector.SelectElement(character)
+		state.buffer.AddString(
+			interactive.PrintSelectorList(state.builder.appointmentSelector) + "\n",
+		)
+
+	case actionConfirmation:
+		state.buffer.AddString(
+			state.builder.confirmationMessage() + "\n",
+		)
 
 	default:
 	}
 
-	return state.nextState
+	return state.nextState, addNewLine
 }

@@ -57,7 +57,7 @@ func newChartingBuilder() chartingBuilder {
 
 func (builder chartingBuilder) confirmationMessage() string {
 	return fmt.Sprintf(
-		"Would you like to sign the chart for appointment on %v with contents:\n%v\n(Y/n/E)",
+		"Would you like to sign the chart for appointment on %v with contents(Y/n/E):\n%v",
 		builder.appointmentSelector.TargetSelection().PrintSelector(),
 		builder.note,
 	)

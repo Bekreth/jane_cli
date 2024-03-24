@@ -1,8 +1,6 @@
 package interactive
 
 import (
-	"fmt"
-
 	"github.com/Bekreth/jane_cli/domain/charts"
 )
 
@@ -19,7 +17,7 @@ func (SelectedChart) PrintHeader() string {
 }
 
 func (selection SelectedChart) PrintSelector() string {
-	return fmt.Sprintf("%v - %v", selection.EnteredOn.HumanDate(), selection.Title)
+	return selection.ChartEntry.PrintSelector()
 }
 
 func (selection SelectedChart) Deref() charts.ChartEntry {

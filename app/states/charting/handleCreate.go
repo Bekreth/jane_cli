@@ -48,7 +48,7 @@ func (state chartingState) handleCreate(
 	}
 
 	// Setup Note
-	state.builder.note, exists = flags[noteFlag]
+	output.note, exists = flags[noteFlag]
 
 	return output, nil
 }

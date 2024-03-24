@@ -5,27 +5,38 @@ import (
 
 	"github.com/Bekreth/jane_cli/app/interactive"
 	"github.com/Bekreth/jane_cli/app/states"
-	"github.com/Bekreth/jane_cli/app/terminal"
+	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/eiannone/keyboard"
 )
 
 func (state *chartingState) isInteractive() bool {
 	substate := state.builder.substate
-
 	return substate == actionConfirmation ||
 		substate == patientSelector ||
 		substate == chartSelector ||
 		substate == noteEditor
 }
 
+func (state *chartingState) setNoteEditor() {
+	if state.builder.note == "" {
+		state.buffer.Clear()
+		state.builder.noteUnderEdit = ""
+		state.builder.substate = noteEditor
+	} else {
+		state.builder.substate = actionConfirmation
+	}
+}
+
 func (state *chartingState) HandleKeyinput(
 	character rune,
 	key keyboard.Key,
-) states.State {
+) (states.State, bool) {
+	addNewLine := false
 	if key == keyboard.KeyEsc && state.isInteractive() {
 		state.builder = newChartingBuilder()
-		state.buffer.WriteNewLine()
-		return state.nextState
+		state.buffer.AddString("Backing out of interactive action")
+		state.buffer.SetPrefix("charting: ")
+		return state.nextState, true
 	}
 
 	switch state.builder.substate {
@@ -49,25 +60,26 @@ func (state *chartingState) HandleKeyinput(
 		case keyboard.KeyBackspace2:
 			fallthrough
 		case keyboard.KeyBackspace:
-			currentNote := state.builder.noteUnderEdit
-			state.builder.noteUnderEdit = currentNote[:len(currentNote)-1]
+			state.buffer.RemoveCharacter()
 		case keyboard.KeyEnter:
 			state.builder.note = state.builder.noteUnderEdit
 		case keyboard.KeySpace:
-			state.builder.noteUnderEdit = state.builder.noteUnderEdit + " "
+			state.buffer.AddCharacter(' ')
+			state.builder.noteUnderEdit, _ = state.buffer.OutputWithoutPrefix()
 		default:
-			state.builder.noteUnderEdit = state.builder.noteUnderEdit + string(character)
+			state.buffer.AddCharacter(character)
+			state.builder.noteUnderEdit, _ = state.buffer.OutputWithoutPrefix()
 		}
 
 	default:
-		terminal.KeyHandler(
+		util.KeyHandler(
 			key,
 			state.buffer,
 			state.triggerAutocomplete,
-			state.Submit,
 		)
-		state.buffer.AddCharacter(character)
-		state.buffer.Write()
+		if character != 0 {
+			state.buffer.AddCharacter(character)
+		}
 	}
 
 	if state.builder.substate != argument {
@@ -81,9 +93,8 @@ func (state *chartingState) HandleKeyinput(
 					state.builder.chartSelector, err = state.fetchCharts()
 				}
 				if err != nil {
-					state.buffer.WriteStoreString(err.Error())
+					state.buffer.AddString(err.Error())
 					state.builder = newChartingBuilder()
-					state.buffer.WriteNewLine()
 				} else {
 					if state.builder.chartSelector.HasSelection() {
 						state.builder.substate = complete
@@ -93,6 +104,7 @@ func (state *chartingState) HandleKeyinput(
 				}
 			} else {
 				state.builder.substate = complete
+				addNewLine = true
 			}
 
 		case create:
@@ -103,41 +115,35 @@ func (state *chartingState) HandleKeyinput(
 					state.builder.appointmentSelector, err = state.fetchAppointments()
 				}
 				if err != nil {
-					state.buffer.WriteStoreString(err.Error())
+					state.buffer.AddString(err.Error())
 					state.builder = newChartingBuilder()
-					state.buffer.WriteNewLine()
 				} else {
 					if state.builder.appointmentSelector.HasSelection() {
-						state.builder.substate = noteEditor
+						state.setNoteEditor()
 					} else {
 						state.builder.substate = appointmentSelector
 					}
 				}
-			} else if state.builder.note == "" {
-				state.builder.substate = noteEditor
 			} else {
-				state.builder.substate = actionConfirmation
+				state.setNoteEditor()
 			}
 		}
 	}
 
 	switch state.builder.substate {
-	case actionConfirmation:
-		state.buffer.WriteStoreString(state.builder.confirmationMessage())
-
 	case patientSelector:
-		state.buffer.WriteStoreString(
-			interactive.PrintSelectorList(state.builder.patientSelector),
+		state.buffer.AddString(
+			interactive.PrintSelectorList(state.builder.patientSelector) + "\n",
 		)
 
 	case chartSelector:
-		state.buffer.WriteStoreString(
-			interactive.PrintSelectorList(state.builder.chartSelector),
+		state.buffer.AddString(
+			interactive.PrintSelectorList(state.builder.chartSelector) + "\n",
 		)
 
 	case appointmentSelector:
-		state.buffer.WriteStoreString(
-			interactive.PrintSelectorList(state.builder.appointmentSelector),
+		state.buffer.AddString(
+			interactive.PrintSelectorList(state.builder.appointmentSelector) + "\n",
 		)
 
 	case noteEditor:
@@ -146,19 +152,23 @@ func (state *chartingState) HandleKeyinput(
 				"Write chart notes for %v(or ESC to back out): ",
 				state.builder.appointmentSelector.TargetSelection().PrintSelector(),
 			)
-			state.buffer.WriteStoreString(output)
-		} else {
-			state.buffer.WriteString(state.builder.noteUnderEdit)
+			state.buffer.SetPrefix(output)
 		}
 
 	case complete:
-		//TODO: Fix this nonsense
-		state.buffer.WriteStoreString(state.builder.chartSelector.TargetSelection().Deref().PrintText())
-		state.buffer.WriteNewLine()
+		state.buffer.AddString(
+			state.builder.chartSelector.TargetSelection().Deref().PrintText(),
+		)
 		state.builder = newChartingBuilder()
+
+	case actionConfirmation:
+		state.buffer.SetPrefix("charting: ")
+		state.buffer.AddString(
+			state.builder.confirmationMessage() + "\n",
+		)
 
 	default:
 	}
 
-	return state.nextState
+	return state.nextState, addNewLine
 }

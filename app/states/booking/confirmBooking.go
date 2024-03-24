@@ -19,12 +19,12 @@ func (state *bookingState) confirmAction(character rune) {
 	case "n":
 		fallthrough
 	case "N":
-		state.buffer.WriteStoreString("aborting")
+		state.buffer.AddString("aborting")
 		state.builder = newBookingBuilder()
 		state.nextState = state.rootState
 
 	default:
-		state.buffer.WriteStoreString(fmt.Sprintf(
+		state.buffer.AddString(fmt.Sprintf(
 			"input of %v not support. Confirm or deny (Y/n)?",
 			string(character),
 		))
@@ -32,30 +32,28 @@ func (state *bookingState) confirmAction(character rune) {
 }
 
 func (state *bookingState) confirmBooking() {
-	state.buffer.WriteStoreString("submitting booking")
+	state.buffer.AddString("submitting booking")
 	err := state.fetcher.BookPatient(
 		state.builder.patientSelector.TargetSelection().Deref(),
 		state.builder.treatmentSelector.TargetSelection().Deref(),
 		state.builder.appointmentDate,
 	)
 	if err != nil {
-		state.buffer.WriteStoreString(fmt.Sprintf("failed to make appointment: %v", err))
+		state.buffer.AddString(fmt.Sprintf("failed to make appointment: %v", err))
 	} else {
-		state.buffer.WriteStoreString("Successfully created booking")
-		state.ClearBuffer()
+		state.buffer.AddString("Successfully created booking")
 	}
 }
 
 func (state *bookingState) confirmCancelation() {
-	state.buffer.WriteStoreString("canceling appointment")
+	state.buffer.AddString("canceling appointment")
 	err := state.fetcher.CancelAppointment(
 		state.builder.appointmentSelector.TargetSelection().GetID(),
 		state.builder.cancelMessage,
 	)
 	if err != nil {
-		state.buffer.WriteStoreString(fmt.Sprintf("failed to cancel appointment: %v", err))
+		state.buffer.AddString(fmt.Sprintf("failed to cancel appointment: %v", err))
 	} else {
-		state.buffer.WriteStoreString("Successfully cancelled appointment")
-		state.ClearBuffer()
+		state.buffer.AddString("Successfully cancelled appointment")
 	}
 }

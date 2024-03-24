@@ -28,10 +28,16 @@ type ChartEntry struct {
 }
 
 func (entry ChartEntry) PrintSelector() string {
-	if entry.Title == "" {
-		return fmt.Sprintf("%v", entry.EnteredOn.HumanDate())
-	} else {
+	if entry.Title != "" {
 		return fmt.Sprintf("%v - %v", entry.EnteredOn.HumanDate(), entry.Title)
+	} else if entry.Snippet != "" {
+		end := 40
+		if len(entry.Snippet) < end {
+			end = len(entry.Snippet)
+		}
+		return fmt.Sprintf("%v - %v", entry.EnteredOn.HumanDate(), entry.Snippet[0:end])
+	} else {
+		return fmt.Sprintf("%v", entry.EnteredOn.HumanDate())
 	}
 }
 

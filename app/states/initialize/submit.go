@@ -1,21 +1,11 @@
 package initialize
 
-import (
-	"fmt"
+import "fmt"
 
-	"github.com/Bekreth/jane_cli/app/terminal"
-)
-
-func (state *initState) submit() {
-	flags := terminal.ParseFlags(state.buffer.Read())
-	state.buffer.Clear()
-
+func (state *initState) Submit(flags map[string]string) bool {
 	if _, exists := flags[".."]; exists {
 		state.nextState = state.rootState
-		return
-	} else if _, exists := flags["help"]; exists {
-		state.printHelp()
-		return
+		return true
 	}
 
 	missingFlags := map[string]string{}
@@ -43,7 +33,8 @@ func (state *initState) submit() {
 		if _, exists := missingFlags[username]; exists {
 			missingParameters = append(missingParameters, "username")
 		}
-		state.buffer.WriteStoreString(fmt.Sprintf(
+		//TODO: Test this
+		state.buffer.AddString(fmt.Sprintf(
 			"missing user data %v",
 			missingParameters,
 		))
@@ -53,4 +44,5 @@ func (state *initState) submit() {
 	if err != nil {
 		state.logger.Infof("error writing userfile: %v", err)
 	}
+	return true
 }

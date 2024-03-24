@@ -1,10 +1,10 @@
-package terminal
+package flag
 
 import (
 	"strings"
 )
 
-func ParseFlags(input string) map[string]string {
+func Parse(input string) map[string]string {
 	output := map[string]string{}
 
 	words := splitWords(input)

@@ -5,24 +5,23 @@ import (
 	"strings"
 
 	"github.com/Bekreth/jane_cli/app/interactive"
-	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/app/util"
 )
 
 func (state *bookingState) handleBooking(flags map[string]string) {
 	missingFlags := map[string]string{
-		bookingDateFlag: "",
-		treatmentFlag:   "",
-		patientFlag:     "",
+		bookingDateFlag: bookingDateFlag,
+		treatmentFlag:   treatmentFlag,
+		patientFlag:     patientFlag,
 	}
 
 	for key := range missingFlags {
 		delete(missingFlags, key)
 	}
 	if len(missingFlags) != 0 {
-		joined := strings.Join(terminal.MapKeysString(missingFlags), ", ")
+		joined := strings.Join(util.MapKeysString(missingFlags), ", ")
 		notifcation := fmt.Sprintf("missing arguments %v", joined)
-		state.buffer.WriteStoreString(notifcation)
+		state.buffer.AddString(notifcation)
 		return
 	}
 	builder := bookingBuilder{
@@ -37,7 +36,7 @@ func (state *bookingState) handleBooking(flags map[string]string) {
 		flags[patientFlag],
 	)
 	if err != nil {
-		state.buffer.WriteStoreString(err.Error())
+		state.buffer.AddString(err.Error())
 		return
 	}
 	builder.patientSelector = interactive.NewPatientSelector(patient, patients)
@@ -48,7 +47,7 @@ func (state *bookingState) handleBooking(flags map[string]string) {
 		flags[treatmentFlag],
 	)
 	if err != nil {
-		state.buffer.WriteStoreString(err.Error())
+		state.buffer.AddString(err.Error())
 		return
 	}
 	builder.treatmentSelector = interactive.NewTreatmentSelector(treatment, treatments)
@@ -60,7 +59,7 @@ func (state *bookingState) handleBooking(flags map[string]string) {
 		flags[bookingDateFlag],
 	)
 	if err != nil {
-		state.buffer.WriteStoreString(err.Error())
+		state.buffer.AddString(err.Error())
 		return
 	}
 

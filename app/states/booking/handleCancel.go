@@ -5,22 +5,21 @@ import (
 	"strings"
 
 	"github.com/Bekreth/jane_cli/app/interactive"
-	"github.com/Bekreth/jane_cli/app/terminal"
 	"github.com/Bekreth/jane_cli/app/util"
 )
 
 func (state *bookingState) handleCancel(flags map[string]string) {
 	missingFlags := map[string]string{
-		bookingDateFlag: "",
+		bookingDateFlag: bookingDateFlag,
 	}
 
 	for key := range missingFlags {
 		delete(missingFlags, key)
 	}
 	if len(missingFlags) != 0 {
-		joined := strings.Join(terminal.MapKeysString(missingFlags), ", ")
+		joined := strings.Join(util.MapKeysString(missingFlags), ", ")
 		notifcation := fmt.Sprintf("missing arguments %v", joined)
-		state.buffer.WriteStoreString(notifcation)
+		state.buffer.AddString(notifcation)
 		return
 	}
 	builder := bookingBuilder{
@@ -28,13 +27,14 @@ func (state *bookingState) handleCancel(flags map[string]string) {
 		flow:     canceling,
 	}
 
+	// Setup Date
 	dateValue, err := util.ParseDate(
 		util.DateFormat,
 		util.YearDateFormat,
 		flags[bookingDateFlag],
 	)
 	if err != nil {
-		state.buffer.WriteStoreString(err.Error())
+		state.buffer.AddString(err.Error())
 		return
 	}
 	builder.appointmentDate = dateValue
@@ -45,7 +45,7 @@ func (state *bookingState) handleCancel(flags map[string]string) {
 		flags[patientFlag],
 	)
 	if err != nil {
-		state.buffer.WriteStoreString(err.Error())
+		state.buffer.AddString(err.Error())
 		return
 	}
 	builder.appointmentSelector = interactive.NewAppointmentSelector(
