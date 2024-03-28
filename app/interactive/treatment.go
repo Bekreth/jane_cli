@@ -1,6 +1,9 @@
 package interactive
 
 import (
+	"sort"
+
+	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/Bekreth/jane_cli/domain"
 )
 
@@ -37,13 +40,14 @@ func NewTreatmentSelector(
 	selected domain.Treatment,
 	possible []domain.Treatment,
 ) Interactive[domain.Treatment] {
-	possiblePatients := make([]Selection[domain.Treatment], len(possible))
+	possibleTreatments := make([]Selection[domain.Treatment], len(possible))
+	sort.Sort(util.Treatments(possible))
 	for i, selection := range possible {
-		possiblePatients[i] = SelectedTreatment{selection}
+		possibleTreatments[i] = SelectedTreatment{selection}
 	}
 	return &selector[domain.Treatment]{
 		page:              0,
-		possibleSelection: possiblePatients,
+		possibleSelection: possibleTreatments,
 		selected:          SelectedTreatment{selected},
 	}
 }
