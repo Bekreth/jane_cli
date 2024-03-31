@@ -49,7 +49,6 @@ func (client Client) FetchPatients(patientName string) ([]domain.Patient, error)
 		client.buildPatientRequest(),
 		strings.NewReader(string(jsonBody)),
 	)
-	//	client.logger.Debugf("REQEUST: %v", request)
 	if err != nil {
 		client.logger.Infof("failed to build patient request")
 		return output, err
@@ -57,7 +56,6 @@ func (client Client) FetchPatients(patientName string) ([]domain.Patient, error)
 	request.Header = http.Header(commonHeaders)
 
 	response, err := client.janeClient.Do(request)
-	//	client.logger.Debugf("RESPONSE: %v", request)
 	if err != nil {
 		client.logger.Infof("failed to get patient info from Jane")
 		return output, err

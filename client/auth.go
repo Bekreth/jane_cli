@@ -51,11 +51,22 @@ func (client Client) Login(password string) error {
 			client.logger.Debugf("Got a new auth cookie until %v", cookie.Expires)
 			client.user.Auth.AuthCookie = cookie.Value
 			client.user.Auth.Expires = cookie.Expires
-			userID, err := client.getUserID()
+			staffMember, err := client.getUserID()
 			if err != nil {
 				return err
 			}
-			client.user.Auth.UserID = userID
+			client.user.Auth.UserID = staffMember.ID
+			if client.user.LocationID == 0 {
+				client.user.LocationID = staffMember.LocationIDs[0]
+				if len(staffMember.LocationIDs) > 1 {
+					fmt.Errorf(
+						"Jane CLI can only support practitioners with 1 location. Your first" +
+							"location has been selected.  When you try to use Jane CLI, you'll " +
+							"only be able to see the schedule and book appointments for that" +
+							" location. You will not see this message again.",
+					)
+				}
+			}
 			return client.updateAuth()
 		}
 	}
@@ -63,7 +74,7 @@ func (client Client) Login(password string) error {
 	return fmt.Errorf("no cookie was provided")
 }
 
-func (client Client) getUserID() (int, error) {
+func (client Client) getUserID() (domain.StaffMember, error) {
 	urlBase := fmt.Sprintf("%v/%v", client.getDomain(), idPath)
 	client.logger.Infof("getting user ID for %v", client.user.Auth.Username)
 	request, err := http.NewRequest(
@@ -75,20 +86,20 @@ func (client Client) getUserID() (int, error) {
 	response, err := client.janeClient.Do(request)
 	if err != nil {
 		client.logger.Infof("unable to get userID: %v", err)
-		return 0, err
+		return domain.StaffMember{}, err
 	}
 
 	bytes, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		client.logger.Infof("failed to read bytes from response: %v", err)
-		return 0, err
+		return domain.StaffMember{}, err
 	}
 
 	output := []domain.StaffMember{}
 	err = json.Unmarshal(bytes, &output)
 	if err != nil {
 		client.logger.Infof("failed to parse json response: %v", err)
-		return 0, err
+		return domain.StaffMember{}, err
 	}
 
 	for _, staffMember := range output {
@@ -99,9 +110,9 @@ func (client Client) getUserID() (int, error) {
 				client.user.Auth.Username,
 			)
 			client.user.Auth.UserID = staffMember.ID
-			return staffMember.ID, err
+			return staffMember, err
 		}
 	}
 
-	return 0, nil
+	return domain.StaffMember{}, nil
 }
