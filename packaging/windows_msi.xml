@@ -30,24 +30,23 @@
 		/>
 		<Property
 			Id='DiskPrompt'
-			Value="Bekreth's Jane CLI $VERSION Installation [1]"
+			Value="Bekreth's Jane CLI $VERSION Installation"
 		/>
 
     <Directory Id='TARGETDIR' Name='SourceDir'>
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
         <Directory Id='Bekreth' Name='Bekreth'>
-          <Directory Id='INSTALLDIR' Name='Jane CLI $VERSION'>
-
+          <Directory Id='INSTALLDIR' Name='Jane CLI'>
             <Component Id='MainExecutable' Guid='fc996916-8096-497c-89d6-d1d3799c95e6'>
 							<File 
 								Id='Jane_CLI' 
-								Name='jane_cli.exe'
+								Name='jane_cli-$VERSION.exe'
 								DiskId='1'
-								Source='jane_cli.exe'
+								Source='jane_cli-$VERSION.exe'
 								KeyPath='yes'
 							>
 								<Shortcut
-									Id="startmenuJaneCLI130"
+									Id="startmenuJaneCLI"
 									Name="Jane CLI"
 									Directory="ProgramMenuDir"
 									WorkingDirectory='INSTALLDIR'
@@ -56,7 +55,7 @@
 									IconIndex="0"
 								/>
 								<Shortcut
-									Id="desktopJaneCLI130"
+									Id="desktopJaneCLI"
 									Directory="DesktopFolder"
 									Name="Jane CLI"
 									WorkingDirectory='INSTALLDIR'
@@ -121,7 +120,7 @@
       </Directory>
 
 			<Directory Id="ProgramMenuFolder" Name="Programs">
-				<Directory Id="ProgramMenuDir" Name="Jane CLI $VERSION">
+				<Directory Id="ProgramMenuDir" Name="Jane CLI">
 					<Component Id="ProgramMenuDir" Guid='e7c9fcb0-3417-42dd-acad-9fc0289751f3'>
 						<RemoveFolder Id='ProgramMenuDir' On='uninstall'/>
 						<RegistryValue 
