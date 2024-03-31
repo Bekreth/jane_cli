@@ -40,9 +40,9 @@
             <Component Id='MainExecutable' Guid='fc996916-8096-497c-89d6-d1d3799c95e6'>
 							<File 
 								Id='Jane_CLI' 
-								Name='jane_cli-$VERSION.exe'
+								Name='jane_cli.exe'
 								DiskId='1'
-								Source='jane_cli-$VERSION.exe'
+								Source='jane_cli.exe'
 								KeyPath='yes'
 							>
 								<Shortcut
