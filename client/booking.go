@@ -27,7 +27,8 @@ type Booking struct {
 	State         string            `json:"state"`
 	Duration      int               `json:"duration"`
 	Break         bool              `json:"break"`
-	RoomID        int               `json:"room_id"`
+	WithinShift   bool              `json:"within_shiftk"`
+	LocationID    int               `json:"location_id"`
 }
 
 func (client Client) buildBookingRequest(appointmentID int) string {
@@ -57,7 +58,8 @@ func (client Client) BookAppointment(
 			State:         "reserved",
 			Duration:      int(treatment.ScheduledDuration.Duration.Seconds()),
 			Break:         false,
-			RoomID:        client.user.RoomID,
+			WithinShift:   true,
+			LocationID:    client.user.LocationID,
 		},
 	}
 

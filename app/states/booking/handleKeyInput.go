@@ -30,6 +30,7 @@ func (state *bookingState) HandleKeyinput(
 	switch state.builder.substate {
 	case actionConfirmation:
 		state.confirmAction(character)
+		addNewLine = true
 
 	case treatmentSelector:
 		state.builder.treatmentSelector.SelectElement(character)
