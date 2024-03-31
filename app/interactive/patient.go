@@ -1,6 +1,9 @@
 package interactive
 
 import (
+	"sort"
+
+	"github.com/Bekreth/jane_cli/app/util"
 	"github.com/Bekreth/jane_cli/domain"
 )
 
@@ -38,6 +41,7 @@ func NewPatientSelector(
 	possible []domain.Patient,
 ) Interactive[domain.Patient] {
 	possiblePatients := make([]Selection[domain.Patient], len(possible))
+	sort.Sort(util.Patients(possible))
 	for i, selection := range possible {
 		possiblePatients[i] = SelectedPatient{selection}
 	}
